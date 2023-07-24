@@ -1,0 +1,40 @@
+.username-input {
+    position:absolute;
+    display:flex;
+    left: 42%;
+    top: 50%;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+}
+
+.email-input {
+    position:absolute;
+    display:flex;
+    left: 42%;
+    top: 41%;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+}
+
+.password-input {
+    position:absolute;
+    display:flex;
+    left: 42%;
+    top: 60%;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+}
+
+.confirm-password {
+    position:absolute;
+    display:flex;
+    left: 42%;
+    top: 70%;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+}
+
