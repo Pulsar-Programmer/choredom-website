@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Cookie</title>
+  <link rel="icon" href="https://pngimg.com/uploads/cookie/cookie_PNG13656.png" type="image/icon type">
+  <!-- Load CSS -->
+  <link href="./static/cookie.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!--     Write stuff here -->
+  <div class="block w100">
+
+    <div class="ib w25">
+      <table id="table" class="hide w25">
+        <tr>
+          <th>Leaderboard</th>
+        </tr>
+        <tr>
+          <td>#</td>
+          <td>Name</td>
+          <td>Score</td>
+        </tr>
+      </table>
+    </div>
+    <div class="ib w85 small_center">
+      <div id="nav">
+        <button id="nav_button"><a href="https://survey.programmingcod2.repl.co/" target="_blank"
+            id="nav_text">Survey</a></button>
+        <button id="nav_button"><a href="https://cookieclicker.programmingcod2.repl.co/" target="_blank"
+            id="nav_text">Cookie</a>
+        </button>
+        <button id="nav_button"><a href="https://one-proj.w3spaces.com/" target="_blank" id="nav_text">Project
+            One</a></button>
+        <button id="nav_button"><a href="https://Animation.programmingcod2.repl.co" target="_blank"
+            id="nav_text">Animation</a></button>
+        <button id="nav_button"><a href="https://Link.programmingcod2.repl.co" target="_blank"
+            id="nav_text">Character</a></button>
+      </div>
+      <div id="box" class="center_text">
+        <h1 id="title">Dairy-Free Cookie Clicker</h1>
+        <img src="https://pngimg.com/uploads/cookie/cookie_PNG13656.png" alt="Dairy-free cookie." height="256"
+          width="256" id="cookie" onclick="click_cookie()" onwheel="click_cookie()">
+        <h3 id="header">Cookies Clicked: <span id="counter">0</span></h3>
+        <button id="reset" onclick="reset()">Reset</button>
+        <button id="reverse" onclick="reverse()">Reverse</button>
+        <button id="parallel" onclick="parallel()">Parallel</button>
+        <p id="p1">Reverse: Off</p>
+        <p id="p2">Parallel: Off</p>
+        <p id="p3">Direction: None</p>
+      </div>
+      <script src="./static/cookie.js"></script>
+    </div>
+    
+    <!-- <div class="show600">
+      <table id="table">
+        <tr>
+          <th>Leaderboard</th>
+        </tr>
+        <tr>
+          <td>#</td>
+          <td>Name</td>
+          <td>Score</td>
+        </tr>
+      </table>
+    </div> -->
+  </div>
+
+</body>
+
+</html>
+<!-- Cross the Road, Whack A Mole, Tic Tac Toe-like Game -->
