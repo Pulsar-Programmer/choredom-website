@@ -2,7 +2,6 @@ use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServ
 pub const WEB: &'static str = include_str!("../html/index.html");
 pub const CREATE: &'static str = include_str!("../html/create.html");
 pub const COOKIE: &'static str = include_str!("../html/cookie.html");
-use sqlite::State;
 
 #[post("/mason")]
 async fn login(form: web::Form<FormData>) -> impl Responder {
