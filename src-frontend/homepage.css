@@ -1,0 +1,77 @@
+body {
+    background-color: black;
+    color: white;
+  }
+  
+  header {
+    background-color: #0000;
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 2em;
+  }
+  
+  a {
+    text-decoration: none;
+    color: white;
+  }
+  
+  nav {
+    float: right;
+    text-align: center;
+  }
+  
+  nav a {
+    padding: 10px;
+    background-color: white;
+    color: black;
+    border-radius: 5px;
+  }
+  
+  nav a:hover {
+    background-color: black;
+    color: white;
+  }
+  
+  main {
+    margin-top: 20px;
+  }
+  
+  .container {
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    font-size: 1.5em;
+  }
+  
+  p {
+    margin-bottom: 10px;
+  }
+  
+  footer {
+    background-color: #0000;
+    padding: 20px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  img {
+    width: 100%;
+  }
+  
+  .sign-up, .log-in {
+    background-color: white;
+    color: black;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  .sign-up:hover, .log-in:hover {
+    background-color: black;
+    color: white;
+  }
+  

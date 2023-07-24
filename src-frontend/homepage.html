@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Choredom: Connect with Freelancers and Businesses to Solve Problems</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="homepage.css">
+</head>
+<body style="background-color: black;">
+  <header>
+    <h1>Choredom</h1>
+    <a href="#">
+      <img src="assets/logo.png" alt="Choredom Logo">
+    </a>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#" id="chat-button">Chat</a>
+      <a href="task.html">Tasks in your Area</a>
+      <a href="#">Settings</a>
+      <a href="#" id="post-button">Post</a>
+    </nav>
+  </header>
+  <main>
+    <div class="container">
+      <h2>Home</h2>
+      <p>Choredom is a platform that connects people with freelancers and businesses to solve problems.</p>
+      <p>Whether you need someone to help you with your chores, or you're looking for a freelance job, Choredom can help.</p>
+      <p>We have a wide variety of freelancers and businesses available, so you're sure to find someone who can help you with your needs.</p>
+      <p>And with our easy-to-use interface, it's simple to post a job or find a freelancer.</p>
+      <p>So what are you waiting for? Sign up for Choredom today and start solving problems!</p>
+      <a href="signup.html" class="sign-up">Sign Up</a>
+      <a href="login.html" class="log-in">Log In</a>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2023 Choredom</p>
+    <img src="assets/background.jpg" alt="Background Image">
+  </footer>
+  <script>
+    document.getElementById("post-button").addEventListener("click", function() {
+      window.location.href = "post.html";
+    });
+    document.getElementById("chat-button").addEventListener("click", function() {
+      window.location.href = "chat.html";
+    });
+  </script>
+</body>
+</html>
