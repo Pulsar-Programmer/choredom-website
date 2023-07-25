@@ -8,12 +8,12 @@
 </head>
 <body>
   <h1 class="main-title">Sign Up</h1>
-  <div class="all-inputs">
-    <form action="signup.js" method="post">
-      <input type="email" class="email-input" placeholder="Email">
-      <input type="password" class="password-input" placeholder="Password">
-      <input type="password" class="confirmPW-input" placeholder="Confirm Password">
-      <button class="continue">Continue</button>
+  <!-- <div class="all-inputs"> -->
+    <form action="/authenticate" method="POST">
+      <input name="email" type="text" class="email-input" placeholder="Email">
+      <input name="password" type="password" class="password-input" placeholder="Password">
+      <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
+      <input type="submit" class="continue"> <!-- Continue -->
     </form>
     <select name="Cities" class="choose-cities">
       <option value="choose-region">Choose Your Region</option>
@@ -22,6 +22,6 @@
       <option value="New York">New York</option>
       <option value="Seattle">Seattle</option>
     </select>
-  </div>
+  <!-- </div> -->
 </body>
 </html>
