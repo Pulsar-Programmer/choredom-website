@@ -10,3 +10,4 @@ actix-web = "*"
 serde = { version = "1.0", features = ["derive"] }
 actix-files = "*"
 serde_json = "*"
+mail-send = "0.4.0"
