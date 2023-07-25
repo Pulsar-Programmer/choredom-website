@@ -1,5 +1,5 @@
 use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
-pub const INDEX: &'static str = include_str!("../src-web/html/index.html");
+pub const HOMEPAGE: &'static str = include_str!("../src-web/html/homepage.html");
 pub const CREATE: &'static str = include_str!("../src-web/html/create.html");
 pub const COOKIE: &'static str = include_str!("../src-web/html/cookie.html");
 
