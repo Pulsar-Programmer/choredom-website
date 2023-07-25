@@ -1,58 +1,27 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
- <title>Sign Up</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | Choredom</title>
+  <link rel="stylesheet" href="signup.css">
 </head>
 <body>
- <h1>Sign Up</h1>
-  <input type="email" name="email" placeholder="Email">
-  <input type="password" name="password" placeholder="Password">
-  <input type="password" name="confirmPassword" placeholder="Confirm Password">
-  <select name="town">
-   <option value="Los Angeles">Los Angeles</option>
-   <option value="New York">New York</option>
-   <option value="Chicago">Chicago</option>
-   <option value="Houston">Houston</option>
-   <option value="Philadelphia">Philadelphia</option>
-   <option value="San Francisco">San Francisco</option>
-   <option value="Dallas">Dallas</option>
-   <option value="Austin">Austin</option>
-   <option value="Seattle">Seattle</option>
-  </select>
-  <input type="text" name="username" placeholder="Username">
-  <input type="text" name="displayName" placeholder="Display Name">
-  <input type="submit" value="Sign Up">
-  <script src="signup.js"></script>
+  <h1 class="main-title">Sign Up</h1>
+  <div class="all-inputs">
+    <form action="signup.js" method="post">
+      <input type="email" class="email-input" placeholder="Email">
+      <input type="password" class="password-input" placeholder="Password">
+      <input type="password" class="confirmPW-input" placeholder="Confirm Password">
+      <button class="continue">Continue</button>
+    </form>
+    <select name="Cities" class="choose-cities">
+      <option value="choose-region">Choose Your Region</option>
+      <option value="Los Angeles">Los Angeles</option>
+      <option value="Chicago">Chicago</option>
+      <option value="New York">New York</option>
+      <option value="Seattle">Seattle</option>
+    </select>
+  </div>
 </body>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
- <meta charset="UTF-8">
- <title>Sign Up</title>
-</head>
-<body>
- <h1>Sign Up</h1>
-  <input type="email" name="email" placeholder="Email">
-  <input type="password" name="password" placeholder="Password">
-  <input type="password" name="confirmPassword" placeholder="Confirm Password">
-  <select name="town">
-   <option value="Los Angeles">Los Angeles</option>
-   <option value="New York">New York</option>
-   <option value="Chicago">Chicago</option>
-   <option value="Houston">Houston</option>
-   <option value="Philadelphia">Philadelphia</option>
-   <option value="San Francisco">San Francisco</option>
-   <option value="Dallas">Dallas</option>
-   <option value="Austin">Austin</option>
-   <option value="Seattle">Seattle</option>
-  </select>
-  <input type="text" name="username" placeholder="Username">
-  <input type="text" name="displayName" placeholder="Display Name">
-  <input type="submit" value="Sign Up">
-  <script src="signup.js"></script>
-</body>
->>>>>>> 59cf81640aca21bcc8ebaad78e8a2f77f9d06450
 </html>
