@@ -12,7 +12,9 @@ website!(
     HOMEPAGE; "homepage", 
     CHAT; "chat", 
     LOGIN; "login",
-    POST; "post"
+    POST; "post",
+    TASK; "task",
+    SIGNUP; "signup"
 );
 
 
