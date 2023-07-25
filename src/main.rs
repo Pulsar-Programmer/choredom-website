@@ -1,7 +1,21 @@
 use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
-pub const HOMEPAGE: &'static str = include_str!("../src-web/html/homepage.html");
-pub const CREATE: &'static str = include_str!("../src-web/html/create.html");
-pub const COOKIE: &'static str = include_str!("../src-web/html/cookie.html");
+
+macro_rules! website {
+    ($($i:ident; $e:expr),+) => {
+        $(
+            pub const $i: &'static str = include_str!(concat!("../src-web/html/", $e, ".html"));
+        )*
+    };
+}
+
+website!(
+    HOMEPAGE; "homepage", 
+    CHAT; "chat", 
+    LOGIN; "login",
+    POST; "post"
+);
+
+
 
 #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
