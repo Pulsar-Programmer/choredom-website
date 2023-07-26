@@ -1,5 +1,10 @@
+mod structs;
+mod cmd;
+mod db;
+
 use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
 use rand::Rng;
+use std::sync::{Arc, Mutex};
 
 macro_rules! website {
     ($($i:ident; $e:expr),+) => {
@@ -101,14 +106,14 @@ async fn index() -> impl Responder{
 
 #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
-    let p = format!("<p>Hello... {}</p>", name);
+    let p = format!("<p>Hello {}</p>", name);
     HttpResponse::Ok().body(p)
 }
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let app_state = web::Data::new(AppState {
-        code: std::sync::Mutex::new(0),
+        code: Arc::new(Mutex::new(0)),
     });
     HttpServer::new(move|| {
         wapp!(greet, homepage, index, signupnew, verify_email, upload)
@@ -126,7 +131,7 @@ struct Account {
     password2: String,
 }
 struct AppState {
-    code: std::sync::Mutex<i64>,
+    code: Arc<Mutex<i64>>,
 }
 #[derive(serde::Deserialize)]
 struct Code{
