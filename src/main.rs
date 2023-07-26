@@ -89,8 +89,25 @@ async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Respond
 }
 
 #[post("/upload-auth")]
-async fn upload_auth(form: actix_multipart::Multipart) -> impl Responder{
+async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpResponse, actix_web::Error>{
     
+    use futures::TryStreamExt;
+    use futures::StreamExt;
+    use std::io::Write;
+    // iterate over multipart stream
+    while let Ok(Some(mut field)) = form.try_next().await {
+        let content_disposition = field.content_disposition();
+        let filename = content_disposition.get_filename().unwrap();
+        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+        let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap().unwrap();
+
+        // Field in turn is stream of *Bytes* object
+        while let Some(chunk) = field.next().await {
+            let data = chunk.unwrap();
+            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap()?;
+        }
+    }
+    Ok(HttpResponse::Ok().into())
 }
 
 #[get("/signup")]
