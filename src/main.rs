@@ -76,12 +76,9 @@ async fn verify_email(app_data: web::Data<AppState>, form: Form<Account>) -> imp
 async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Responder{
     println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     if code.0.code != *app_data.code.lock().unwrap(){
-        println!("NiG");
         HttpResponse::Ok().body(EMAIL)
-        
     }
     else{
-        println!("OOG");
         HttpResponse::Ok().body(UPLOAD)
     }
 }
