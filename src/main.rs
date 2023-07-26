@@ -89,8 +89,8 @@ async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Respond
 }
 
 #[post("/upload-auth")]
-async fn upload_auth(form: web::FormData<File>) -> impl Responder{
-    todo!()
+async fn upload_auth(form: actix_multipart::Multipart) -> impl Responder{
+    
 }
 
 #[get("/signup")]
