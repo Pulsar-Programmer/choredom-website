@@ -1,16 +1,12 @@
-
 use std::num::{ParseIntError, ParseFloatError};
 
 use crate::structs::{Account, Job, Money, CmdResult};
 
-
-#[tauri::command]
 pub fn register_user(display_name: String, username: String, password: String, email: String){
     let acct = Account::new(display_name, username, password, email);
     
 }
 
-#[tauri::command]
 pub fn register_job(title: String, body: String, location: String, time: String, price: String) -> CmdResult<()>{
     use chrono::Utc;
     use chrono::TimeZone;
