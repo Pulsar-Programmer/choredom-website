@@ -14,6 +14,7 @@ pub struct Account{
     email: String,
     data: AccountData,
     page: AccountPage,
+    acct: AccountType,
 
     password: String,
     balance: Money,
@@ -29,9 +30,16 @@ impl Account{
             password, 
             balance: Money(0.), 
             page: AccountPage::new(),
-            last_location: todo!(), 
+            last_location: todo!(),
+            acct: AccountType::Consumer,
         }
     }
+}
+#[derive(serde::Serialize, Debug, serde::Deserialize)]
+enum AccountType{
+    Consumer,
+    Pending,
+    Worker,
 }
 
 
