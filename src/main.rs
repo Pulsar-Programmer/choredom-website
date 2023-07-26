@@ -88,6 +88,11 @@ async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Respond
     }
 }
 
+#[post("/upload-auth")]
+async fn upload_auth(form: web::FormData<File>) -> impl Responder{
+    todo!()
+}
+
 #[get("/signup")]
 async fn signupnew() -> impl Responder{
     HttpResponse::Ok().body(SIGNUP)
@@ -116,7 +121,7 @@ async fn main() -> std::io::Result<()> {
         code: Arc::new(Mutex::new(0)),
     });
     HttpServer::new(move|| {
-        wapp!(greet, homepage, index, signupnew, verify_email, upload)
+        wapp!(greet, homepage, index, signupnew, verify_email, upload, upload_auth)
         .app_data(app_state.clone())
     })
     .bind(("127.0.0.1", 8080))?

@@ -83,39 +83,8 @@ impl Job{
 }
 
 
-
-
-
-
-
-
-// #[derive(Debug)]
-// pub struct CmdError(Box<dyn std::error::Error>);
-// impl std::fmt::Display for CmdError{
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         writeln!(f, "BACKEND ERROR: {}", self.0)
-//     }
-// }
-
-// // we must manually implement serde::Serialize
-// impl serde::Serialize for CmdError {
-//     fn serialize<S: serde::ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//     {
-//         serializer.serialize_str(self.to_string().as_ref())
-//     }
-// }
-
-// #[derive(serde::Serialize)]
-// struct CmdResult<T>(Result<T, CmdError>);//ErrorHandle, previously
-
-// impl<T, E> FromResidual<Result<T, E>> for Result<T, E>{
-//     fn into(self) -> CmdResult<T> {
-//         todo!()
-//     }
-// }
-
-// pub type CmdHandle<T> = Result<T, Box<dyn std::error::Error>>; //previously error handle
-pub type CmdResult<T> = Result<T, String>;
+pub type CmdResult<T> = Result<T, Box<dyn std::error::Error>>; //previously error handle
+// pub type CmdResult<T> = Result<T, String>;
 
 
 

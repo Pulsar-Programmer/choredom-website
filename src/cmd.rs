@@ -13,14 +13,14 @@ pub fn register_job(title: String, body: String, location: String, time: String,
     //https://github.com/kelvins/US-Cities-Database
     // let (y, m, d) = ()
     let mut iter = time.split('-');
-    let year = iter.next().ok_or("REGISTER JOB FN: Error parsing Date year.")?.parse().map_err(|e: ParseIntError|e.to_string())?;
-    let month = iter.next().ok_or("REGISTER JOB FN: Error parsing Date month.")?.parse().map_err(|e: ParseIntError|e.to_string())?;
-    let day = iter.next().ok_or("REGISTER JOB FN: Error parsing Date day.")?.parse().map_err(|e: ParseIntError|e.to_string())?;
+    let year = iter.next().ok_or("REGISTER JOB FN: Error parsing Date year.")?.parse()?;
+    let month = iter.next().ok_or("REGISTER JOB FN: Error parsing Date month.")?.parse()?;
+    let day = iter.next().ok_or("REGISTER JOB FN: Error parsing Date day.")?.parse()?;
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.")?;
     //time is written in the format: yyyy-mm-dd
     // let location = google_maps::distance_matrix::Location::LatLng(google_maps::LatLng::)
 
-    let price = crate::structs::Money(price.parse().map_err(|e: ParseFloatError|e.to_string())?);
+    let price = crate::structs::Money(price.parse()?);
     let job = crate::structs::Job::new(
         title,
         body,
