@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image Upload</title>
+</head>
+<body>
+<h1>Upload your gov ID or 30 second video explaining why you should work</h1>
+<form action="/upload" method="post" enctype="multipart/form-data">
+<input type="file" name="file" id="file" accept="image/*, video/*" max-size="600MB">
+<input type="button" value="Skip" id="skip-button">
+<input type="submit" value="Upload">
+</form>
+
+<script>
+document.getElementById("skip-button").addEventListener("click", function() {
+document.getElementById("file").value = "";
+});
+</script>
+</body>
+</html>

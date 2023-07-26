@@ -1,7 +1,5 @@
-use lettre::message::header::ContentType;
-use lettre::{Message, Transport};
-use lettre_email::EmailBuilder;
 use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
+use rand::Rng;
 
 macro_rules! website {
     ($($i:ident; $e:expr),+) => {
@@ -29,44 +27,63 @@ website!(
     TASK; "task",
     SIGNUP; "signup",
     INDEX; "index",
-    EMAIL; "email"
+    EMAIL; "email",
+    UPLOAD; "upload"
 );
 
 #[post("/verify-email")]
-async fn verify_email(form: Form<Account>) -> impl Responder{
-    let Account { email, password, password2 } = form.0;
-    println!("{email}, {password}, {password2}");
+async fn verify_email(app_data: web::Data<AppState>, form: Form<Account>) -> impl Responder{
+    let Account { email: to_email, password, password2 } = form.0;
+    println!("{to_email}, {password}, {password2}");
     if password != password2{
         return HttpResponse::Ok().body(SIGNUP);
     }
-    // use lettre::message::header::ContentType;
-    // use lettre::{Message, Transport};
+    use lettre::transport::smtp::authentication::Credentials;
+    use lettre::{SmtpTransport, Transport};
+    use lettre::Message;
+    // let smtp_key: &str = "Brokies129gg";
+    let smtp_key = "pjefpqhvsxmzomjf"; //app password
+    let from_email: &str = "business@quannt.net";
+    let host: &str = "smtp.gmail.com";
+    let mut code = app_data.code.lock().unwrap();
+    let codea = rand::thread_rng().gen_range(100000..1000000);
+    *code = codea;
 
-    // let email = Message::builder()
-    //     .from("NoBody <[email protected]>".parse().unwrap())
-    //     .to("Hei <[email protected]>".parse().unwrap())
-    //     .subject("Happy new year")
-    //     .header(ContentType::TEXT_PLAIN)
-    //     .body(String::from("Be happy!"))
-    //     .unwrap();
+    let email: Message = Message::builder()
+        .from(from_email.parse().unwrap())
+        .to(to_email.parse().unwrap())
+        .subject("Welcome to Choredom")
+        .body(format!("Welcome to Choredom, mf (my friend). Your verification code is {}", code))
+        .unwrap();
 
-    // use lettre::transport::smtp::authentication::Credentials;
-    // use lettre::SmtpTransport;
+    let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
 
-    // let creds = Credentials::new("smtp_username".to_owned(), "smtp_password".to_owned());
+    // Open a remote connection to gmail
+    let mailer: SmtpTransport = SmtpTransport::relay(&host)
+        .unwrap()
+        .credentials(creds)
+        .build();
 
-    // let mailer = SmtpTransport::relay("smtp.gmail.com")
-    //     .unwrap()
-    //     .credentials(creds)
-    //     .build();
+    // Send the email
+    match mailer.send(&email) {
+        Ok(_) => {println!("Email sent successfully!"); HttpResponse::Ok().body(EMAIL)},
+        Err(e) => HttpResponse::Ok().body(e.to_string()), //handle this better later
+    }
+    
+}
 
-    // match mailer.send(&email) {
-    //     Ok(_) => println!("Email sent successfully!"),
-    //     Err(e) => panic!("Could not send email: {:?}", e),
-    // }
-
-
-    HttpResponse::Ok().body(EMAIL)
+#[post("/upload")]
+async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Responder{
+    println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
+    if code.0.code != *app_data.code.lock().unwrap(){
+        println!("NiG");
+        HttpResponse::Ok().body(EMAIL)
+        
+    }
+    else{
+        println!("OOG");
+        HttpResponse::Ok().body(UPLOAD)
+    }
 }
 
 #[get("/signup")]
@@ -93,8 +110,12 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        wapp!(greet, homepage, index, signupnew, verify_email)
+    let app_state = web::Data::new(AppState {
+        code: std::sync::Mutex::new(0),
+    });
+    HttpServer::new(move|| {
+        wapp!(greet, homepage, index, signupnew, verify_email, upload)
+        .app_data(app_state.clone())
     })
     .bind(("127.0.0.1", 8080))?
     .run()
@@ -106,4 +127,11 @@ struct Account {
     email: String,
     password: String,
     password2: String,
+}
+struct AppState {
+    code: std::sync::Mutex<i64>,
+}
+#[derive(serde::Deserialize)]
+struct Code{
+    code: i64
 }

@@ -14,4 +14,6 @@ mail-send = "0.4.0"
 lettre = "0.10"
 lettre_email = "0.9.4"
 dotenv = "0.15.0"
+rustls = "0.21.5"
+rand = "0.8.5"
 
