@@ -7,78 +7,6 @@ use surrealdb::opt::auth::{Root, Scope};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb as s;
 
-async fn db() -> s::Result<()>{
-    let db = Surreal::new::<Ws>("localhost:8000").await?;
-
-    // Signin as a namespace, database, or root user
-    db.signin(Root {
-        username: "root",
-        password: "root",
-    }).await?;
-
-    // Select a specific namespace / database
-    db.use_ns("namespace").use_db("database").await?;
-
-    // Create a new person with a random ID
-    let created: Person = db.create("person")
-        .content(Person {
-            title: "Founder & CEO".into(),
-            name: Name {
-                first: "Tobie".into(),
-                last: "Morgan Hitchcock".into(),
-            },
-            marketing: true,
-        })
-        .await?;
-
-    // Create a new person with a specific ID
-    let created: Person = db.create(("person", "jaime"))
-        .content(Person {
-            title: "Founder & COO".into(),
-            name: Name {
-                first: "Jaime".into(),
-                last: "Morgan Hitchcock".into(),
-            },
-            marketing: false,
-        })
-        .await?;
-
-    // Update a person record with a specific ID
-    let updated: Person = db.update(("person", "jaime"))
-        .merge(json!({"marketing": true}))
-        .await?;
-
-    // Select all people records
-    let people: Vec<Person> = db.select("person").await?;
-
-    // Perform a custom advanced query
-    let sql = r#"
-        SELECT marketing, count()
-        FROM type::table($table)
-        GROUP BY marketing
-    "#;
-
-    let groups = db.query(sql)
-        .bind(("table", "person"))
-        .await?;
-
-    Ok(())
-}
-
-
-#[derive(Serialize, Deserialize)]
-struct Name {
-    first: Cow<'static, str>,
-    last: Cow<'static, str>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Person {
-    title: Cow<'static, str>,
-    name: Name,
-    marketing: bool,
-}
-
 #[derive(Serialize)]
 struct Credentials<'a> {
     email: &'a str,
@@ -104,7 +32,7 @@ async fn setup_users(db: s::Result<Surreal<Client>>) -> s::Result<Surreal<Client
     // Ok(db)
 }
 
-pub async fn setup_db() -> s::Result<Surreal<Client>>{
+pub async fn setup_db() -> s::Result<Db>{
     //Create the db connection
     let db = Surreal::new::<Ws>("localhost:8000").await?;
 
@@ -125,28 +53,25 @@ pub async fn setup_db() -> s::Result<Surreal<Client>>{
     Ok(db)
 }
 
-
-
-
-
 type Db = Surreal<Client>;
 
-
 //Create
-pub async fn register<Value: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: Value) -> s::Result<()>{
+pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{
     db.create((table, id)).content(value).await?;
     Ok(())
 }
 
 //Read
-async fn retrieve<'db, Value: serde::Deserialize<'db>>(db: &mut Db, table: &str, id: &str) -> s::Result<Value>{
-    // Ok(db.select((table, id)).await?)
-    todo!()
+pub async fn retrieve<V: serde::de::DeserializeOwned>(db: &mut Db, table: &str) -> s::Result<Vec<V>>{
+    let records = db.select(table).await?;
+    let deserialized_records: Vec<V> = records.into_iter().map(|record| {
+        serde_json::from_value(record).unwrap()
+    }).collect();
+    Ok(deserialized_records)
 }
 
-
 //Update
-pub async fn reregister<Value: serde::Serialize>(db: &mut Db, table: &str, id: &str, new_value: Value) -> s::Result<()>{
+pub async fn reregister<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, new_value: V) -> s::Result<()>{
     db.update((table, id)).content(new_value).await?;
     Ok(())
 }
@@ -157,3 +82,8 @@ pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
     db.delete((table, id)).await?;
     Ok(())
 }
+
+// //Query
+// async fn request(db: &mut Db, query: String) -> s::Result<>{
+//     db.query(query)
+// }

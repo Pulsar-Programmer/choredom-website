@@ -1,6 +1,5 @@
 // use crate::structs::{Account, Job, Money};
-
-// use actix_web::HttpResponse;
+use actix_web::{get, post, HttpResponse};
 
 
 pub mod sites{
@@ -174,10 +173,15 @@ pub mod login{
 }
 
 
-// #[actix_web::get("/task.html")]
-// pub async fn task() -> impl actix_web::Responder{
-//     HttpResponse::Ok().body(sites::TASK)
-// }
+#[actix_web::get("/task")]
+pub async fn task() -> impl actix_web::Responder{
+    HttpResponse::Ok().body(sites::TASK)
+}
+
+#[get("/accounts")]
+pub async fn accounts() -> impl actix_web::Responder{
+    serde_json::to_string(&1)
+}
 
 
 
