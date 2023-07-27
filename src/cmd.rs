@@ -1,5 +1,4 @@
 // use crate::structs::{Account, Job, Money};
-use actix_web::{get, Responder, HttpResponse};
 
 
 pub mod sites{
@@ -142,9 +141,31 @@ pub mod signup{
 
 }
 
+use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
+
+#[derive(serde::Deserialize)]
+pub struct LoginData{
+    email: String,
+    password: String,
+}
+
 #[get("/login")]
 pub async fn login() -> impl Responder{
     HttpResponse::Ok().body(sites::LOGIN)
+}
+
+#[post("/signin")]
+pub async fn signin(app_data: actix_web::web::Data<crate::structs::AppState>, form: Form<LoginData>) -> impl Responder{
+    let dbpassword = String::new(); // get password from surreal.
+    let dbemail = String::new(); // get email from surreal to confirm
+    //if email exists in db then continue, else redirect to signup
+    if dbpassword != form.password{
+        HttpResponse::Ok().body(sites::LOGIN)
+    }
+    else{
+        *app_data.logged_in.lock().unwrap() = true;
+        HttpResponse::Ok().body(sites::HOMEPAGE)
+    }
 }
 
 

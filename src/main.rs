@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
         wapp!(
             homepage,
             signup, verify_email, upload, upload_auth,
-            login
+            login, signin
         )
         .app_data(app_state.clone())
     })
