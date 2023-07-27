@@ -4,6 +4,7 @@ use structs::AppState;
 
 mod structs;
 mod cmd;
+use cmd::*;
 use cmd::sites::*;
 use cmd::signup::*;
 use cmd::login::*;
@@ -49,7 +50,8 @@ async fn main() -> std::io::Result<()> {
         wapp!(
             homepage,
             signup, verify_email, upload, upload_auth,
-            login, signin
+            login, signin,
+            task
         )
         .app_data(app_state.clone())
     })
