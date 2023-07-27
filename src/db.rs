@@ -129,11 +129,31 @@ pub async fn setup_db() -> s::Result<Surreal<Client>>{
 
 
 
-
+type Db = Surreal<Client>;
 
 
 //Create
-pub async fn register<Value: serde::Serialize>(db: &mut Surreal<Client>, table: &str, id: &str, value: Value) -> s::Result<()>{
+pub async fn register<Value: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: Value) -> s::Result<()>{
     db.create((table, id)).content(value).await?;
+    Ok(())
+}
+
+//Read
+async fn retrieve<'db, Value: serde::Deserialize<'db>>(db: &mut Db, table: &str, id: &str) -> s::Result<Value>{
+    // Ok(db.select((table, id)).await?)
+    todo!()
+}
+
+
+//Update
+pub async fn reregister<Value: serde::Serialize>(db: &mut Db, table: &str, id: &str, new_value: Value) -> s::Result<()>{
+    db.update((table, id)).content(new_value).await?;
+    Ok(())
+}
+
+
+//Delete
+pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
+    db.delete((table, id)).await?;
     Ok(())
 }

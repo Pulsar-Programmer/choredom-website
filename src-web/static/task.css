@@ -1,58 +1,91 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Choredom: View Tasks</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="view.css">
-  <style>
-    /* Dark mode styles */
-    body.dark-mode {
-      background-color: #1a1a1a;
-      color: #fff;
-    }
-
-    .post {
-      background-color: #333;
-      color: #fff;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 20px;
-    }
-
-    .post h3 {
-      color: #ff9800;
-    }
-
-    .post button {
-      background-color: #ff9800;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    .post button:hover {
-      background-color: #f57c00;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <!-- Header content -->
-  </header>
-  <main>
-    <div id="post-container">
-      <!-- Posts will be added here -->
-    </div>
-  </main>
-  <footer>
-    <!-- Footer content -->
-  </footer>
-  <script src="view.js"></script>
-  <script>
-    // JavaScript code
-  </script>
-</body>
-</html>
+/* Global Styles */
+body {
+    background-color: black;
+    color: white;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* Header Styles */
+  header {
+    background-color: #333333;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin-right: 20px;
+  }
+  
+  nav a {
+    margin-right: 10px;
+  }
+  
+  /* Main Styles */
+  main {
+    padding: 20px;
+  }
+  
+  .post {
+    background-color: #222222;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .post h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  
+  .post h4 {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+  
+  .post p {
+    margin-bottom: 5px;
+  }
+  
+  /* Footer Styles */
+  footer {
+    background-color: #333333;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  footer p {
+    margin: 0;
+  }
+  
+  /* Dark Mode Styles */
+  .dark-mode body {
+    background-color: #222222;
+    color: white;
+  }
+  
+  .dark-mode header {
+    background-color: #000000;
+  }
+  
+  .dark-mode a {
+    color: white;
+  }
+  
+  .dark-mode .post {
+    background-color: #111111;
+  }
+  
+  .dark-mode footer {
+    background-color: #000000;
+  }
+  
