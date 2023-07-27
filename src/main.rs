@@ -6,7 +6,7 @@ mod structs;
 mod cmd;
 use cmd::sites::*;
 use cmd::signup::*;
-use cmd::*;
+use cmd::login::*;
 mod db;
 
 macro_rules! wapp {
