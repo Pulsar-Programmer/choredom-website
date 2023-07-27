@@ -1,20 +1,19 @@
 window.onload = function() {
-  // Load the JSON file
-  const cities = require('./us_cities.json');
-
-  // Get the select element
   const select = document.querySelector('select[name="Cities"]');
+  const filterInput = document.querySelector('#city-filter');
 
-  // Populate the select options
-  cities.forEach((city) => {
-    const option = document.createElement('option');
-    option.value = city.CITY;
-    option.textContent = city.CITY;
-    select.appendChild(option);
-  });
+  fetch('./us_cities.json')
+    .then(response => response.json())
+    .then(cities => {
+      cities.forEach((city) => {
+        const option = document.createElement('option');
+        option.value = city.CITY;
+        option.textContent = city.CITY;
+        select.appendChild(option);
+      });
+    });
 
-  // Filter the options as the user types
-  select.addEventListener('input', (event) => {
+  filterInput.addEventListener('input', (event) => {
     const filter = event.target.value.toLowerCase();
     const options = select.querySelectorAll('option');
 
@@ -29,7 +28,6 @@ window.onload = function() {
     }
   });
 
-  // Ensure that all inputs are filled before moving on
   const form = document.querySelector('form');
 
   form.addEventListener('submit', (event) => {

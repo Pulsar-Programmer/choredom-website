@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use std::borrow::Cow;
-use surrealdb::{Result, Surreal};
+use surrealdb::Surreal;
 use surrealdb::sql;
 use surrealdb::opt::auth::{Root, Scope};
 use surrealdb::engine::remote::ws::{Client, Ws};
@@ -104,7 +104,7 @@ async fn setup_users(db: s::Result<Surreal<Client>>) -> s::Result<Surreal<Client
     // Ok(db)
 }
 
-async fn setup_db() -> s::Result<Surreal<Client>>{
+pub async fn setup_db() -> s::Result<Surreal<Client>>{
     //Create the db connection
     let db = Surreal::new::<Ws>("localhost:8000").await?;
 
@@ -133,12 +133,7 @@ async fn setup_db() -> s::Result<Surreal<Client>>{
 
 
 //Create
-async fn register<Value: serde::Serialize>(table: &str, id: &str, value: Value) -> s::Result<()>{
-    
-    let db = setup_db().await?;
-    
-
-
-
+pub async fn register<Value: serde::Serialize>(db: &mut Surreal<Client>, table: &str, id: &str, value: Value) -> s::Result<()>{
+    db.create((table, id)).content(value).await?;
     Ok(())
 }

@@ -1,11 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <title>Choredom: View Tasks</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="view.css">
 </head>
-<body>
-    
+<body style="background-color: black;">
+  <header>
+    <h1>Choredom</h1>
+    <a href="#">
+      <img src="assets/logo.png" alt="Choredom Logo">
+    </a>
+    <nav>
+      <a href="homepage.html">Home</a>
+      <a href="chat.html">Chat</a>
+      <a href="post.html">Post</a>
+      <a href="#">Tasks in your Area</a>
+      <a href="#">Settings</a>
+    </nav>
+  </header>
+  <main>
+    <div id="post-container">
+      <!-- Posts will be added here -->
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2023 Choredom</p>
+    <img src="assets/background.jpg" alt="Background Image">
+  </footer>
+  <script src="view.js"></script>
+  <script>
+    // Example data for posts
+    const posts = [
+      {
+        displayName: "John Doe",
+        username: "@johndoe",
+        title: "Task 1",
+        body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        location: "Town A",
+        dateTime: "2023-07-28T10:00",
+        price: 50,
+      },
+      // Add more posts here
+    ];
+
+    // Function to generate the HTML for each post
+    function generatePostHTML(post) {
+      return `
+        <div class="post">
+          <h3>${post.displayName} (${post.username})</h3>
+          <h4>${post.title}</h4>
+          <p>${post.body}</p>
+          <p>Location: ${post.location}</p>
+          <p>Date and Time: ${post.dateTime}</p>
+          <p>Price: $${post.price}</p>
+          <button onclick="startChat('${post.username}')">Chat</button>
+        </div>
+      `;
+    }
+
+    // Get the post container element
+    const postContainer = document.getElementById("post-container");
+
+    // Generate the HTML for each post and append it to the container
+    posts.forEach((post) => {
+      const postHTML = generatePostHTML(post);
+      postContainer.innerHTML += postHTML;
+    });
+
+    // Function to start a chat with the poster
+    function startChat(username) {
+      // Open a new chat or space with the poster's username
+
+    }
+  </script>
 </body>
 </html>

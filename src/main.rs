@@ -8,6 +8,7 @@ use cmd::sites::*;
 use cmd::signup::*;
 use cmd::login::*;
 mod db;
+use db::setup_db;
 
 macro_rules! wapp {
     ($($i:ident),+) => {
@@ -36,9 +37,10 @@ async fn main() -> std::io::Result<()> {
         code: 0,
         state: structs::AccountState::Consumer
     };
-
+    let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppState {
         logged_in: Arc::new(Mutex::new(false)),
+        db: Arc::new(Mutex::new(db)),
         transmitters: Arc::new((
             Mutex::new(Box::new(signuptransmitter)),
         ))
