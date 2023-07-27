@@ -3,9 +3,8 @@ use serde_json::json;
 use std::borrow::Cow;
 use surrealdb::{Result, Surreal};
 use surrealdb::sql;
-use surrealdb::opt::auth::Root;
+use surrealdb::opt::auth::{Root, Scope};
 use surrealdb::engine::remote::ws::{Client, Ws};
-use surrealdb::opt::auth::Scope;
 use surrealdb as s;
 
 async fn db() -> s::Result<()>{
@@ -87,7 +86,7 @@ struct Credentials<'a> {
 }
 
 
-async fn create_users() -> s::Result<Surreal<Client>> {
+async fn setup_users(db: s::Result<Surreal<Client>>) -> s::Result<Surreal<Client>> {
 
     // let credentials = Scope {
     //     namespace: "choredom",
