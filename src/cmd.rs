@@ -1,5 +1,7 @@
 // use crate::structs::{Account, Job, Money};
 
+// use actix_web::HttpResponse;
+
 
 pub mod sites{
     macro_rules! website {
@@ -172,7 +174,10 @@ pub mod login{
 }
 
 
-
+// #[actix_web::get("/task.html")]
+// pub async fn task() -> impl actix_web::Responder{
+//     HttpResponse::Ok().body(sites::TASK)
+// }
 
 
 

@@ -100,7 +100,7 @@ use std::sync::{Arc, Mutex};
 use surrealdb::engine::remote::ws::{Client, Ws};
 pub struct AppState {
     pub logged_in: Arc<Mutex<bool>>, //replace by a browser cookie?
-    pub db: Arc<Mutex<Surreal<Client>>>,
+    // pub db: Arc<Mutex<Surreal<Client>>>,
     pub transmitters: Arc<(Mutex<Box<crate::cmd::signup::SignupTransmitter>>,)> //add new transmitters as necessary and manually
 } //nig
 pub trait Transmitter{}
