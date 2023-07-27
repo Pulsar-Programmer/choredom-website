@@ -14,7 +14,7 @@ pub struct Account{
     email: String,
     data: AccountData,
     page: AccountPage,
-    acct: AccountType,
+    state: AccountState,
 
     password: String,
     balance: Money,
@@ -31,19 +31,19 @@ impl Account{
             balance: Money(0.), 
             page: AccountPage::new(),
             last_location: todo!(),
-            acct: AccountType::Consumer,
+            state: AccountState::Consumer,
         }
     }
 }
 #[derive(serde::Serialize, Debug, serde::Deserialize)]
-enum AccountType{
+pub enum AccountState{
     Consumer,
     Pending,
     Worker,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct AccountData{
+pub struct AccountData{
     rating: f64,
     reviews: Vec<String>,
 }
@@ -97,23 +97,17 @@ impl Job{
 // }
 
 use std::sync::{Arc, Mutex};
-#[derive(serde::Deserialize)]
-pub struct BasicAccount {
-    pub email: String,
-    pub password: String,
-    pub password2: String,
-    pub username: String,
-    pub displayname: String,
-}
 pub struct AppState {
-    pub code: Arc<Mutex<i64>>,
+    pub logged_in: Arc<Mutex<bool>>, //replace by a browser cookie?
+    pub transmitters: Arc<(Mutex<Box<crate::cmd::signup::SignupTransmitter>>,)> //add new transmitters as necessary and manually
 }
+pub trait Transmitter{}
 
 
-#[derive(serde::Deserialize)]
-pub struct Code{
-    pub code: i64
-}
+
+
+
+
 
 
 

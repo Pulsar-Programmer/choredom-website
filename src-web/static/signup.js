@@ -1,31 +1,51 @@
-const cities = require('./us-cities.json');
+window.onload = function() {
+  // Load the JSON file
+  const cities = require('./us_cities.json');
 
-const select = document.querySelector('select[name="Cities"]');
+  // Get the select element
+  const select = document.querySelector('select[name="Cities"]');
 
-cities.forEach((city) => {
-  const option = document.createElement('option');
-  option.value = city.name;
-  option.textContent = city.name;
-  select.appendChild(option);
-});
+  // Populate the select options
+  cities.forEach((city) => {
+    const option = document.createElement('option');
+    option.value = city.CITY;
+    option.textContent = city.CITY;
+    select.appendChild(option);
+  });
 
-// Ensure that all inputs are filled before moving on
-const form = document.querySelector('form');
+  // Filter the options as the user types
+  select.addEventListener('input', (event) => {
+    const filter = event.target.value.toLowerCase();
+    const options = select.querySelectorAll('option');
 
-form.addEventListener('submit', (event) => {
-  const inputs = form.querySelectorAll('input');
+    for (const option of options) {
+      const text = option.textContent.toLowerCase();
 
-  let allInputsFilled = true;
-
-  for (const input of inputs) {
-    if (input.value === '') {
-      allInputsFilled = false;
-      break;
+      if (text.indexOf(filter) === -1) {
+        option.style.display = 'none';
+      } else {
+        option.style.display = 'block';
+      }
     }
-  }
+  });
 
-  if (!allInputsFilled) {
-    event.preventDefault();
-    alert('Please fill in all of the inputs before submitting.');
-  }
-});
+  // Ensure that all inputs are filled before moving on
+  const form = document.querySelector('form');
+
+  form.addEventListener('submit', (event) => {
+    const inputs = form.querySelectorAll('input');
+    let allInputsFilled = true;
+
+    for (const input of inputs) {
+      if (input.value === '') {
+        allInputsFilled = false;
+        break;
+      }
+    }
+
+    if (!allInputsFilled) {
+      event.preventDefault();
+      alert('Please fill in all of the inputs before submitting.');
+    }
+  });
+};

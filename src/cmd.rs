@@ -1,5 +1,5 @@
-use crate::structs::{Account, Job, Money};
-use actix_web::{get, Responder};
+// use crate::structs::{Account, Job, Money};
+use actix_web::{get, Responder, HttpResponse};
 
 
 pub mod sites{
@@ -24,9 +24,30 @@ pub mod sites{
 
 pub mod signup{
     use super::sites::*;
-    use crate::structs::{AppState, BasicAccount, Code};
+    use crate::structs::{AppState, Transmitter, AccountState};
     use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
     use rand::Rng;
+
+    pub struct SignupTransmitter{
+        pub state: AccountState,
+        pub code: i64,
+    }
+    impl Transmitter for SignupTransmitter{}
+
+    #[derive(serde::Deserialize)]
+    pub struct SignupData {
+        pub email: String,
+        pub password: String,
+        pub password2: String,
+        pub username: String,
+        pub displayname: String,
+        // pub location: String,
+    }
+
+    #[derive(serde::Deserialize)]
+    pub struct Code{
+        pub code: i64
+    }
 
     #[get("/signup")]
     pub async fn signup() -> impl Responder{
@@ -34,8 +55,8 @@ pub mod signup{
     }
 
     #[post("/verify-email")]
-    pub async fn verify_email(app_data: web::Data<AppState>, form: Form<BasicAccount>) -> impl Responder{
-        let BasicAccount { email: to_email, password, password2, username, displayname } = form.0;
+    pub async fn verify_email(app_data: web::Data<AppState>, form: Form<SignupData>) -> impl Responder{
+        let SignupData { email: to_email, password, password2, username, displayname } = form.0;
         println!("{to_email}, {password}, {password2}");
         if password != password2{
             return HttpResponse::Ok().body(SIGNUP);
@@ -47,15 +68,15 @@ pub mod signup{
         let smtp_key = "pjefpqhvsxmzomjf"; //app password
         let from_email: &str = "business@quannt.net";
         let host: &str = "smtp.gmail.com";
-        let mut code = app_data.code.lock().unwrap();
+        let mut code = app_data.transmitters.0.lock().unwrap();
         let codea = rand::thread_rng().gen_range(100000..1000000);
-        *code = codea;
+        (*code).code = codea;
 
         let email: Message = Message::builder()
             .from(from_email.parse().unwrap())
             .to(to_email.parse().unwrap())
             .subject("Welcome to Choredom")
-            .body(format!("Welcome to Choredom, mf (my friend). Your verification code is {}", code))
+            .body(format!("Welcome to Choredom, mf (my friend). Your verification code is {}", codea))
             .unwrap();
 
         let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
@@ -76,8 +97,8 @@ pub mod signup{
 
     #[post("/upload")]
     pub async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Responder{
-        println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-        if code.0.code != *app_data.code.lock().unwrap(){
+        // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
+        if code.0.code != app_data.transmitters.0.lock().unwrap().code{
             HttpResponse::Ok().body(EMAIL)
         }
         else{
@@ -123,7 +144,7 @@ pub mod signup{
 
 #[get("/login")]
 pub async fn login() -> impl Responder{
-    todo!()
+    HttpResponse::Ok().body(sites::LOGIN)
 }
 
 

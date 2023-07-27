@@ -32,9 +32,18 @@ async fn homepage() -> impl Responder{
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let signuptransmitter = cmd::signup::SignupTransmitter{
+        code: 0,
+        state: structs::AccountState::Consumer
+    };
+
     let app_state = web::Data::new(AppState {
-        code: Arc::new(Mutex::new(0)),
+        logged_in: Arc::new(Mutex::new(false)),
+        transmitters: Arc::new((
+            Mutex::new(Box::new(signuptransmitter)),
+        ))
     });
+    let app_state = 5;
     HttpServer::new(move|| {
         wapp!(
             homepage,
