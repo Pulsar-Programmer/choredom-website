@@ -111,8 +111,24 @@ pub type CmdResult<T> = Result<T, Box<dyn std::error::Error>>; //previously erro
 //     }
 // }
 
+use std::sync::{Arc, Mutex};
+#[derive(serde::Deserialize)]
+pub struct BasicAccount {
+    pub email: String,
+    pub password: String,
+    pub password2: String,
+    pub username: String,
+    pub displayname: String,
+}
+pub struct AppState {
+    pub code: Arc<Mutex<i64>>,
+}
 
 
+#[derive(serde::Deserialize)]
+pub struct Code{
+    pub code: i64
+}
 
 
 
