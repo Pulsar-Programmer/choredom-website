@@ -1,9 +1,12 @@
 use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
+use std::sync::{Arc, Mutex};
+use structs::AppState;
 
 mod structs;
 mod cmd;
 use cmd::sites::*;
 use cmd::signup::*;
+use cmd::*;
 mod db;
 
 macro_rules! wapp {
@@ -35,7 +38,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             homepage,
-            signup, verify_email, upload, upload_auth
+            signup, verify_email, upload, upload_auth,
+            login
         )
         .app_data(app_state.clone())
     })

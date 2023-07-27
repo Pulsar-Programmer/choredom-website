@@ -1,4 +1,5 @@
-use crate::structs::{Account, Job, Money, CmdResult};
+use crate::structs::{Account, Job, Money};
+use actix_web::{get, Responder};
 
 
 pub mod sites{
@@ -120,6 +121,10 @@ pub mod signup{
 
 }
 
+#[get("/login")]
+pub async fn login() -> impl Responder{
+    todo!()
+}
 
 
 
@@ -161,8 +166,7 @@ pub mod signup{
 
 
 
-
-pub fn register_job(title: String, body: String, location: String, time: String, price: String) -> CmdResult<()>{
+pub fn register_job(title: String, body: String, location: String, time: String, price: String) -> Result<(), Box<dyn std::error::Error>>{
     use chrono::Utc;
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database

@@ -42,9 +42,6 @@ enum AccountType{
     Worker,
 }
 
-
-
-
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct AccountData{
     rating: f64,
@@ -55,10 +52,6 @@ impl AccountData{
         Self{ rating: 0., reviews: Vec::new() }
     }
 }
-
-
-
-
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct AccountPage{
@@ -71,10 +64,6 @@ impl AccountPage{
         }
     }
 }
-
-
-
-
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct Job{
@@ -89,10 +78,6 @@ impl Job{
         Job { title, body, location, time, price }
     }
 }
-
-
-pub type CmdResult<T> = Result<T, Box<dyn std::error::Error>>; //previously error handle
-// pub type CmdResult<T> = Result<T, String>;
 
 
 
