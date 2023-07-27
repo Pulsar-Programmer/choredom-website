@@ -55,7 +55,6 @@ pub async fn setup_db() -> s::Result<Db>{
 
 type Db = Surreal<Client>;
 
-
 //Create
 pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{
     db.create((table, id)).content(value).await?;
