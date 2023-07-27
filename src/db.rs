@@ -13,7 +13,6 @@ struct Credentials<'a> {
     pass: &'a str,
 }
 
-
 async fn setup_users(db: s::Result<Surreal<Client>>) -> s::Result<Surreal<Client>> {
 
     // let credentials = Scope {
