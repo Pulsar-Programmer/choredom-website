@@ -8,41 +8,51 @@ html {
     margin-left: 41%;
     font-size: 50px;
     color: white;
-}
-
-.email-input {
+  }
+  
+  .email-input {
     position: absolute;
     margin-left: 38%;
     margin-top: 13%;
     font-size: 20px;
-}
-
-.password-input {
+  }
+  
+  .password-input {
     position: absolute;
     margin-left: 38%;
     margin-top: 17%;
     font-size: 20px;
-}
-
-.confirmPW-input { 
+  }
+  
+  .username-input {
+    position: absolute;
+    margin-left: 38%;
+    margin-top: 25%;
+    font-size: 20px;
+  }
+  
+  .displayname-input {
+    position: absolute;
+    margin-left: 38%;
+    margin-top: 29%;
+    font-size: 20px;
+  }
+  
+  .confirmPW-input {
     position: absolute;
     margin-left: 38%;
     margin-top: 21%;
-    font-size: 20px;  
-}
-
-.choose-cities { 
+    font-size: 20px;
+  }
+  
+  .choose-cities {
     position: absolute;
     margin-left: 39%;
     margin-top: 10%;
     font-size: 20px;
-}
-
-.continue {
+  }
+  
+  .continue {
     position: absolute;
     margin-left: 20px;
-}
-
-
-
-
+  }
