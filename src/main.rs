@@ -45,7 +45,6 @@ async fn main() -> std::io::Result<()> {
             Mutex::new(Box::new(signuptransmitter)),
         ))
     });
-    let app_state = 5;
     HttpServer::new(move|| {
         wapp!(
             homepage,
