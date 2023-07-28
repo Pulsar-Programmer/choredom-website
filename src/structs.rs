@@ -1,3 +1,4 @@
+use actix_web::body::BoxBody;
 use chrono as c;
 use c::{DateTime, Utc};
 use google_maps::distance_matrix::Location;
@@ -6,31 +7,31 @@ use google_maps::LatLng;
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct Account{
-    display_name: String,
-    username: String,
-    creation_date: DateTime<Utc>,
-    last_location: Location,
+    pub display_name: String,
+    // pub username: String, USERNAME STORED IN DB AS ID
+    pub creation_date: DateTime<Utc>,
+    // pub last_location: Location,
 
-    email: String,
-    data: AccountData,
-    page: AccountPage,
-    state: AccountState,
+    pub email: String,
+    pub data: AccountData,
+    pub page: AccountPage,
+    pub state: AccountState,
 
-    password: String,
-    balance: Money,
+    pub password: String,
+    pub balance: Money,
 }
 impl Account{
-    pub fn new(display_name: String, username: String, password: String, email: String) -> Self {
+    pub fn new(display_name: String, password: String, email: String) -> Self {
         Self { 
             display_name, 
-            username, 
+            // username, 
             creation_date: Utc::now(), 
             email, 
             data: AccountData::new(), 
             password, 
             balance: Money(0.), 
             page: AccountPage::new(),
-            last_location: todo!(),
+            // last_location: todo!(),
             state: AccountState::Consumer,
         }
     }
@@ -54,7 +55,7 @@ impl AccountData{
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct AccountPage{
+pub struct AccountPage{
     pfp_url: String,
 }
 impl AccountPage{
@@ -95,10 +96,8 @@ impl Job{
 //         todo!()
 //     }
 // }
-// use surrealdb::Surreal;
 use std::sync::{Arc, Mutex};
 use crate::db::Db;
-// use surrealdb::engine::remote::ws::{Client, Ws};
 pub struct AppData {
     pub logged_in: Arc<Mutex<bool>>, //replace by a browser cookie?
     pub db: Arc<Mutex<Db>>,
@@ -118,7 +117,31 @@ pub trait Transmitter{}
 
 
 
+#[derive(Debug)]
+pub struct ActixSurrealError{
+    inner: surrealdb::Error,
+}
+impl From<surrealdb::Error> for ActixSurrealError {
+    fn from(error: surrealdb::Error) -> Self {
+        ActixSurrealError { inner: error }
+    }
+}
+impl actix_web::error::ResponseError for ActixSurrealError {
+    fn status_code(&self) -> actix_web::http::StatusCode {
+        // return an appropriate status code based on the error
+        actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+    }
 
+    fn error_response(&self) -> actix_web::HttpResponse {
+        actix_web::HttpResponse::new(self.status_code())
+        .set_body(BoxBody::new(self.inner.to_string()))
+    }
+}
+impl std::fmt::Display for ActixSurrealError{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
 
 
 

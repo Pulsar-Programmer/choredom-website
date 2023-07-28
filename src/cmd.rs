@@ -25,7 +25,7 @@ pub mod sites{
 
 pub mod signup{
     use super::sites::*;
-    use crate::structs::{AppData, Transmitter, AccountState};
+    use crate::structs::{AppData, Transmitter, AccountState, Account};
     use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
     use rand::Rng;
 
@@ -58,10 +58,17 @@ pub mod signup{
     #[post("/verify-email")]
     pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
         let SignupData { email: to_email, password, password2, username, displayname } = form.0;
-        println!("{to_email}, {password}, {password2}");
+        // println!("{to_email}, {password}, {password2}");
         if password != password2{
+            //better error handling
             return HttpResponse::Ok().body(SIGNUP);
         }
+
+        let account: Account = Account::new(displayname.clone() , password, to_email.clone());
+
+        let mut db = app_data.db.lock().unwrap();
+        crate::db::register(&mut db, "accounts", username.as_str(), account).await;
+
         use lettre::transport::smtp::authentication::Credentials;
         use lettre::{SmtpTransport, Transport};
         use lettre::Message;
@@ -77,7 +84,7 @@ pub mod signup{
             .from(from_email.parse().unwrap())
             .to(to_email.parse().unwrap())
             .subject("Welcome to Choredom")
-            .body(format!("Welcome to Choredom, mf (my friend). Your verification code is {}", codea))
+            .body(format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea))
             .unwrap();
 
         let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
@@ -180,7 +187,7 @@ pub mod settings{
 
     #[get("/settings")]
     async fn settings(app_data: Data<AppData>) -> impl Responder{
-
+        todo!();
         //get login data
         //give acct data
         HttpResponse::Ok().body(SETTINGS)
@@ -189,6 +196,7 @@ pub mod settings{
     #[post("/settings-post")]
     async fn settings_post() -> impl Responder{
         // let accounts
+        todo!();
         serde_json::to_string(&5)
     }
 
