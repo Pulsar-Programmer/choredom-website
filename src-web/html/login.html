@@ -14,20 +14,9 @@
 <input type="email" name="email" placeholder="Email" id="email">
 <input type="password" name="password" placeholder="Password">
 <input type="submit" value="Sign In">
-<script>
-const emailInput = document.querySelector('#email');
-
-emailInput.addEventListener('blur', () => {
-  const email = emailInput.value;
-
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}$/;
-
-  if (!regex.test(email)) {
-    alert('Please enter a valid email address.');
-  }
-});
-</script>
 </form>
 </main>
+<!-- Include the JavaScript file here -->
+<script src="login.js"></script>
 </body>
 </html>
