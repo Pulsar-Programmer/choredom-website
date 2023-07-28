@@ -14,7 +14,7 @@ struct Credentials<'a> {
 }
 
 
-async fn setup_users(db: s::Result<Surreal<Client>>) -> s::Result<Surreal<Client>> {
+async fn setup_users(db: &mut Db) -> s::Result<()> {
 
     // let credentials = Scope {
     //     namespace: "choredom",
@@ -53,7 +53,7 @@ pub async fn setup_db() -> s::Result<Db>{
     Ok(db)
 }
 
-type Db = Surreal<Client>;
+pub type Db = Surreal<Client>;
 
 //Create
 pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{

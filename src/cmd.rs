@@ -1,5 +1,5 @@
 // use crate::structs::{Account, Job, Money};
-use actix_web::{get, post, HttpResponse};
+use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
 
 
 pub mod sites{
@@ -18,13 +18,14 @@ pub mod sites{
         TASK; "task",
         SIGNUP; "signup",
         EMAIL; "email",
-        UPLOAD; "upload"
+        UPLOAD; "upload",
+        SETTINGS; "settings"
     );
 }
 
 pub mod signup{
     use super::sites::*;
-    use crate::structs::{AppState, Transmitter, AccountState};
+    use crate::structs::{AppData, Transmitter, AccountState};
     use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
     use rand::Rng;
 
@@ -55,7 +56,7 @@ pub mod signup{
     }
 
     #[post("/verify-email")]
-    pub async fn verify_email(app_data: web::Data<AppState>, form: Form<SignupData>) -> impl Responder{
+    pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
         let SignupData { email: to_email, password, password2, username, displayname } = form.0;
         println!("{to_email}, {password}, {password2}");
         if password != password2{
@@ -96,7 +97,7 @@ pub mod signup{
     }
 
     #[post("/upload")]
-    pub async fn upload(app_data: web::Data<AppState>, code: Form<Code>) -> impl Responder{
+    pub async fn upload(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
         // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
         if code.0.code != app_data.transmitters.0.lock().unwrap().code{
             HttpResponse::Ok().body(EMAIL)
@@ -158,7 +159,7 @@ pub mod login{
     }
 
     #[post("/signin")]
-    pub async fn signin(app_data: actix_web::web::Data<crate::structs::AppState>, form: Form<LoginData>) -> impl Responder{
+    pub async fn signin(app_data: actix_web::web::Data<crate::structs::AppData>, form: Form<LoginData>) -> impl Responder{
         let dbpassword = String::new(); // get password from surreal.
         let dbemail = String::new(); // get email from surreal to confirm
         //if email exists in db then continue, else redirect to signup
@@ -172,14 +173,35 @@ pub mod login{
     }
 }
 
+pub mod settings{
+    use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
+    use super::sites::*;
+    use crate::structs::AppData;
+
+    #[get("/settings")]
+    async fn settings(app_data: Data<AppData>) -> impl Responder{
+
+        //get login data
+        //give acct data
+        HttpResponse::Ok().body(SETTINGS)
+    }
+
+    #[post("/settings-post")]
+    async fn settings_post() -> impl Responder{
+        // let accounts
+        serde_json::to_string(&5)
+    }
+
+}
+
 
 #[actix_web::get("/task")]
-pub async fn task() -> impl actix_web::Responder{
+pub async fn task() -> impl Responder{
     HttpResponse::Ok().body(sites::TASK)
 }
 
 #[get("/accounts")]
-pub async fn accounts() -> impl actix_web::Responder{
+pub async fn accounts() -> impl Responder{
     serde_json::to_string(&1)
 }
 

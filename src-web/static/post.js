@@ -4,10 +4,6 @@
 
 
 function saveJob() {
-  document.getElementById("demo").innerHTML = document.getElementById("location").value;
-  document.getElementById("demo1").innerHTML = document.getElementById("time").value;
-  document.getElementById("demo2").innerHTML = document.getElementById("price").value;
-
   const jobData = {
     title: document.getElementById("title").value,
     body: document.getElementById("body").value,
