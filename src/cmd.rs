@@ -213,6 +213,11 @@ pub async fn accounts() -> impl Responder{
     serde_json::to_string(&1)
 }
 
+#[get("/")]
+async fn homepage() -> impl Responder{
+    HttpResponse::Ok().body(sites::HOMEPAGE)
+}
+
 
 
 

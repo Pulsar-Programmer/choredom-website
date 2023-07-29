@@ -1,8 +1,8 @@
-use actix_web::{get, post, web::{self, Form, Query}, App, HttpResponse, HttpServer, Responder};
-use std::sync::{Arc, Mutex};
-use structs::AppData;
+use actix_web::{ web, App, HttpServer};
+use std::sync::{ Arc, Mutex};
 
 mod structs;
+use structs::AppData;
 mod cmd;
 use cmd::*;
 use cmd::sites::*;
@@ -19,11 +19,6 @@ macro_rules! wapp {
                 .service($i)
             )+
     };
-}
-
-#[get("/")]
-async fn homepage() -> impl Responder{
-    HttpResponse::Ok().body(HOMEPAGE)
 }
 
 // #[get("/hello/{name}")]
