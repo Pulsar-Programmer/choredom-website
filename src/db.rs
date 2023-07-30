@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::fmt::Display;
 use surrealdb::Surreal;
 use surrealdb::sql;
@@ -118,3 +119,9 @@ pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
 //     todo!()
 // }
 
+async fn query(db: &mut Db, query: &str, parameters: &[&str]) -> Result<String, Box<dyn std::error::Error>>{
+    let result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
+    let string = format!("{result:?}");
+    println!("{string}");
+    Ok(string)
+}

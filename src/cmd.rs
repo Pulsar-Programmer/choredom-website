@@ -39,7 +39,7 @@ pub mod signup{
     pub struct SignupData {
         pub email: String,
         pub password: String,
-        pub password2: String,
+        pub password2: String, //send through frontend differently
         pub username: String,
         pub displayname: String,
         // pub location: String,
