@@ -95,6 +95,8 @@
     form.addEventListener('submit', validateForm);
 
     function validateForm(e) {
+      e.preventDefault();
+
       const email = document.querySelector('.email-input').value;
       const password = document.querySelector('.password-input').value;
       const password2 = document.querySelector('.confirmPW-input').value;
@@ -103,15 +105,44 @@
 
       if (!email || !password || !password2 || !username || !displayname) {
         alert('Please fill in all fields');
-        e.preventDefault();
         return;
       }
 
       if (password !== password2) {
         alert('Passwords do not match');
-        e.preventDefault();
         return;
       }
+
+      const data = {
+        email: email,
+        password: password,
+        username: username,
+        displayname: displayname
+      };
+
+      sendData(data);
+    }
+
+    function sendData(data) {
+      fetch('/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // handle the response data
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation: ', error);
+      });
     }
   </script>
 </body>
