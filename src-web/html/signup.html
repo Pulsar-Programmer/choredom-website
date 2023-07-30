@@ -81,14 +81,38 @@
 
     const input = document.getElementById('filterInput');
     input.addEventListener('input', filterOptions);
-</script>
-<form action="/verify-email" method="POST">
-  <input name="email" type="text" class="email-input" placeholder="Email">
-  <input name="password" type="password" class="password-input" placeholder="Password">
-  <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
-  <input name="username" type="text" class="username-input" placeholder="Username">
-  <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
-  <input type="submit" class="continue">
-</form>
+  </script>
+  <form action="/verify-email" method="POST">
+    <input name="email" type="text" class="email-input" placeholder="Email">
+    <input name="password" type="password" class="password-input" placeholder="Password">
+    <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
+    <input name="username" type="text" class="username-input" placeholder="Username">
+    <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
+    <input type="submit" class="continue">
+  </form>
+  <script>
+    const form = document.querySelector('form');
+    form.addEventListener('submit', validateForm);
+
+    function validateForm(e) {
+      const email = document.querySelector('.email-input').value;
+      const password = document.querySelector('.password-input').value;
+      const password2 = document.querySelector('.confirmPW-input').value;
+      const username = document.querySelector('.username-input').value;
+      const displayname = document.querySelector('.displayname-input').value;
+
+      if (!email || !password || !password2 || !username || !displayname) {
+        alert('Please fill in all fields');
+        e.preventDefault();
+        return;
+      }
+
+      if (password !== password2) {
+        alert('Passwords do not match');
+        e.preventDefault();
+        return;
+      }
+    }
+  </script>
 </body>
 </html>
