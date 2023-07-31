@@ -37,7 +37,6 @@ async fn main() -> std::io::Result<()> {
     };
     let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppData {
-        logged_in: Arc::new(Mutex::new(false)),
         db: Arc::new(Mutex::new(db)),
         transmitters: Arc::new((
             Mutex::new(signuptransmitter),
