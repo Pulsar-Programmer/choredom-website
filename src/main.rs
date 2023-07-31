@@ -8,7 +8,8 @@ use cmd::*;
 use cmd::sites::*;
 use cmd::signup::*;
 use cmd::login::*;
-use cmd::settings::*;
+// use cmd::settings::*;
+// use cmd::
 mod db;
 use db::setup_db;
 
@@ -32,7 +33,7 @@ macro_rules! wapp {
 async fn main() -> std::io::Result<()> {
     let signuptransmitter = cmd::signup::SignupTransmitter{
         code: 0,
-        state: structs::AccountState::Consumer
+        state: cmd::signup::AccountState::Consumer
     };
     let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppData {
@@ -46,8 +47,7 @@ async fn main() -> std::io::Result<()> {
         wapp!(
             homepage,
             signup, verify_email, upload, upload_auth,
-            login, signin,
-            task
+            login, signin
         )
         .app_data(app_state.clone())
     })

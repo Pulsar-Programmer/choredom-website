@@ -1,7 +1,6 @@
 // use crate::structs::{Account, Job, Money};
 use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
 
-
 pub mod sites{
     macro_rules! website {
         ($($i:ident; $e:expr),+) => {
@@ -25,11 +24,10 @@ pub mod sites{
 
 pub mod signup{
     use super::sites::*;
-    use crate::structs::{AppData, Transmitter, AccountState, Account};
+    use crate::structs::{AppData, Transmitter, Money};
+    use crate::db::{dissolve, query};
     use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
     use rand::Rng;
-
-    use crate::db::{dissolve, query};
 
     pub struct SignupTransmitter{
         pub state: AccountState,
@@ -50,6 +48,67 @@ pub mod signup{
     #[derive(serde::Deserialize)]
     pub struct Code{
         pub code: i64
+    }
+
+    #[derive(serde::Deserialize, serde::Serialize, Debug)]
+    pub struct Account{
+        pub display_name: String,
+        pub username: String, //USERNAME STORED IN DB AS ID
+        pub creation_date: chrono::DateTime<chrono::Utc>,
+        // pub last_location: Location,
+
+        pub email: String,
+        pub data: AccountData,
+        pub page: AccountPage,
+        pub state: AccountState,
+
+        pub password: String,
+        pub balance: Money,
+    }
+    impl Account{
+        pub fn new(username: String, display_name: String, password: String, email: String) -> Self {
+            Self { 
+                display_name, 
+                username, 
+                creation_date: chrono::Utc::now(), 
+                email, 
+                data: AccountData::new(), 
+                password, 
+                balance: Money(0.), 
+                page: AccountPage::new(),
+                // last_location: todo!(),
+                state: AccountState::Consumer,
+            }
+        }
+    }
+    #[derive(serde::Serialize, Debug, serde::Deserialize)]
+    pub enum AccountState{
+        Consumer,
+        Pending,
+        Worker,
+    }
+
+    #[derive(serde::Deserialize, serde::Serialize, Debug)]
+    pub struct AccountData{
+        rating: f64,
+        reviews: Vec<String>,
+    }
+    impl AccountData{
+        fn new() -> Self{
+            Self{ rating: 0., reviews: Vec::new() }
+        }
+    }
+
+    #[derive(serde::Deserialize, serde::Serialize, Debug)]
+    pub struct AccountPage{
+        pfp_url: String,
+    }
+    impl AccountPage{
+        fn new() -> Self{
+            Self{ 
+                pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),  
+            }
+        }
     }
 
     #[get("/signup")]
@@ -198,7 +257,7 @@ pub mod login{
     }
 }
 
-pub mod settings{
+mod settings{
     use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
     use super::sites::*;
     use crate::structs::AppData;
@@ -220,14 +279,56 @@ pub mod settings{
 
 }
 
+mod jobs{
+    use crate::db::{dissolve, query};
+    use actix_web::{web::{Form, self}, Responder, get, post, HttpResponse, HttpRequest};
+    use super::sites::{POST, TASK};
+    use chrono::{DateTime, Utc};
 
-#[actix_web::get("/task")]
-pub async fn task() -> impl Responder{
-    HttpResponse::Ok().body(sites::TASK)
+    #[derive(serde::Deserialize)]
+    struct JobData{
+        title: String,
+        body: String,
+        time: DateTime<Utc>,
+        price: crate::structs::Money,
+    }
+
+
+    #[derive(serde::Deserialize, serde::Serialize, Debug)]
+    pub struct Job{
+        title: String,
+        body: String,
+        // location: Location, todo!()
+        time: DateTime<Utc>,
+        price: crate::structs::Money,
+        username: String,
+    }
+    impl Job{
+        pub fn new(username: String, title: String, body: String, time: DateTime<Utc>, price: crate::structs::Money) -> Job{
+            Job { username, title, body, time, price }
+        }
+    }
+
+
+
+    #[get("/post-job")]
+    async fn post_job(form: Form<JobData>) -> impl Responder{
+
+
+        todo!();
+        HttpResponse::Ok().body(POST)
+    }
+
+    #[actix_web::get("/task")]
+    pub async fn task() -> impl Responder{
+        todo!();
+        HttpResponse::Ok().body(TASK)
+    }
 }
 
+
 #[get("/accounts")]
-pub async fn accounts() -> impl Responder{
+async fn accounts() -> impl Responder{
     serde_json::to_string(&1)
 }
 
@@ -237,14 +338,7 @@ pub async fn homepage() -> impl Responder{
 }
 
 
-use crate::db::{dissolve, query};
-#[get("/post-job")]
-async fn post_job(form: Form<crate::structs::Job>) -> impl Responder{
 
-
-
-    HttpResponse::Ok().body(sites::POST)
-}
 
 
 
@@ -296,7 +390,8 @@ pub fn register_job(title: String, body: String, time: String, price: String) ->
     // let location = google_maps::distance_matrix::Location::LatLng(google_maps::LatLng::)
 
     let price = crate::structs::Money(price.parse()?);
-    let job = crate::structs::Job::new(
+    let job = jobs::Job::new(
+        String::new(),
         title,
         body,
         time,

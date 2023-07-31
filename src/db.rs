@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Serialize, Deserialize};
 use surrealdb::Surreal;
 use surrealdb::sql;
@@ -99,6 +101,24 @@ pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
 //     }
 //     todo!()
 // }
+async fn create<T: Serialize>(db: &mut Db, table: &str, id: &str, content: T, fields_skip: &[&str]){
+
+    // let mut query = format!("CREATE type::thing({}, $id)", table);
+    // let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
+    // for (field, value) in fields{
+
+    // }
+
+
+    
+    // let parameters = 
+    // query(db, query, parameters)
+
+
+}
+
+
+
 
 pub async fn query(db: &mut Db, query: &str, parameters: impl Serialize) -> s::Result<String>{
     let result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
