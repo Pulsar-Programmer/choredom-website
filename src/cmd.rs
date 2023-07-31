@@ -64,11 +64,6 @@ pub mod signup{
             return HttpResponse::Ok().body(SIGNUP);
         }
 
-        let account: Account = Account::new(displayname.clone() , password, to_email.clone());
-
-        let mut db = app_data.db.lock().unwrap();
-        crate::db::register(&mut db, "accounts", username.as_str(), account).await;
-
         use lettre::transport::smtp::authentication::Credentials;
         use lettre::{SmtpTransport, Transport};
         use lettre::Message;
@@ -97,9 +92,17 @@ pub mod signup{
 
         // Send the email
         match mailer.send(&email) {
-            Ok(_) => {println!("Email sent successfully!"); HttpResponse::Ok().body(EMAIL)},
-            Err(e) => HttpResponse::Ok().body(e.to_string()), //handle this better later
-        }
+            Ok(_) => {println!("Email sent successfully!");},
+            Err(e) => println!("{e}"), //handle this better later
+        };
+        
+        let account: Account = Account::new(displayname , password, to_email);
+        
+        let mut db = app_data.db.lock().unwrap();
+        crate::db::register(&mut db, "accounts", username.as_str(), account).await;
+
+
+        HttpResponse::Ok().body(UPLOAD)
         
     }
 
