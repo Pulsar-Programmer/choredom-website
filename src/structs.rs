@@ -9,7 +9,6 @@ use google_maps::LatLng;
 use std::sync::{Arc, Mutex};
 use crate::db::Db;
 pub struct AppData {
-    pub logged_in: Arc<Mutex<bool>>, //replace by a browser cookie?
     pub db: Arc<Mutex<Db>>,
     pub transmitters: Arc<(
         Mutex<crate::cmd::signup::SignupTransmitter>,
