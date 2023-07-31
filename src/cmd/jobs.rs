@@ -1,5 +1,7 @@
-use crate::db::{dissolve, query};
-use actix_web::{web::{Form, self}, Responder, get, post, HttpResponse, HttpRequest};
+use std::sync::atomic::AtomicUsize;
+
+use crate::{db::{dissolve, query}, structs::AppData};
+use actix_web::{web::{Form, self, Data}, Responder, get, post, HttpResponse, HttpRequest};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
 
@@ -8,7 +10,7 @@ struct JobData{
     title: String,
     body: String,
     time: DateTime<Utc>,
-    price: crate::structs::Money,
+    price: f32, //later replace with money struct?
 }
 
 
@@ -30,12 +32,23 @@ impl Job{
 
 
 #[get("/post-job")]
-async fn post_job(form: Form<JobData>) -> impl Responder{
+async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
 
+    let cookie: bool = req.cookie("login").map(|c|{c.value().parse().unwrap_or(false)}).unwrap_or(false);
     
+    if !cookie{
+        return HttpResponse::Forbidden().body("Cannot access contents; log in.")
+    }
+    
+    let JobData { title, body, time, price } = form.0;
+    let username = String::from("test"); // will be better later
+    let job = Job::new(username, title, body, time, crate::structs::Money(price));
+
+    let mut db = data.db.lock().unwrap();
+    dissolve(query(&mut db, "CREATE jobs SET data = $job", ("job", job)).await, 1);
 
 
-    todo!();
+    // todo!();
     HttpResponse::Ok().body(POST)
 }
 
