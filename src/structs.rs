@@ -8,7 +8,7 @@ use google_maps::LatLng;
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct Account{
     pub display_name: String,
-    // pub username: String, USERNAME STORED IN DB AS ID
+    pub username: String, //USERNAME STORED IN DB AS ID
     pub creation_date: DateTime<Utc>,
     // pub last_location: Location,
 
@@ -21,10 +21,10 @@ pub struct Account{
     pub balance: Money,
 }
 impl Account{
-    pub fn new(display_name: String, password: String, email: String) -> Self {
+    pub fn new(username: String, display_name: String, password: String, email: String) -> Self {
         Self { 
             display_name, 
-            // username, 
+            username, 
             creation_date: Utc::now(), 
             email, 
             data: AccountData::new(), 
@@ -70,13 +70,13 @@ impl AccountPage{
 pub struct Job{
     title: String,
     body: String,
-    location: Location,
+    // location: Location, todo!()
     time: DateTime<Utc>,
     price: Money,
 }
 impl Job{
-    pub fn new(title: String, body: String, location: Location, time: DateTime<Utc>, price: Money) -> Job{
-        Job { title, body, location, time, price }
+    pub fn new(title: String, body: String, time: DateTime<Utc>, price: Money) -> Job{
+        Job { title, body, time, price }
     }
 }
 

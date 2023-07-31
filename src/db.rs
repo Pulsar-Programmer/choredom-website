@@ -1,8 +1,4 @@
 use serde::{Serialize, Deserialize};
-use serde_json::json;
-use std::borrow::Cow;
-use std::fmt::Debug;
-use std::fmt::Display;
 use surrealdb::Surreal;
 use surrealdb::sql;
 use surrealdb::opt::auth::{Root, Scope};
@@ -57,21 +53,6 @@ pub async fn setup_db() -> s::Result<Db>{
 
 pub type Db = Surreal<Client>;
 
-// struct DBResult<T>(s::Result<T>);
-// impl<T> DBResult<T>{
-//     pub fn encapsulate(inner: s::Result<T>) -> Self{
-//         Self(inner)
-//     }
-    // pub fn dissolve(self, num: usize){
-    //     match self.absolve(){
-    //         Ok(t) => println!("Success w/ DB Interaction #{num}: {t}"),
-    //         Err(e) => println!("Error w/ DB Interaction #{num}: {e}"),
-    //     }
-    // }
-//     pub fn absolve(self) -> s::Result<T>{
-//         self.0
-//     }
-// }
 pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
     match s{
         Ok(t) => println!("Success w/ DB Interaction #{num}: {t:?}"),
@@ -80,32 +61,32 @@ pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
 }
 
 //Create
-pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{
-    db.create((table, id)).content(value).await?;
-    Ok(())
-}
+// pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{
+//     db.create((table, id)).content(value).await?;
+//     Ok(())
+// }
 
-//Read
-pub async fn retrieve<V: serde::de::DeserializeOwned + std::fmt::Debug>(db: &mut Db, table: &str) -> s::Result<Vec<V>>{
-    let records = db.select(table).await?;
-    let deserialized_records: Vec<V> = records.into_iter().map(|record| {
-        serde_json::from_value(record).unwrap()
-    }).collect();
-    Ok(deserialized_records)
-}
+// //Read
+// pub async fn retrieve<V: serde::de::DeserializeOwned + std::fmt::Debug>(db: &mut Db, table: &str) -> s::Result<Vec<V>>{
+//     let records = db.select(table).await?;
+//     let deserialized_records: Vec<V> = records.into_iter().map(|record| {
+//         serde_json::from_value(record).unwrap()
+//     }).collect();
+//     Ok(deserialized_records)
+// }
 
-//Update
-pub async fn reregister<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, new_value: V) -> s::Result<()>{
-    db.update((table, id)).content(new_value).await?;
-    Ok(())
-}
+// //Update
+// pub async fn reregister<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, new_value: V) -> s::Result<()>{
+//     db.update((table, id)).content(new_value).await?;
+//     Ok(())
+// }
 
 
-//Delete
-pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
-    db.delete((table, id)).await?;
-    Ok(())
-}
+// //Delete
+// pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
+//     db.delete((table, id)).await?;
+//     Ok(())
+// }
 
 // //Query
 // async fn request(db: &mut Db, query: &str) -> s::Response{
@@ -119,9 +100,9 @@ pub async fn remove(db: &mut Db, table: &str, id: &str) -> s::Result<()>{
 //     todo!()
 // }
 
-async fn query(db: &mut Db, query: &str, parameters: &[&str]) -> Result<String, Box<dyn std::error::Error>>{
+pub async fn query(db: &mut Db, query: &str, parameters: impl Serialize) -> s::Result<String>{
     let result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
     let string = format!("{result:?}");
-    println!("{string}");
+    // println!("{string}");
     Ok(string)
 }

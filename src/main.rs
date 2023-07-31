@@ -8,6 +8,7 @@ use cmd::*;
 use cmd::sites::*;
 use cmd::signup::*;
 use cmd::login::*;
+use cmd::settings::*;
 mod db;
 use db::setup_db;
 

@@ -29,6 +29,8 @@ pub mod signup{
     use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
     use rand::Rng;
 
+    use crate::db::{dissolve, query};
+
     pub struct SignupTransmitter{
         pub state: AccountState,
         pub code: i64,
@@ -96,13 +98,26 @@ pub mod signup{
             Err(e) => println!("{e}"), //handle this better later
         };
         
-        let account: Account = Account::new(displayname , password, to_email);
-        
+        let account: Account = Account::new(username, displayname , password, to_email);
+
         let mut db = app_data.db.lock().unwrap();
-        crate::db::register(&mut db, "accounts", username.as_str(), account).await;
+        // crate::db::register(&mut db, "accounts", username.as_str(), account).await;
+
+        dissolve(query(&mut db, r#"
+        CREATE type::thing("accounts", $username)
+        SET
+        display_name = type::string($display_name),
+        creation_date = $creation_date,
+        email = type::string($email),
+        data = $data,
+        page = $page,
+        state = $state,
+        password = type::string($password),
+        balance = $balance;
+        "#, account).await, 0);
 
 
-        HttpResponse::Ok().body(UPLOAD)
+        HttpResponse::Ok().body(EMAIL)
         
     }
 
@@ -217,8 +232,18 @@ pub async fn accounts() -> impl Responder{
 }
 
 #[get("/")]
-async fn homepage() -> impl Responder{
+pub async fn homepage() -> impl Responder{
     HttpResponse::Ok().body(sites::HOMEPAGE)
+}
+
+
+use crate::db::{dissolve, query};
+#[get("/post-job")]
+async fn post_job(form: Form<crate::structs::Job>) -> impl Responder{
+
+
+
+    HttpResponse::Ok().body(sites::POST)
 }
 
 
@@ -257,8 +282,7 @@ async fn homepage() -> impl Responder{
 
 
 
-
-pub fn register_job(title: String, body: String, location: String, time: String, price: String) -> Result<(), Box<dyn std::error::Error>>{
+pub fn register_job(title: String, body: String, time: String, price: String) -> Result<(), Box<dyn std::error::Error>>{
     use chrono::Utc;
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database
@@ -275,7 +299,6 @@ pub fn register_job(title: String, body: String, location: String, time: String,
     let job = crate::structs::Job::new(
         title,
         body,
-        todo!(),
         time,
         price,
     );

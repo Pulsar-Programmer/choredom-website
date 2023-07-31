@@ -90,7 +90,7 @@
     <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
     <input type="submit" class="continue">
   </form>
-  <script>
+  <!-- <script>
     const form = document.querySelector('form');
     form.addEventListener('submit', validateForm);
 
@@ -132,10 +132,10 @@
         body: JSON.stringify(data)
       })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
+        //if (!response.ok) {
+        //  throw new Error('Network response was not ok');
+        //}
+        //return response.json();
       })
       .then(data => {
         // handle the response data
@@ -144,6 +144,6 @@
         console.error('There has been a problem with your fetch operation: ', error);
       });
     }
-  </script>
+  </script> -->
 </body>
 </html>
