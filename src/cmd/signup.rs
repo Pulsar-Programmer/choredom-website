@@ -141,8 +141,9 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     // crate::db::register(&mut db, "accounts", username.as_str(), account).await;
 
     dissolve(query_value(&mut db, r#"
-    CREATE type::thing("accounts", $username)
+    CREATE accounts
     SET
+    user_name = type::string($username)
     display_name = type::string($display_name),
     creation_date = $creation_date,
     email = type::string($email),

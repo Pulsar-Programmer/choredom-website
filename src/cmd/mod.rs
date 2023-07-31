@@ -104,7 +104,6 @@ mod settings{
 
 mod jobs;
 
-
 #[get("/accounts")]
 async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
     let mut db = app_data.db.lock().unwrap();
