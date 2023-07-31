@@ -5,80 +5,6 @@ use google_maps::distance_matrix::Location;
 use google_maps::LatLng;
 
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct Account{
-    pub display_name: String,
-    pub username: String, //USERNAME STORED IN DB AS ID
-    pub creation_date: DateTime<Utc>,
-    // pub last_location: Location,
-
-    pub email: String,
-    pub data: AccountData,
-    pub page: AccountPage,
-    pub state: AccountState,
-
-    pub password: String,
-    pub balance: Money,
-}
-impl Account{
-    pub fn new(username: String, display_name: String, password: String, email: String) -> Self {
-        Self { 
-            display_name, 
-            username, 
-            creation_date: Utc::now(), 
-            email, 
-            data: AccountData::new(), 
-            password, 
-            balance: Money(0.), 
-            page: AccountPage::new(),
-            // last_location: todo!(),
-            state: AccountState::Consumer,
-        }
-    }
-}
-#[derive(serde::Serialize, Debug, serde::Deserialize)]
-pub enum AccountState{
-    Consumer,
-    Pending,
-    Worker,
-}
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct AccountData{
-    rating: f64,
-    reviews: Vec<String>,
-}
-impl AccountData{
-    fn new() -> Self{
-        Self{ rating: 0., reviews: Vec::new() }
-    }
-}
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct AccountPage{
-    pfp_url: String,
-}
-impl AccountPage{
-    fn new() -> Self{
-        Self{ 
-            pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),  
-        }
-    }
-}
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct Job{
-    title: String,
-    body: String,
-    // location: Location, todo!()
-    time: DateTime<Utc>,
-    price: Money,
-}
-impl Job{
-    pub fn new(title: String, body: String, time: DateTime<Utc>, price: Money) -> Job{
-        Job { title, body, time, price }
-    }
-}
 
 
 
@@ -113,35 +39,6 @@ pub trait Transmitter{}
 
 
 
-
-
-
-
-#[derive(Debug)]
-pub struct ActixSurrealError{
-    inner: surrealdb::Error,
-}
-impl From<surrealdb::Error> for ActixSurrealError {
-    fn from(error: surrealdb::Error) -> Self {
-        ActixSurrealError { inner: error }
-    }
-}
-impl actix_web::error::ResponseError for ActixSurrealError {
-    fn status_code(&self) -> actix_web::http::StatusCode {
-        // return an appropriate status code based on the error
-        actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn error_response(&self) -> actix_web::HttpResponse {
-        actix_web::HttpResponse::new(self.status_code())
-        .set_body(BoxBody::new(self.inner.to_string()))
-    }
-}
-impl std::fmt::Display for ActixSurrealError{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.inner.fmt(f)
-    }
-}
 
 
 
