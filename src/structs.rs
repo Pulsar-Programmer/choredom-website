@@ -6,22 +6,6 @@ use google_maps::LatLng;
 
 
 
-
-
-// #[derive(Error, Debug, Serialize)]
-// pub struct CmdError {
-//     #[serde(skip)]
-//     source: anyhow::Error, // Source of the error
-//     context: String, // Context information
-//     // #[serde(skip)]
-//     // #[backtrace]
-//     // backtrace: Backtrace, //add backtracing eventually
-// }
-// impl Display for CmdError{
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         todo!()
-//     }
-// }
 use std::sync::{Arc, Mutex};
 use crate::db::Db;
 pub struct AppData {
@@ -32,10 +16,6 @@ pub struct AppData {
     )> //add new transmitters as necessary and manually
 } //nig
 pub trait Transmitter{}
-
-
-
-
 
 
 

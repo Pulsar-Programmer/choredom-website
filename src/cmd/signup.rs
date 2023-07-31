@@ -131,7 +131,9 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
         Ok(_) => {println!("Email sent successfully!");},
         Err(e) => println!("{e}"), //handle this better later
     };
-    
+
+    let cookie = super::login::login_cookie(&username);
+
     let account: Account = Account::new(username, displayname , password, to_email);
 
     let mut db = app_data.db.lock().unwrap();
@@ -150,8 +152,11 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     balance = $balance;
     "#, account).await, 0);
 
-
-    HttpResponse::Ok().body(EMAIL)
+    let mut resp = HttpResponse::Ok().body(EMAIL);
+    if let Err(e) = resp.add_cookie(&cookie){
+        return HttpResponse::Ok().body(e.to_string())
+    }
+    resp
     
 }
 

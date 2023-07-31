@@ -25,7 +25,7 @@ pub mod sites{
 pub mod signup;
 
 pub mod login{
-    use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
+    use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse, cookie::Cookie, HttpRequest};
     use super::sites::*;
 
     #[derive(serde::Deserialize)]
@@ -40,17 +40,39 @@ pub mod login{
     }
 
     #[post("/signin")]
-    pub async fn signin(app_data: actix_web::web::Data<crate::structs::AppData>, form: Form<LoginData>) -> impl Responder{
+    pub async fn signin(form: Form<LoginData>) -> impl Responder{
         let dbpassword = String::new(); // get password from surreal.
         let dbemail = String::new(); // get email from surreal to confirm
+        //sned emaiL? also get 
+        let username = String::new(); //get username
         //if email exists in db then continue, else redirect to signup
         if dbpassword != form.password{
+            //THIS IS AN ISSUE AN ERROR THAT SHOULD BE BETTER HANDLED
             HttpResponse::Ok().body(LOGIN)
         }
         else{
-            *app_data.logged_in.lock().unwrap() = true;
-            HttpResponse::Ok().body(HOMEPAGE)
+            login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &username)
         }
+    }
+
+
+    pub fn login_cookie<'a>(username: &str) -> Cookie<'a>{
+        // make sure you SANTIIZE THE USERNAME (what if it has special characters)
+        // todo!()
+        let value = format!("true;{username}");
+        Cookie::build("login", value)
+            .domain("localhost:8080")
+            .path("/")
+            .secure(true)
+            .http_only(true)
+            .finish()
+    }
+
+    pub fn login_cookie_response(mut resp: HttpResponse, username: &str) -> HttpResponse{
+        if let Err(e) = resp.add_cookie(&login_cookie(username)){
+            return HttpResponse::Ok().body(e.to_string())
+        }
+        resp
     }
 }
 
