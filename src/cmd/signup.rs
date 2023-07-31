@@ -1,6 +1,6 @@
 use super::sites::*;
 use crate::structs::{AppData, Transmitter, Money};
-use crate::db::{dissolve, query};
+use crate::db::{dissolve, query, query_value};
 use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
 use rand::Rng;
 
@@ -139,7 +139,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     let mut db = app_data.db.lock().unwrap();
     // crate::db::register(&mut db, "accounts", username.as_str(), account).await;
 
-    dissolve(query(&mut db, r#"
+    dissolve(query_value(&mut db, r#"
     CREATE type::thing("accounts", $username)
     SET
     display_name = type::string($display_name),
@@ -150,7 +150,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     state = $state,
     password = type::string($password),
     balance = $balance;
-    "#, account).await, 0);
+    "#, Some(account)).await, 0);
 
     let mut resp = HttpResponse::Ok().body(EMAIL);
     if let Err(e) = resp.add_cookie(&cookie){

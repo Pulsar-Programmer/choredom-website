@@ -1,5 +1,9 @@
 // use crate::structs::{Account, Job, Money};
-use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
+use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
+
+use crate::{db::query, structs::AppData};
+
+use self::signup::Account;
 
 pub mod sites{
     macro_rules! website {
@@ -102,8 +106,12 @@ mod jobs;
 
 
 #[get("/accounts")]
-async fn accounts() -> impl Responder{
-    serde_json::to_string(&1)
+async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts;", None::<()>).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    HttpResponse::Ok().body(format!("{result:?}"))
 }
 
 #[get("/")]

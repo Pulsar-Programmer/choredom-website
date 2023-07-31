@@ -1,11 +1,3 @@
-use actix_web::body::BoxBody;
-use chrono as c;
-use c::{DateTime, Utc};
-use google_maps::distance_matrix::Location;
-use google_maps::LatLng;
-
-
-
 use std::sync::{Arc, Mutex};
 use crate::db::Db;
 pub struct AppData {
