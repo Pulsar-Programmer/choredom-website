@@ -1,4 +1,4 @@
-use crate::{db::{dissolve, query, query_value}, structs::AppData};
+use crate::{db::{dissolve, query, query_value}, AppData};
 use actix_web::{web::{Form, Data}, Responder, get, post, HttpResponse, HttpRequest};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};

@@ -1,5 +1,6 @@
 use super::sites::*;
-use crate::structs::{AppData, Transmitter, Money};
+use crate::{AppData, Transmitter};
+use crate::structs::{Money};
 use crate::db::{dissolve, query, query_value};
 use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
 use rand::Rng;

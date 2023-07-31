@@ -1,17 +1,3 @@
-use std::sync::{Arc, Mutex};
-use crate::db::Db;
-pub struct AppData {
-    pub db: Arc<Mutex<Db>>,
-    pub transmitters: Arc<(
-        Mutex<crate::cmd::signup::SignupTransmitter>,
-    )> //add new transmitters as necessary and manually
-} //nig
-pub trait Transmitter{}
-
-
-
-
-
 
 
 //ALL FROM BELOW: ADD THEIR RESPECTIVE LIBRARIES

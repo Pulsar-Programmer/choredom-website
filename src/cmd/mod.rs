@@ -1,7 +1,7 @@
 // use crate::structs::{Account, Job, Money};
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
-use crate::{db::query, structs::AppData};
+use crate::{db::query, AppData};
 
 use self::signup::Account;
 
@@ -83,7 +83,7 @@ pub mod login{
 mod settings{
     use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse};
     use super::sites::*;
-    use crate::structs::AppData;
+    use crate::AppData;
 
     #[get("/settings")]
     async fn settings(app_data: Data<AppData>) -> impl Responder{

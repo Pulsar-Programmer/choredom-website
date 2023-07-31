@@ -1,8 +1,6 @@
 use actix_web::{ web, App, HttpServer};
-use std::sync::{ Arc, Mutex};
 
 mod structs;
-use structs::AppData;
 mod cmd;
 use cmd::*;
 use cmd::sites::*;
@@ -55,3 +53,13 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }
+
+use std::sync::{Arc, Mutex};
+use crate::db::Db;
+pub struct AppData {
+    pub db: Arc<Mutex<Db>>,
+    pub transmitters: Arc<(
+        Mutex<crate::cmd::signup::SignupTransmitter>,
+    )> //add new transmitters as necessary and manually
+} //nig
+pub trait Transmitter{}
