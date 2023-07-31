@@ -56,6 +56,7 @@
           <p>Date and Time: ${post.dateTime}</p>
           <p>Price: $${post.price}</p>
           <button onclick="startChat('${post.username}')">Chat</button>
+          <button onclick="applyForJob('${post.username}')">Apply</button>
         </div>
       `;
     }
@@ -72,7 +73,27 @@
     // Function to start a chat with the poster
     function startChat(username) {
       // Open a new chat or space with the poster's username
+    }
 
+    // Function to apply for a job
+    function applyForJob(username) {
+      const url = '/apply'; // URL of server-side script to process applications
+
+      // Use Fetch API to send a POST request
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
     }
   </script>
 </body>
