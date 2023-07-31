@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
+use serde_json::Value;
 use surrealdb::Surreal;
 use surrealdb::sql;
 use surrealdb::opt::auth::{Root, Scope};
@@ -123,6 +124,36 @@ async fn create<T: Serialize>(db: &mut Db, table: &str, id: &str, content: T, fi
 pub async fn query(db: &mut Db, query: &str, parameters: impl Serialize) -> s::Result<String>{
     let result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
     let string = format!("{result:?}");
-    // println!("{string}");
     Ok(string)
 }
+
+// pub async fn query_select<T: serde::Serialize + serde::de::DeserializeOwned + Default>(db: &mut Db, query: &str, parameters: impl Serialize) -> s::Result<String>{
+//     let mut result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
+//     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
+//     for i in 0..result.num_statements(){
+
+//         let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&T::default()).unwrap()).unwrap();
+//         for (field, _) in fields{
+//             vec.push(result.take((i, field.as_str())));
+//         }
+//     }
+//     let string = format!("{result:?}");
+//     println!("{string}");
+    
+//     Ok(string)
+// }
+
+
+async fn query__(db: &mut Db, query: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<Value>>>>{
+    let mut result = db.query(query).bind(parameters).await?; //.bind(parameters) might not be correct. Please test this out.
+    let mut vec: Vec<Result<Vec<Value>, _>> = Vec::new();
+    for i in 0..result.num_statements(){
+        let result: Result<Vec<Value>, _> = result.take(i);
+        vec.push(result)
+    }
+    Ok(vec)
+}
+
+// async fn query__wrapper(s: s::Result<Vec<s::Result<Vec<Value>>>>) -> Value{
+//     todo!()
+// }
