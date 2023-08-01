@@ -143,7 +143,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     dissolve(query_value(&mut db, r#"
     CREATE accounts
     SET
-    user_name = type::string($username)
+    username = type::string($username)
     display_name = type::string($display_name),
     creation_date = $creation_date,
     email = type::string($email),

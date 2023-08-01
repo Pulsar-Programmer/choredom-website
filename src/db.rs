@@ -102,13 +102,13 @@ pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
 //     }
 //     todo!()
 // }
-async fn create<T: Serialize>(db: &mut Db, table: &str, id: &str, content: T, fields_skip: &[&str]){
+async fn create<T: Serialize>(db: &mut Db, base_query: &str, content: T, fields_skip: &[&str]){
 
-    // let mut query = format!("CREATE type::thing({}, $id)", table);
-    // let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
-    // for (field, value) in fields{
-
-    // }
+    
+    let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
+    for (field, value) in fields{
+        // let plusq = format!("{}")
+    }
 
 
     
