@@ -29,12 +29,13 @@ pub mod sites{
 pub mod signup;
 
 pub mod login{
-    use actix_web::{get, post, Responder, web::{Data, Form}, HttpResponse, cookie::Cookie, HttpRequest};
-    use super::sites::*;
+    use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, cookie::Cookie, HttpRequest};
+    use super::{sites::*, signup::Account};
+    use crate::{db::query, AppData};
 
     #[derive(serde::Deserialize)]
     pub struct LoginData{
-        email: String,
+        username: String,
         password: String,
     }
 
@@ -44,18 +45,28 @@ pub mod login{
     }
 
     #[post("/signin")]
-    pub async fn signin(form: Form<LoginData>) -> impl Responder{
-        let dbpassword = String::new(); // get password from surreal.
-        let dbemail = String::new(); // get email from surreal to confirm
-        //sned emaiL? also get 
-        let username = String::new(); //get username
-        //if email exists in db then continue, else redirect to signup
-        if dbpassword != form.password{
-            //THIS IS AN ISSUE AN ERROR THAT SHOULD BE BETTER HANDLED
+    pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Responder{
+        //Send email?
+        let LoginData { username, password } = form.0;
+        let mut db = data.db.lock().unwrap();
+        let resp = login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &username);
+        let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await.unwrap();
+        let result = result.get(0).unwrap().as_ref().unwrap();
+        let len = result.len();
+        if len > 1{
+            todo!() // should never happen if correct things are true
+        }
+        else if len < 1{
+            // ^feh 3
+            return HttpResponse::Ok().body(SIGNUP)
+        }
+        let account = result.get(0).unwrap();
+        if account.password != password{
+            // ^feh 2
             HttpResponse::Ok().body(LOGIN)
         }
         else{
-            login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &username)
+            resp
         }
     }
 

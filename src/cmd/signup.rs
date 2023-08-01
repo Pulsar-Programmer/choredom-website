@@ -95,50 +95,24 @@ pub async fn signup() -> impl Responder{
 #[post("/verify-email")]
 pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, password2, username, displayname } = form.0;
-    // println!("{to_email}, {password}, {password2}");
+
     if password != password2{
-        //better error handling
+        // ^feh 1
         return HttpResponse::Ok().body(SIGNUP);
     }
-
-    use lettre::transport::smtp::authentication::Credentials;
-    use lettre::{SmtpTransport, Transport};
-    use lettre::Message;
-    // let smtp_key: &str = "Brokies129gg";
-    let smtp_key = "pjefpqhvsxmzomjf"; //app password
-    let from_email: &str = "business@quannt.net";
-    let host: &str = "smtp.gmail.com";
+    
     let mut code = app_data.transmitters.0.lock().unwrap();
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
+    let body = format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea);
 
-    let email: Message = Message::builder()
-        .from(from_email.parse().unwrap())
-        .to(to_email.parse().unwrap())
-        .subject("Welcome to Choredom")
-        .body(format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea))
-        .unwrap();
-
-    let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
-
-    // Open a remote connection to gmail
-    let mailer: SmtpTransport = SmtpTransport::relay(&host)
-        .unwrap()
-        .credentials(creds)
-        .build();
-
-    // Send the email
-    match mailer.send(&email) {
-        Ok(_) => {println!("Email sent successfully!");},
-        Err(e) => println!("{e}"), //handle this better later
-    };
+    email(&to_email, "Welcome to Choredom!", body);
 
     let cookie = super::login::login_cookie(&username);
 
     let account: Account = Account::new(username, displayname , password, to_email);
 
     let mut db = app_data.db.lock().unwrap();
-    // crate::db::register(&mut db, "accounts", username.as_str(), account).await;
 
     dissolve(query_value(&mut db, r#"
     CREATE accounts
@@ -193,4 +167,38 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpRes
         }
     }
     Ok(HttpResponse::Ok().into())
+}
+
+
+
+fn email(to_email: &str, subject: &str, body: String){
+    use lettre::transport::smtp::authentication::Credentials;
+    use lettre::{SmtpTransport, Transport};
+    use lettre::Message;
+
+    // let smtp_key: &str = "Brokies129gg";
+    let smtp_key = "pjefpqhvsxmzomjf"; //app password
+    let from_email: &str = "business@quannt.net";
+    let host: &str = "smtp.gmail.com";
+
+    let email: Message = Message::builder()
+        .from(from_email.parse().unwrap())
+        .to(to_email.parse().unwrap())
+        .subject(subject)
+        .body(body)
+        .unwrap();
+
+    let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
+
+    // Open a remote connection to gmail
+    let mailer: SmtpTransport = SmtpTransport::relay(&host)
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    // Send the email
+    match mailer.send(&email) {
+        Ok(_) => {println!("Email sent successfully!");},
+        Err(e) => println!("{e}"), //invalid email ^feh 4
+    };
 }
