@@ -130,9 +130,45 @@ pub async fn homepage() -> impl Responder{
 }
 
 
+// #[get("/")]
+async fn tasks_in_area(app_data: web::Data<AppData>) -> impl Responder{
+
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM jobs;", None::<()>).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    HttpResponse::Ok()
+}
+
+struct Username{
+    username: String,
+}
 
 
+async fn profile_data(app_data: web::Data<AppData>, username: Form<Username>) -> impl Responder{
+    
+    
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username.0.username))).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    let len = result.len();
+    if len > 1 {
+        todo!() // should never happen
+    }
+    else if len < 1 {
+        return HttpResponse::BadRequest()
+    }
 
+    HttpResponse::Ok()
+}
+
+
+#[get("/users/{username}")]
+async fn profile(username: web::Path<String>) -> HttpResponse{
+    //create a profile for username
+    todo!()
+}
 
 
 
