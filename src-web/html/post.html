@@ -23,15 +23,14 @@
   <main>
     <div class="container">
       <h2>Post a Job</h2>
-        <input id="title" type="text" placeholder="Title of your job">
-        <input id="body" type="text" placeholder="Body of your job description">
-        <input id="location" type="text" placeholder="Location of your job (Town)">
-        <input id="time" type="date" placeholder="Date and time of your job">
-        <input id="price" type="number" placeholder="Price you are willing to pay">
-        <button onclick="saveJob()" id='btn1'>Post</button>
-        <p id="demo">Demo</p>
-        <p id="demo1">Demo</p>
-        <p id="demo2">Demo</p>
+      <form action="your_server_endpoint_here" method="POST">
+        <input id="title" name="title" type="text" placeholder="Title of your job">
+        <input id="body" name="body" type="text" placeholder="Body of your job description">
+        <input id="location" name="location" type="text" placeholder="Location of your job (Town)">
+        <input id="time" name="time" type="date" placeholder="Date and time of your job">
+        <input id="price" name="price" type="number" placeholder="Price you are willing to pay">
+        <button type="submit" id='btn1'>Post</button>
+      </form>
     </div>
   </main>
   <footer>
