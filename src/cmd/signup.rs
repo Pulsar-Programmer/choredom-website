@@ -100,7 +100,16 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
         // ^feh 1
         return HttpResponse::Ok().body(SIGNUP);
     }
-    
+
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let len = result.len();
+    if len >= 1 {
+        //error , bad username OR could be an error with MORE THAN ONE username
+        //^feh
+        todo!()
+    }
     let mut code = app_data.transmitters.0.lock().unwrap();
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
@@ -112,7 +121,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 
     let account: Account = Account::new(username, displayname , password, to_email);
 
-    let mut db = app_data.db.lock().unwrap();
+    // let mut db = app_data.db.lock().unwrap();
 
     dissolve(query_value(&mut db, r#"
     CREATE accounts
