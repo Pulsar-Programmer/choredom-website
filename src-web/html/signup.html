@@ -5,31 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up | Choredom</title>
   <link rel="stylesheet" href="./src-web/static/signup.css">
-  <script>
-    function populateDropdown(data) {
-        const dropdown = document.getElementById('dropdownOptions');
-        data.forEach(town => {
-            const option = document.createElement('div');
-            option.setAttribute('value', town.ID);
-            option.textContent = town.CITY;
-            dropdown.appendChild(option);
-        });
-        dropdown.style.display = 'block';
-    }
-
-    function filterOptions() {
-        const filterValue = this.value.toLowerCase();
-        const options = document.querySelectorAll('#dropdownOptions div');
-        options.forEach(option => {
-            const optionText = option.textContent.toLowerCase();
-            if (optionText.includes(filterValue)) {
-                option.style.display = "";
-            } else {
-                option.style.display = "none";
-            }
-        });
-    }
-  </script>
 </head>
 <body>
   <h1 class="main-title">Sign Up</h1>
@@ -38,34 +13,41 @@
     <div id="dropdownOptions" class="dropdown-options">
     </div>
   </div>
+  <form action="/verify-email" method="POST">
+    <input name="email" type="text" class="email-input" placeholder="Email">
+    <input name="password" type="password" class="password-input" placeholder="Password">
+    <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
+    <input name="username" type="text" class="username-input" placeholder="Username">
+    <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
+    <input type="submit" class="continue">
+  </form>
   <script>
-    let selectedOption = null;
+    let allTowns = [];
 
     function populateDropdown(data) {
-        const dropdown = document.getElementById('dropdownOptions');
-        data.forEach(town => {
-            const option = document.createElement('div');
-            option.setAttribute('value', town.ID);
-            option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
-            dropdown.appendChild(option);
-        });
-        dropdown.style.display = 'block';
+        allTowns = data;
     }
 
     function filterOptions() {
+        const dropdown = document.getElementById('dropdownOptions');
+        dropdown.innerHTML = '';
+
         let count = 0;
         const filterValue = this.value.toLowerCase();
-        const options = document.querySelectorAll('#dropdownOptions div');
-        options.forEach(option => {
-            const optionText = option.textContent.toLowerCase();
+        allTowns.forEach(town => {
+            const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
             if (optionText.includes(filterValue) && count < 10) {
-                option.style.display = "";
+                const option = document.createElement('div');
+                option.setAttribute('value', town.ID);
+                option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
+                dropdown.appendChild(option);
                 count++;
-            } else {
-                option.style.display = "none";
             }
         });
+        dropdown.style.display = (count > 0) ? 'block' : 'none';
     }
+
+    let selectedOption = null;
 
     const dropdown = document.getElementById('dropdown');
     dropdown.addEventListener('click', function(e) {
@@ -81,68 +63,50 @@
 
     const input = document.getElementById('filterInput');
     input.addEventListener('input', filterOptions);
-  </script>
-  <form action="/verify-email" method="POST">
-    <input name="email" type="text" class="email-input" placeholder="Email">
-    <input name="password" type="password" class="password-input" placeholder="Password">
-    <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
-    <input name="username" type="text" class="username-input" placeholder="Username">
-    <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
-    <input type="submit" class="continue">
-  </form>
-  <script>
+
     const form = document.querySelector('form');
     form.addEventListener('submit', validateForm);
 
     function validateForm(e) {
-      e.preventDefault();
+        e.preventDefault();
 
-      const email = document.querySelector('.email-input').value;
-      const password = document.querySelector('.password-input').value;
-      const password2 = document.querySelector('.confirmPW-input').value;
-      const username = document.querySelector('.username-input').value;
-      const displayname = document.querySelector('.displayname-input').value;
+        const formData = new FormData(form);
+        let dataString = '';
 
-      if (!email || !password || !password2 || !username || !displayname) {
-        alert('Please fill in all fields');
-        return;
-      }
+        for (const [key, value] of formData.entries()) {
+            if (dataString !== '') {
+                dataString += '&';
+            }
+            dataString += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+        }
 
-      if (password !== password2) {
-        alert('Passwords do not match');
-        return;
-      }
+        if (!formData.get('email') || !formData.get('password') || !formData.get('password2') || !formData.get('username') || !formData.get('displayname')) {
+            alert('Please fill in all fields');
+            return;
+        }
 
-      const data = {
-        email: email,
-        password: password,
-        username: username,
-        displayname: displayname
-      };
+        if (formData.get('password') !== formData.get('password2')) {
+            alert('Passwords do not match');
+            return;
+        }
 
-      sendData(data);
+        sendData(dataString);
     }
 
     function sendData(data) {
-      fetch('/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        //if (!response.ok) {
-        //  throw new Error('Network response was not ok');
-        //}
-        //return response.json();
-      })
-      .then(data => {
-        // handle the response data
-      })
-      .catch(error => {
-        console.error('There has been a problem with your fetch operation: ', error);
-      });
+        fetch('/verify-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            // handle the response
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation: ', error);
+        });
     }
   </script>
 </body>
