@@ -3,7 +3,7 @@ use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
 use crate::{db::query, AppData};
 
-use self::signup::Account;
+use self::{signup::Account, jobs::Job};
 
 pub mod sites{
     macro_rules! website {
@@ -133,8 +133,10 @@ pub async fn homepage() -> impl Responder{
 // #[get("/")]
 async fn tasks_in_area(app_data: web::Data<AppData>) -> impl Responder{
 
+
+    let zipcode = String::new(); //get from database
     let mut db = app_data.db.lock().unwrap();
-    let res2 = query::<Account>(&mut db, "SELECT * FROM jobs;", None::<()>).await.unwrap();
+    let res2 = query::<Job>(&mut db, "SELECT * FROM jobs WHERE zipcode = string::new($zipcode);", Some(("zipcode", zipcode))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     HttpResponse::Ok()
