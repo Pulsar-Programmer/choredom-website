@@ -1,5 +1,5 @@
 use crate::{db::{dissolve, query, query_value}, AppData};
-use actix_web::{web::{Form, Data}, Responder, get, post, HttpResponse, HttpRequest};
+use actix_web::{web::{Form, Data}, Responder, get, post, HttpResponse, HttpRequest, http::header::q};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
 
@@ -7,8 +7,8 @@ use chrono::{DateTime, Utc};
 struct JobData{
     title: String,
     body: String,
-    time: DateTime<Utc>,
-    price: f32, //later replace with money struct?
+    time: String, 
+    price: f32,
 }
 
 
@@ -18,7 +18,7 @@ pub struct Job{
     body: String,
     // location: Location, todo!()
     time: DateTime<Utc>,
-    price: crate::structs::Money,
+    price: crate::structs::Money, 
     username: String,
 }
 impl Job{
@@ -40,6 +40,16 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
     }
     
     let JobData { title, body, time, price } = form.0;
+
+    use chrono::TimeZone;
+    //https://github.com/kelvins/US-Cities-Database
+    let mut iter = time.split('-');
+    let year = iter.next().ok_or("REGISTER JOB FN: Error parsing Date year.").unwrap().parse().unwrap();
+    let month = iter.next().ok_or("REGISTER JOB FN: Error parsing Date month.").unwrap().parse().unwrap();
+    let day = iter.next().ok_or("REGISTER JOB FN: Error parsing Date day.").unwrap().parse().unwrap();
+    let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
+    //time is written in the format: yyyy-mm-dd
+
     let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price));
 
     let mut db = data.db.lock().unwrap();
@@ -54,4 +64,34 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
 pub async fn task() -> impl Responder{
     todo!();
     HttpResponse::Ok().body(TASK)
+}
+
+#[get("/jobs/{id}")]
+pub async fn jobs(id: actix_web::web::Path<String>, data: Data<AppData>,) -> impl Responder{
+    //get job by id
+    let mut db = data.db.lock().unwrap();
+    let res2 = query::<Job>(&mut db, r#"SELECT type::thing("jobs", $id) FROM jobs;"#, Some(("id", id.as_str()))).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    let len = result.len();
+    //there should never be more than one but just in case
+    if len != 1 {
+        //bad request 
+    }
+    let job = result.get(0).unwrap();
+    //give job to frontend etc. etc. etc.
+    todo!() as HttpResponse
+}
+
+// #[get("/")]
+async fn tasks_in_area(app_data: Data<AppData>) -> impl Responder{
+
+
+    let zipcode = String::new(); //get from database
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Job>(&mut db, "SELECT * FROM jobs WHERE zipcode = string::new($zipcode);", Some(("zipcode", zipcode))).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    //give vector of jobs to frontend
+    HttpResponse::Ok()
 }
