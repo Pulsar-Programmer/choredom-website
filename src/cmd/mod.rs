@@ -1,7 +1,6 @@
 // use crate::structs::{Account, Job, Money};
-use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
+use actix_web::{get, Responder, HttpResponse};
 
-use crate::{db::query, AppData};
 
 // use {signup::Account, jobs::Job};
 
@@ -29,7 +28,7 @@ pub mod sites{
 pub mod signup;
 
 pub mod login{
-    use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, cookie::Cookie, HttpRequest};
+    use actix_web::{get, post, Responder, web::{Form, self}, HttpResponse, cookie::Cookie, HttpRequest};
     use super::{sites::*, signup::Account};
     use crate::{db::query, AppData};
 

@@ -1,7 +1,6 @@
-use crate::{AppData, Transmitter};
-use crate::structs::Money;
-use crate::db::{dissolve, query, query_value};
-use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
+use crate::AppData;
+use crate::db::{dissolve, query_value};
+use actix_web::{Responder, HttpResponse, web::{Form, self}, post};
 
 
 #[derive(serde::Serialize, serde::Deserialize)]

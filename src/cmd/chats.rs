@@ -1,6 +1,8 @@
 use actix_web::{web, HttpResponse, Responder, get};
 use std::collections::HashMap;
 use crate::{Transmitter, AppData};
+use super::sites::CHAT;
+
 
 #[derive(Default)]
 pub struct ChatClientTransmitter{
