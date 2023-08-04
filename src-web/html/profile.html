@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS for star rating */
+        .rating {
+            unicode-bidi: bidi-override;
+            direction: rtl;
+        }
+        .rating > span {
+            display: inline-block;
+            position: relative;
+            width: 1.1em;
+        }
+        .rating > span:before {
+           content: "\2605";
+           position: absolute;
+        }
+        /* CSS for dark mode */
+        .dark-mode {
+            background-color: #222;
+            color: #e6e6e6;
+        }
+        /* CSS for review form */
+        .review-form {
+            margin-top: 20px;
+        }
+        /* CSS for reviews container */
+        .reviews-container {
+            height: 200px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        /* CSS for individual reviews */
+        .review {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .review h3 {
+            margin-top: 0;
+        }
+        .review .rating {
+            margin-bottom: 10px;
+        }
+        .review .review-text {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <button id="toggleButton" class="btn btn-primary">Toggle Dark Mode</button>
+    <div class="container">
+        <h1>User Profile</h1>
+
+        <!-- Display User's username -->
+        <h2>Username: <span id="username">User's Username</span></h2>
+
+        <!-- Display average user's rating -->
+        <div class="average-rating">
+            <h3>Average Rating:</h3>
+            <div class="rating" id="averageRating">
+                <span>☆</span><span>☆</span><span>☆</span><span>☆</span><span>☆</span>
+            </div>
+        </div>
+
+        <!-- Scrollable container for reviews -->
+        <div class="reviews-container" id="reviewsContainer">
+            <!-- Reviews will be dynamically added here -->
+        </div>
+
+        <!-- Review form -->
+        <div class="review-form">
+            <h3>Write a Review:</h3>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label for="rating">Rating:</label>
+                    <input type="number" id="rating" class="form-control" min="1" max="5" required>
+                </div>
+                <div class="form-group">
+                    <label for="review">Review:</label>
+                    <textarea id="review" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get the button
+        var button = document.getElementById("toggleButton");
+        
+        // When the user clicks on the button, toggle between light and dark modes
+        button.onclick = function() {
+            var body = document.body;
+            body.classList.toggle("dark-mode");
+        }
+
+        // Handle review form submission
+        document.getElementById('reviewForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Get the rating and review from the form
+            var rating = document.getElementById('rating').value;
+            var review = document.getElementById('review').value;
+
+            // Prepare the data to send to the backend
+            var data = {
+                rating: rating,
+                review: review
+            };
+
+            // Make an AJAX request to the backend
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/your-backend-endpoint', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    alert('Your review has been submitted!');
+                    // Refresh the reviews after submitting the form
+                    fetchReviews();
+                }
+            };
+            xhr.send(JSON.stringify(data));
+        });
+
+        // Function to fetch and display the reviews
+        function fetchReviews() {
+            // Simulating fetching reviews from the backend
+            var reviews = [
+                { rating: 5, review: "This user is really helpful!" },
+                { rating: 4, review: "Good user, but could be more active." },
+                { rating: 3, review: "Average user." }
+            ];
+            // Get the reviews container element
+            var reviewsContainer = document.getElementById('reviewsContainer');
+
+            // Clear the existing reviews
+            reviewsContainer.innerHTML = '';
+
+            // Loop through the reviews and create review elements
+            for (var i = 0; i < reviews.length; i++) {
+                var review = reviews[i];
+
+                // Create a div for the review
+                var reviewDiv = document.createElement('div');
+                reviewDiv.classList.add('review');
+
+                // Create a heading for the review
+                var heading = document.createElement('h3');
+                heading.textContent = 'Rating: ' + review.rating;
+                reviewDiv.appendChild(heading);
+
+                // Create a paragraph for the review text
+                var reviewText = document.createElement('p');
+                reviewText.classList.add('review-text');
+                reviewText.textContent = review.review;
+                reviewDiv.appendChild(reviewText);
+
+                // Append the review div to the reviews container
+                reviewsContainer.appendChild(reviewDiv);
+            }
+        }
+
+        // Call the fetchReviews function to initially display the reviews
+        fetchReviews();
+    </script>
+</body>
+</html>
