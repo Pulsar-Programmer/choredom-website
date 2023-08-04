@@ -1,6 +1,6 @@
 use super::sites::*;
 use crate::{AppData, Transmitter};
-use crate::structs::{Money};
+use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
 use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
 use rand::Rng;
@@ -34,7 +34,6 @@ pub struct Account{
     // pub last_location: Location,
 
     pub email: String,
-    pub data: AccountData,
     pub page: AccountPage,
     pub state: AccountState,
 
@@ -48,7 +47,6 @@ impl Account{
             username, 
             creation_date: chrono::Utc::now(), 
             email, 
-            data: AccountData::new(), 
             password, 
             balance: Money(0.), 
             page: AccountPage::new(),
@@ -65,24 +63,16 @@ pub enum AccountState{
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct AccountData{
-    rating: f64,
-    reviews: Vec<String>,
-}
-impl AccountData{
-    fn new() -> Self{
-        Self{ rating: 0., reviews: Vec::new() }
-    }
-}
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct AccountPage{
     pfp_url: String,
+    avg_rating: f64,
+    reviews: Vec<super::profile::RatingData>,
 }
 impl AccountPage{
     fn new() -> Self{
         Self{ 
-            pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),  
+            pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),
+            avg_rating: 0., reviews: Vec::new()  
         }
     }
 }
@@ -130,7 +120,6 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     display_name = type::string($display_name),
     creation_date = $creation_date,
     email = type::string($email),
-    data = $data,
     page = $page,
     state = $state,
     password = type::string($password),
@@ -210,4 +199,13 @@ fn email(to_email: &str, subject: &str, body: String){
         Ok(_) => {println!("Email sent successfully!");},
         Err(e) => println!("{e}"), //invalid email ^feh 4
     };
+}
+
+#[get("/accounts")]
+async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
+    let mut db = app_data.db.lock().unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts;", None::<()>).await.unwrap();
+    let res1 = res2.get(0).unwrap();
+    let result = res1.as_ref().unwrap();
+    HttpResponse::Ok().body(format!("{result:?}"))
 }
