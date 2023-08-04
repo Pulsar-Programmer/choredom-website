@@ -10,6 +10,11 @@ pub struct SignupTransmitter{
     pub code: i64,
 }
 impl Transmitter for SignupTransmitter{}
+impl Default for SignupTransmitter{
+    fn default() -> Self {
+        Self { state: AccountState::Consumer, code: 0 }
+    }
+}
 
 #[derive(serde::Deserialize)]
 pub struct SignupData {
@@ -102,7 +107,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
         //^feh
         todo!()
     }
-    let mut code = app_data.transmitters.0.lock().await;
+    let mut code = app_data.transmitters.signup.lock().await;
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
     let body = format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea);
@@ -139,7 +144,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 #[post("/upload")]
 pub async fn upload(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    if code.0.code != app_data.transmitters.0.lock().await.code{
+    if code.0.code != app_data.transmitters.signup.lock().await.code{
         HttpResponse::Ok().body(EMAIL)
     }
     else{

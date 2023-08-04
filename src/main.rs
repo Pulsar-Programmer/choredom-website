@@ -28,23 +28,17 @@ macro_rules! wapp {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let signuptransmitter = cmd::signup::SignupTransmitter{
-        code: 0,
-        state: cmd::signup::AccountState::Consumer
-    };
     let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppData {
         db: Arc::new(Mutex::new(db)),
-        transmitters: Arc::new((
-            Mutex::new(signuptransmitter),
-        ))
+        transmitters: Arc::new(Transmitters::default())
     });
     HttpServer::new(move|| {
         wapp!(
             homepage,
             signup, verify_email, upload, upload_auth,
-            login, signin,
-            accounts
+            login, signin
+            // accounts
         )
         .app_data(app_state.clone())
     })
@@ -58,8 +52,11 @@ use tokio::sync::Mutex;
 use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,
-    pub transmitters: Arc<(
-        Mutex<crate::cmd::signup::SignupTransmitter>,
-    )> //add new transmitters as necessary and manually
+    pub transmitters: Arc<Transmitters> //add new transmitters as necessary and manually
 } //nig
-pub trait Transmitter{}
+#[derive(Default)]
+pub struct Transmitters{
+    signup: Mutex<crate::cmd::signup::SignupTransmitter>,
+    cct: Mutex<crate::cmd::chats::ChatClientTransmitter>,
+}
+pub trait Transmitter: Default{}

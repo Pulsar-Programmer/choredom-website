@@ -95,6 +95,8 @@ mod jobs;
 
 mod profile;
 
+pub mod chats;
+
 #[get("/")]
 pub async fn homepage() -> impl Responder{
     HttpResponse::Ok().body(sites::HOMEPAGE)
