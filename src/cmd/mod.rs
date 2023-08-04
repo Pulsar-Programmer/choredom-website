@@ -48,7 +48,7 @@ pub mod login{
     pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Responder{
         //Send email?
         let LoginData { username, password } = form.0;
-        let mut db = data.db.lock().unwrap();
+        let mut db = data.db.lock().await;
         let resp = login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &username);
         let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await.unwrap();
         let result = result.get(0).unwrap().as_ref().unwrap();

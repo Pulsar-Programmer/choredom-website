@@ -1,4 +1,4 @@
-use super::sites::*;
+use super::sites::{SIGNUP, EMAIL, UPLOAD};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
@@ -91,7 +91,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
         return HttpResponse::Ok().body(SIGNUP);
     }
 
-    let mut db = app_data.db.lock().unwrap();
+    let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
@@ -100,7 +100,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
         //^feh
         todo!()
     }
-    let mut code = app_data.transmitters.0.lock().unwrap();
+    let mut code = app_data.transmitters.0.lock().await;
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
     let body = format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea);
@@ -137,7 +137,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 #[post("/upload")]
 pub async fn upload(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    if code.0.code != app_data.transmitters.0.lock().unwrap().code{
+    if code.0.code != app_data.transmitters.0.lock().await.code{
         HttpResponse::Ok().body(EMAIL)
     }
     else{
@@ -203,7 +203,7 @@ fn email(to_email: &str, subject: &str, body: String){
 
 #[get("/accounts")]
 async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
-    let mut db = app_data.db.lock().unwrap();
+    let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts;", None::<()>).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();

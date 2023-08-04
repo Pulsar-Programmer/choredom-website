@@ -3,7 +3,6 @@ use actix_web::{ web, App, HttpServer};
 mod structs;
 mod cmd;
 use cmd::*;
-use cmd::sites::*;
 use cmd::signup::*;
 use cmd::login::*;
 // use cmd::settings::*;
@@ -54,7 +53,8 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,

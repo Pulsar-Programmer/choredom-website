@@ -52,7 +52,7 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
 
     let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price));
 
-    let mut db = data.db.lock().unwrap();
+    let mut db = data.db.lock().await;
     dissolve(query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await, 1);
 
 
@@ -69,7 +69,7 @@ pub async fn task() -> impl Responder{
 #[get("/jobs/{id}")]
 pub async fn jobs(id: actix_web::web::Path<String>, data: Data<AppData>,) -> impl Responder{
     //get job by id
-    let mut db = data.db.lock().unwrap();
+    let mut db = data.db.lock().await;
     let res2 = query::<Job>(&mut db, r#"SELECT type::thing("jobs", $id) FROM jobs;"#, Some(("id", id.as_str()))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
@@ -88,7 +88,7 @@ async fn tasks_in_area(app_data: Data<AppData>) -> impl Responder{
 
 
     let zipcode = String::new(); //get from database
-    let mut db = app_data.db.lock().unwrap();
+    let mut db = app_data.db.lock().await;
     let res2 = query::<Job>(&mut db, "SELECT * FROM jobs WHERE zipcode = string::new($zipcode);", Some(("zipcode", zipcode))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();

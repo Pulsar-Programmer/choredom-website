@@ -7,16 +7,13 @@ struct Username{
 
 async fn profile_data(app_data: web::Data<AppData>, username: Form<Username>) -> impl Responder{
     
-    let mut db = app_data.db.lock().unwrap();
+    let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username.0.username))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
-    if len > 1 {
-        todo!() // should never happen
-    }
-    else if len < 1 {
-        return HttpResponse::BadRequest()
+    if len != 1 {
+        return HttpResponse::BadRequest() // should never happen
     }
 
     HttpResponse::Ok()
@@ -41,7 +38,7 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
     let stars = review.stars.clamp(0., 5.);
 
 
-    let mut db = data.db.lock().unwrap();
+    let mut db = data.db.lock().await;
     let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = type::string($username);", Some(("username", username.as_str()))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
