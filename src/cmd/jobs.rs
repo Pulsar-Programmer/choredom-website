@@ -9,7 +9,7 @@ struct JobData{
     body: String,
     time: String, 
     price: f32,
-    address: String,
+    location: String,
 }
 
 
@@ -41,7 +41,7 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
         return HttpResponse::Forbidden().body("Cannot access contents; log in.")
     }
     
-    let JobData { title, body, time, price, address } = form.0;
+    let JobData { title, body, time, price, location } = form.0;
 
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database
@@ -52,7 +52,7 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
     //time is written in the format: yyyy-mm-dd
 
-    let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price), address);
+    let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price), location);
 
     let mut db = data.db.lock().await;
     dissolve(query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await, 1);
@@ -93,10 +93,8 @@ async fn tasks_in_area(app_data: Data<AppData>, form: Form<Address>) -> impl Res
     
     // in the future allow filtering of multiple addresses.
     let address = form.into_inner().location;
-    let mut db = app_data.db.lock().await;
-    let res2 = query::<Job>(&mut db, "SELECT * FROM jobs WHERE data.address = type::string($location);", Some(("location", address))).await.unwrap();
-    let res1 = res2.get(0).unwrap();
-    let result = res1.as_ref().unwrap();
+    let res2 = query::<Job>(&mut *app_data.db.lock().await, "SELECT VALUE data FROM jobs WHERE data.location = type::string($location);", Some(("location", address))).await.unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
     //give vector of jobs to frontend
     HttpResponse::Ok()
 }
