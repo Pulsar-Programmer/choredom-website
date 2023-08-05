@@ -9,6 +9,7 @@ struct JobData{
     body: String,
     time: String, 
     price: f32,
+    address: String,
 }
 
 
@@ -20,10 +21,11 @@ pub struct Job{
     time: DateTime<Utc>,
     price: crate::structs::Money, 
     username: String,
+    address: String,
 }
 impl Job{
-    pub fn new(username: String, title: String, body: String, time: DateTime<Utc>, price: crate::structs::Money) -> Job{
-        Job { username, title, body, time, price }
+    pub fn new(username: String, title: String, body: String, time: DateTime<Utc>, price: crate::structs::Money, address: String) -> Job{
+        Job { username, title, body, time, price, address}
     }
 }
 
@@ -39,18 +41,18 @@ async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) ->
         return HttpResponse::Forbidden().body("Cannot access contents; log in.")
     }
     
-    let JobData { title, body, time, price } = form.0;
+    let JobData { title, body, time, price, address } = form.0;
 
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database
     let mut iter = time.split('-');
-    let year = iter.next().ok_or("REGISTER JOB FN: Error parsing Date year.").unwrap().parse().unwrap();
-    let month = iter.next().ok_or("REGISTER JOB FN: Error parsing Date month.").unwrap().parse().unwrap();
-    let day = iter.next().ok_or("REGISTER JOB FN: Error parsing Date day.").unwrap().parse().unwrap();
+    let year = iter.next().unwrap().parse().unwrap();
+    let month = iter.next().unwrap().parse().unwrap();
+    let day = iter.next().unwrap().parse().unwrap();
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
     //time is written in the format: yyyy-mm-dd
 
-    let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price));
+    let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price), address);
 
     let mut db = data.db.lock().await;
     dissolve(query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await, 1);
