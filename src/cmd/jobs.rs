@@ -71,10 +71,9 @@ pub async fn task() -> impl Responder{
 #[get("/jobs/{id}")]
 pub async fn jobs(id: actix_web::web::Path<String>, data: Data<AppData>,) -> impl Responder{
     //get job by id
-    let mut db = data.db.lock().await;
-    let res2 = query::<Job>(&mut db, r#"SELECT type::thing("jobs", $id) FROM jobs;"#, Some(("id", id.as_str()))).await.unwrap();
-    let res1 = res2.get(0).unwrap();
-    let result = res1.as_ref().unwrap();
+    let res2 = query::<Job>(&mut *data.db.lock().await, r#"SELECT type::thing("jobs", $id) FROM jobs;"#, Some(("id", id.as_str()))).await.unwrap();
+    let res1 = res2.get(0).unwrap().as_ref().unwrap();
+    let result = res1;
     let len = result.len();
     //there should never be more than one but just in case
     if len != 1 {
@@ -84,14 +83,18 @@ pub async fn jobs(id: actix_web::web::Path<String>, data: Data<AppData>,) -> imp
     //give job to frontend etc. etc. etc.
     todo!() as HttpResponse
 }
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Address{
+    address: String,
+}
 
 // #[get("/")]
-async fn tasks_in_area(app_data: Data<AppData>) -> impl Responder{
+async fn tasks_in_area(app_data: Data<AppData>, form: Form<Address>) -> impl Responder{
 
 
-    let zipcode = String::new(); //get from database
+    let address = form.into_inner().address;
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Job>(&mut db, "SELECT * FROM jobs WHERE zipcode = string::new($zipcode);", Some(("zipcode", zipcode))).await.unwrap();
+    let res2 = query::<Job>(&mut db, "SELECT * as j FROM jobs WHERE j.address = string::new($address);", Some(("address", address))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     //give vector of jobs to frontend
