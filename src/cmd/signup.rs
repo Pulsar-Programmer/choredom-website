@@ -144,38 +144,18 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     
 }
 
-#[post("/upload")]
-pub async fn upload(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
+#[post("/settings")]
+pub async fn settings_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     if code.0.code != app_data.transmitters.signup.lock().await.code{
         HttpResponse::Ok().body(EMAIL)
     }
     else{
-        HttpResponse::Ok().body(super::sites::SETTINGS)
+        HttpResponse::Ok().body(super::sites::HOMEPAGE)
     }
 }
 
-#[post("/upload-auth")]
-pub async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpResponse, actix_web::Error>{
-    
-    use futures::TryStreamExt;
-    use futures::StreamExt;
-    use std::io::Write;
-    // iterate over multipart stream
-    while let Ok(Some(mut field)) = form.try_next().await {
-        let content_disposition = field.content_disposition();
-        let filename = content_disposition.get_filename().unwrap();
-        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
-        let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap().unwrap();
 
-        // Field in turn is stream of *Bytes* object
-        while let Some(chunk) = field.next().await {
-            let data = chunk.unwrap();
-            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap()?;
-        }
-    }
-    Ok(HttpResponse::Ok().into())
-}
 
 
 
@@ -211,11 +191,11 @@ fn email(to_email: &str, subject: &str, body: String){
     };
 }
 
-#[get("/accounts")]
-async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
-    let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts;", None::<()>).await.unwrap();
-    let res1 = res2.get(0).unwrap();
-    let result = res1.as_ref().unwrap();
-    HttpResponse::Ok().body(format!("{result:?}"))
-}
+// #[get("/accounts")]
+// async fn accounts(app_data: web::Data<AppData>) -> impl Responder{
+//     let mut db = app_data.db.lock().await;
+//     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts;", None::<()>).await.unwrap();
+//     let res1 = res2.get(0).unwrap();
+//     let result = res1.as_ref().unwrap();
+//     HttpResponse::Ok().body(format!("{result:?}"))
+// }

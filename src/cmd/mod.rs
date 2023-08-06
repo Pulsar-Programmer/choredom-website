@@ -92,9 +92,9 @@ pub mod login{
     }
 }
 
-mod jobs;
+pub mod jobs;
 
-mod profile;
+pub mod profile;
 
 pub mod chats;
 

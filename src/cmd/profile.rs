@@ -1,5 +1,6 @@
 use crate::{db::{query, query_value, dissolve}, AppData};
 use super::{signup::Account, jobs::Job};
+use super::sites::*;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, HttpResponseBuilder};
 struct Username{
     username: String,
@@ -69,18 +70,18 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
-struct SettingsData{
+pub struct SettingsData{
     username: String,
     password: String,
-    displayname: String,
-    // location: 
+    display_name: String,
+    location: String,
     bio: String,
     // pfp_pic: 
 }
 
 
 #[get("/settings")]
-async fn settings(app_data: Data<AppData>) -> impl Responder{
+pub async fn settings(app_data: Data<AppData>) -> impl Responder{
     // todo!();
     //get login data
     //give acct data
@@ -88,14 +89,14 @@ async fn settings(app_data: Data<AppData>) -> impl Responder{
 }
 
 #[post("/settings-post")]
-async fn settings_post(setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
+pub async fn settings_post(setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     // let accounts
     // let SettingsData { username, password: _, displayname, bio } = setting.0;
     //have a separate password and username changing mechanism 
 
 
     let surrealql = "UPDATE accounts SET 
-        displayname = type::string($displayname),
+        display_name = type::string($display_name),
         page.bio = type::string($bio)
     WHERE username = type::string($username);
     ";
@@ -104,4 +105,31 @@ async fn settings_post(setting: Form<SettingsData>, data: Data<AppData>) -> impl
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::Ok()
+}
+
+#[get("/settings/upload")]
+pub async fn upload() -> impl Responder{
+    HttpResponse::Ok().body(UPLOAD)
+}
+
+#[post("/settings/upload-auth")]
+pub async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpResponse, actix_web::Error>{
+    
+    use futures::TryStreamExt;
+    use futures::StreamExt;
+    use std::io::Write;
+    // iterate over multipart stream
+    while let Ok(Some(mut field)) = form.try_next().await {
+        let content_disposition = field.content_disposition();
+        let filename = content_disposition.get_filename().unwrap();
+        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+        let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap().unwrap();
+
+        // Field in turn is stream of *Bytes* object
+        while let Some(chunk) = field.next().await {
+            let data = chunk.unwrap();
+            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap()?;
+        }
+    }
+    Ok(HttpResponse::Ok().body(SETTINGS))
 }

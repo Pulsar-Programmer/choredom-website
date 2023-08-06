@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Choredom: Post Details</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="task.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Choredom</h1>
+    <a href="#">
+      <img src="assets/logo.png" alt="Choredom Logo">
+    </a>
+    <nav>
+      <a href="/homepage">Home</a>
+      <a href="/chat">Chat</a>
+      <a href="/post">Post</a>
+      <a href="#">Tasks in your Area</a>
+      <a href="#">Settings</a>
+    </nav>
+  </header>
+  <main>
+    <div class="post-details">
+      <h2 id="post-title"></h2>
+      <p id="post-body"></p>
+      <p id="post-location"></p>
+      <p id="post-date"></p>
+      <p id="post-displayname"></p>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2023 Choredom</p>
+    <img src="assets/background.jpg" alt="Background Image">
+  </footer>
+  <button id="toggle-button">Toggle Dark Mode</button>
+  <script src="/src-web/static/lolll.js"></script>
+  <script src="yourScript.js"></script>
+  <script>
+    // Example post data
+    const post = {
+      displayName: "John Doe",
+      title: "Task 1",
+      body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      location: "Town A",
+      dateTime: "2023-07-28T10:00",
+      price: 50,
+    };
+
+    // Update the post details with the data
+    document.getElementById("post-title").textContent = post.title;
+    document.getElementById("post-body").textContent = post.body;
+    document.getElementById("post-location").textContent = `Location: ${post.location}`;
+    document.getElementById("post-date").textContent = `Date and Time: ${post.dateTime}`;
+    document.getElementById("post-displayname").textContent = `Posted by: ${post.displayName}`;
+  </script>
+</body>
+</html>

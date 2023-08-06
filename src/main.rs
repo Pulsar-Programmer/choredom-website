@@ -5,6 +5,8 @@ mod cmd;
 use cmd::*;
 use cmd::signup::*;
 use cmd::login::*;
+use cmd::profile::*;
+use cmd::jobs::*;
 // use cmd::settings::*;
 // use cmd::
 mod db;
@@ -36,8 +38,12 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             homepage,
-            signup, verify_email, upload, upload_auth,
-            login, signin
+            signup, verify_email, settings_redirect,
+            login, signin,
+            settings, settings_post,
+            upload, upload_auth,
+            post, post_job,
+            tasks, tasks_in_area
             // accounts
         )
         .app_data(app_state.clone())
