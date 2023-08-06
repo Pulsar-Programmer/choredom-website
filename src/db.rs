@@ -119,26 +119,15 @@ async fn create<T: Serialize>(db: &mut Db, base_query: &str, content: T, fields_
 }
 
 
-pub async fn query_value(db: &mut Db, query: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<Value>>>>{
-    let mut result = match parameters{
-        Some(p) => db.query(query).bind(p).await?,
-        None => db.query(query).await?,
-    };
-    let mut vec: Vec<Result<Vec<Value>, _>> = Vec::new();
-    for i in 0..result.num_statements(){
-        let result: Result<Vec<Value>, _> = result.take(i);
-        println!("{result:?}");
-        vec.push(result)
-    }
-    Ok(vec)
+pub async fn query_value(db: &mut Db, surrealql: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<Value>>>>{
+    query(db, surrealql, parameters).await
 }
 
 
-pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, query: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<T>>>>{
-
+pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<T>>>>{
     let mut result = match parameters{
-        Some(p) => db.query(query).bind(p).await?,
-        None => db.query(query).await?,
+        Some(p) => db.query(surrealql).bind(p).await?,
+        None => db.query(surrealql).await?,
     };
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){

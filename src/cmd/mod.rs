@@ -1,7 +1,6 @@
 // use crate::structs::{Account, Job, Money};
-use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
+use actix_web::{get, Responder, HttpResponse};
 
-use crate::{db::query, AppData};
 
 // use {signup::Account, jobs::Job};
 
@@ -29,7 +28,7 @@ pub mod sites{
 pub mod signup;
 
 pub mod login{
-    use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, cookie::Cookie, HttpRequest};
+    use actix_web::{get, post, Responder, web::{Form, self}, HttpResponse, cookie::Cookie, HttpRequest};
     use super::{sites::*, signup::Account};
     use crate::{db::query, AppData};
 
@@ -48,7 +47,7 @@ pub mod login{
     pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Responder{
         //Send email?
         let LoginData { username, password } = form.0;
-        let mut db = data.db.lock().unwrap();
+        let mut db = data.db.lock().await;
         let resp = login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &username);
         let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await.unwrap();
         let result = result.get(0).unwrap().as_ref().unwrap();
@@ -94,6 +93,10 @@ pub mod login{
 mod jobs;
 
 mod profile;
+
+pub mod chats;
+
+mod payment;
 
 #[get("/")]
 pub async fn homepage() -> impl Responder{
