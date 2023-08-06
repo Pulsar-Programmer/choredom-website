@@ -1,0 +1,94 @@
+/* General styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: all 0.25s linear;
+  }
+  
+  /* Dark mode and light mode */
+  body {
+    --bg-color: #f5f5f5;
+    --text-color: #333333;
+    --box-bg-color: #ffffff;
+    --primary-color: #008CBA;
+    --secondary-color: #4CAF50;
+    --header-bg-color: #f8f9fa;
+  }
+  
+  body.dark {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --box-bg-color: #1f1f1f;
+    --primary-color: #bb86fc;
+    --secondary-color: #03dac5;
+    --header-bg-color: #1f1f1f;
+  }
+  
+  /* Apply the colors */
+  body, h1, h2, h3, h4, p, a {
+    color: var(--text-color);
+    background-color: var(--bg-color);
+  }
+  
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: var(--header-bg-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  header a {
+    color: var(--text-color);
+    text-decoration: none;
+  }
+  
+  /* Post container */
+  #post-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  /* Each post */
+  .post {
+    background-color: var(--box-bg-color);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .post:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Buttons */
+  button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: var(--secondary-color);
+  }
+  
+  /* Toggle button */
+  #toggle-button {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    font-size: 18px;
+  }  

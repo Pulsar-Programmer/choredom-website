@@ -4,10 +4,18 @@
   <title>Choredom: View Tasks</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/src-web/static/task.css">
+  <link rel="stylesheet" href="task.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body style="background-color: black;">
+<body>
   <header>
+    <div id="dropdown" class="dropdown">
+      <input id="filterInput" type="text" placeholder="Filter towns...">
+      <div id="dropdownOptions" class="dropdown-options">
+      </div>
+    </div>
     <h1>Choredom</h1>
     <a href="#">
       <img src="assets/logo.png" alt="Choredom Logo">
@@ -21,13 +29,6 @@
     </nav>
   </header>
   <main>
-    <div>
-      <label for="town-input">Type a Town:</label>
-      <input list="towns-list" id="town-input" placeholder="Type a town">
-      <datalist id="towns-list">
-        <!-- Options will be added here -->
-      </datalist>
-    </div>
     <div id="post-container">
       <!-- Posts will be added here -->
     </div>
@@ -36,7 +37,8 @@
     <p>&copy; 2023 Choredom</p>
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
-  <script src="/src-web/static/view.js"></script>
+  <button id="toggle-button">Toggle Dark Mode</button>
+  <script src="/src-web/static/lolll.js"></script>
   <script>
     // Example data for posts
     const posts = [
@@ -45,62 +47,12 @@
         username: "@johndoe",
         title: "Task 1",
         body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        locationId: "1", // Assume each town has a unique ID
+        location: "Town A",
         dateTime: "2023-07-28T10:00",
         price: 50,
       },
       // Add more posts here
-    ];
-
-    // Fetch the town data
-    fetch('towns.json') // Replace with your actual JSON file or API
-      .then(response => response.json())
-      .then(data => populateDropdown(data));
-
-    // Function to populate the dropdown
-    function populateDropdown(towns) {
-      const input = document.getElementById('town-input');
-      const list = document.getElementById('towns-list');
-
-      input.addEventListener('keyup', function() {
-        const userInput = this.value;
-
-        // Filter the towns array
-        const filteredTowns = towns.filter(town => 
-          town.name.toLowerCase().includes(userInput.toLowerCase())
-        ).slice(0, 10); // Limit to 10 results
-
-        // Clear the datalist
-        list.innerHTML = '';
-
-        // Add the filtered towns to the datalist
-        filteredTowns.forEach(town => {
-          const option = document.createElement('option');
-          option.value = town.name;
-          option.textContent = `${town.name}, ${town.state}`;
-          list.appendChild(option);
-        });
-      });
-      input.addEventListener('change', filterTasks);
-    }
-
-    // Function to filter tasks based on the selected town
-    function filterTasks() {
-      const selectedTownName = this.value;
-
-      // Filter the posts array
-      const filteredPosts = posts.filter(post => post.location === selectedTownName);
-
-      // Clear the post container
-      const postContainer = document.getElementById('post-container');
-      postContainer.innerHTML = '';
-
-      // Generate the HTML for each filtered post and append it to the container
-      filteredPosts.forEach((post) => {
-        const postHTML = generatePostHTML(post);
-        postContainer.innerHTML += postHTML;
-      });
-    }
+    ]
 
     // Function to generate the HTML for each post
     function generatePostHTML(post) {
@@ -118,6 +70,15 @@
       `;
     }
 
+    // Get the post container element
+    const postContainer = document.getElementById("post-container");
+
+    // Generate the HTML for each post and append it to the container
+    posts.forEach((post) => {
+      const postHTML = generatePostHTML(post);
+      postContainer.innerHTML += postHTML;
+    });
+
     // Function to start a chat with the poster
     function startChat(username) {
       // Open a new chat or space with the poster's username
@@ -132,18 +93,114 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username }),
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Success:', data);
-  })
-  .catch((error) => {
-    console.error('Error:', error);
-  });
-}
+        },
+        body: JSON.stringify({ username }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+    }
+
+    // Get the toggle button
+    const toggleButton = document.getElementById('toggle-button');
+
+    // Add an event listener for click events
+    toggleButton.addEventListener('click', function() {
+      // Toggle the 'dark' class on the body element
+      document.body.classList.toggle('dark');
+    });
+  </script>
+  <script>
+    let allTowns = [];
+
+    function populateDropdown(data) {
+        allTowns = data;
+    }
+
+    function filterOptions() {
+        const dropdown = document.getElementById('dropdownOptions');
+        dropdown.innerHTML = '';
+
+        let count = 0;
+        const filterValue = this.value.toLowerCase();
+        allTowns.forEach(town => {
+            const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
+            if (optionText.includes(filterValue) && count < 10) {
+                const option = document.createElement('div');
+                option.setAttribute('value', town.ID);
+                option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
+                dropdown.appendChild(option);
+                count++;
+            }
+        });
+        dropdown.style.display = (count > 0) ? 'block' : 'none';
+    }
+
+    let selectedOption = null;
+
+    const dropdown = document.getElementById('dropdown');
+    dropdown.addEventListener('click', function(e) {
+        if (e.target.tagName === 'DIV' && e.target.parentNode.id === 'dropdownOptions') {
+            selectedOption = e.target.textContent;
+            document.getElementById('filterInput').value = selectedOption;
+        }
+    });
+
+    fetch('us_cities.json')
+        .then(response => response.json())
+        .then(data => populateDropdown(data));
+
+    const input = document.getElementById('filterInput');
+    input.addEventListener('input', filterOptions);
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', validateForm);
+
+    function validateForm(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        let dataString = '';
+
+        for (const [key, value] of formData.entries()) {
+            if (dataString !== '') {
+                dataString += '&';
+            }
+            dataString += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+        }
+
+        if (!formData.get('email') || !formData.get('password') || !formData.get('password2') || !formData.get('username') || !formData.get('displayname')) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        if (formData.get('password') !== formData.get('password2')) {
+            alert('Passwords do not match');
+            return;
+        }
+
+        sendData(dataString);
+    }
+
+    function sendData(data) {
+        fetch('/verify-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            // handle the response
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation: ', error);
+        });
+    }
   </script>
 </body>
 </html>
-
