@@ -21,6 +21,13 @@
     </nav>
   </header>
   <main>
+    <div>
+      <label for="town-input">Type a Town:</label>
+      <input list="towns-list" id="town-input" placeholder="Type a town">
+      <datalist id="towns-list">
+        <!-- Options will be added here -->
+      </datalist>
+    </div>
     <div id="post-container">
       <!-- Posts will be added here -->
     </div>
@@ -38,12 +45,62 @@
         username: "@johndoe",
         title: "Task 1",
         body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        location: "Town A",
+        locationId: "1", // Assume each town has a unique ID
         dateTime: "2023-07-28T10:00",
         price: 50,
       },
       // Add more posts here
     ];
+
+    // Fetch the town data
+    fetch('towns.json') // Replace with your actual JSON file or API
+      .then(response => response.json())
+      .then(data => populateDropdown(data));
+
+    // Function to populate the dropdown
+    function populateDropdown(towns) {
+      const input = document.getElementById('town-input');
+      const list = document.getElementById('towns-list');
+
+      input.addEventListener('keyup', function() {
+        const userInput = this.value;
+
+        // Filter the towns array
+        const filteredTowns = towns.filter(town => 
+          town.name.toLowerCase().includes(userInput.toLowerCase())
+        ).slice(0, 10); // Limit to 10 results
+
+        // Clear the datalist
+        list.innerHTML = '';
+
+        // Add the filtered towns to the datalist
+        filteredTowns.forEach(town => {
+          const option = document.createElement('option');
+          option.value = town.name;
+          option.textContent = `${town.name}, ${town.state}`;
+          list.appendChild(option);
+        });
+      });
+      input.addEventListener('change', filterTasks);
+    }
+
+    // Function to filter tasks based on the selected town
+    function filterTasks() {
+      const selectedTownName = this.value;
+
+      // Filter the posts array
+      const filteredPosts = posts.filter(post => post.location === selectedTownName);
+
+      // Clear the post container
+      const postContainer = document.getElementById('post-container');
+      postContainer.innerHTML = '';
+
+      // Generate the HTML for each filtered post and append it to the container
+      filteredPosts.forEach((post) => {
+        const postHTML = generatePostHTML(post);
+        postContainer.innerHTML += postHTML;
+      });
+    }
 
     // Function to generate the HTML for each post
     function generatePostHTML(post) {
@@ -61,15 +118,6 @@
       `;
     }
 
-    // Get the post container element
-    const postContainer = document.getElementById("post-container");
-
-    // Generate the HTML for each post and append it to the container
-    posts.forEach((post) => {
-      const postHTML = generatePostHTML(post);
-      postContainer.innerHTML += postHTML;
-    });
-
     // Function to start a chat with the poster
     function startChat(username) {
       // Open a new chat or space with the poster's username
@@ -84,17 +132,18 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-    }
+    },
+    body: JSON.stringify({ username }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+}
   </script>
 </body>
 </html>
+
