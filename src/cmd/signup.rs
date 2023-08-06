@@ -23,7 +23,7 @@ pub struct SignupData {
     pub password2: String, //send through frontend differently
     pub username: String,
     pub displayname: String,
-    // pub location: String,
+    pub location: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -37,6 +37,7 @@ pub struct Account{
     pub username: String, //USERNAME STORED IN DB AS ID
     pub creation_date: chrono::DateTime<chrono::Utc>,
     // pub last_location: Location,
+    pub location: String, //just a string for now
 
     pub email: String,
     pub page: AccountPage,
@@ -46,7 +47,7 @@ pub struct Account{
     pub balance: Money,
 }
 impl Account{
-    pub fn new(username: String, display_name: String, password: String, email: String) -> Self {
+    pub fn new(username: String, display_name: String, password: String, email: String, location: String) -> Self {
         Self { 
             display_name, 
             username, 
@@ -57,6 +58,7 @@ impl Account{
             page: AccountPage::new(),
             // last_location: todo!(),
             state: AccountState::Consumer,
+            location,
         }
     }
 }
@@ -91,7 +93,7 @@ pub async fn signup() -> impl Responder{
 
 #[post("/verify-email")]
 pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
-    let SignupData { email: to_email, password, password2, username, displayname } = form.0;
+    let SignupData { email: to_email, password, password2, username, displayname, location } = form.0;
 
     if password != password2{
         // ^feh 1
@@ -116,21 +118,22 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 
     let cookie = super::login::login_cookie(&username);
 
-    let account: Account = Account::new(username, displayname , password, to_email);
+    let account: Account = Account::new(username, displayname , password, to_email, location);
 
     // let mut db = app_data.db.lock().unwrap();
 
     dissolve(query_value(&mut db, r#"
     CREATE accounts
     SET
-    username = type::string($username)
+    username = type::string($username),
     display_name = type::string($display_name),
     creation_date = $creation_date,
     email = type::string($email),
     page = $page,
     state = $state,
     password = type::string($password),
-    balance = $balance;
+    balance = $balance,
+    location = type::string($location);
     "#, Some(account)).await, 0);
 
     let mut resp = HttpResponse::Ok().body(EMAIL);
@@ -148,7 +151,7 @@ pub async fn upload(app_data: web::Data<AppData>, code: Form<Code>) -> impl Resp
         HttpResponse::Ok().body(EMAIL)
     }
     else{
-        HttpResponse::Ok().body(UPLOAD)
+        HttpResponse::Ok().body(super::sites::SETTINGS)
     }
 }
 
