@@ -1,4 +1,4 @@
-use super::sites::{SIGNUP, EMAIL, UPLOAD};
+use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
@@ -103,12 +103,20 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
-    let len = result.len();
-    if len >= 1 {
+    let len1 = result.len();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = type::string($email);", Some(("email", &to_email))).await.unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let len2 = result.len();
+    if len1 >= 1 {
         //error , bad username OR could be an error with MORE THAN ONE username
         //^feh
         todo!()
     }
+    if len1 != len2{
+        //^feh
+        todo!()
+    }
+    
     let mut code = app_data.transmitters.signup.lock().await;
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
@@ -116,7 +124,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 
     email(&to_email, "Welcome to Choredom!", body);
 
-    let cookie = super::login::login_cookie(&username);
+    let cookie = login_cookie(&username);
 
     let account: Account = Account::new(username, displayname , password, to_email, location);
 
@@ -151,7 +159,7 @@ pub async fn settings_redirect(app_data: web::Data<AppData>, code: Form<Code>) -
         HttpResponse::Ok().body(EMAIL)
     }
     else{
-        HttpResponse::Ok().body(super::sites::HOMEPAGE)
+        HttpResponse::Ok().body(HOMEPAGE)
     }
 }
 
@@ -199,3 +207,64 @@ fn email(to_email: &str, subject: &str, body: String){
 //     let result = res1.as_ref().unwrap();
 //     HttpResponse::Ok().body(format!("{result:?}"))
 // }
+
+
+
+
+
+#[derive(serde::Deserialize)]
+pub struct LoginData{
+    email: String,
+    password: String,
+}
+
+#[get("/login")]
+pub async fn login() -> impl Responder{
+    HttpResponse::Ok().body(LOGIN)
+}
+
+#[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
+pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Responder{
+    //Send email?
+    let LoginData { email, password } = form.0;
+    let mut db = data.db.lock().await;
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = type::string($email);", Some(("email", email))).await.unwrap();
+    let result = result.get(0).unwrap().as_ref().unwrap();
+    let len = result.len();
+    if len > 1{
+        //^feh
+        todo!() // should never happen if correct things are true
+    }
+    else if len < 1{
+        // ^feh 3
+        return HttpResponse::Ok().body(SIGNUP)
+    }
+    let account = result.get(0).unwrap();
+    if account.password != password{
+        // ^feh 2
+        HttpResponse::Ok().body(LOGIN)
+    }
+    else{
+        login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &account.username)
+    }
+}
+use actix_web::cookie::*;
+
+pub fn login_cookie<'a>(username: &str) -> Cookie<'a>{
+    // make sure you SANTIIZE THE USERNAME (what if it has special characters)
+    // todo!()
+    let value = format!("true;{username}");
+    Cookie::build("login", value)
+        .domain("localhost:8080")
+        .path("/")
+        .secure(true)
+        .http_only(true)
+        .finish()
+}
+
+pub fn login_cookie_response(mut resp: HttpResponse, username: &str) -> HttpResponse{
+    if let Err(e) = resp.add_cookie(&login_cookie(username)){
+        return HttpResponse::Ok().body(e.to_string())
+    }
+    resp
+}

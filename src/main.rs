@@ -4,7 +4,6 @@ mod structs;
 mod cmd;
 use cmd::*;
 use cmd::signup::*;
-use cmd::login::*;
 use cmd::profile::*;
 use cmd::jobs::*;
 // use cmd::settings::*;
