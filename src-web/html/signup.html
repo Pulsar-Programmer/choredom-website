@@ -8,7 +8,7 @@
 </head>
 <body>
   <h1 class="main-title">Sign Up</h1>
-  <form action="/verify-email" method="POST">
+  <form>
     <input name="email" type="text" class="email-input" placeholder="Email">
     <input name="password" type="password" class="password-input" placeholder="Password">
     <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
@@ -103,7 +103,6 @@
       })
       .then(data => {
         console.log('Success:', data);
-        window.location = 'email.html'; // Updated code for redirection
       })
       .catch((error) => {
         console.error('Error:', error);

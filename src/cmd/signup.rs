@@ -2,6 +2,7 @@ use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
+use actix_web::web::Json;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use actix_identity::Identity;
 use rand::Rng;
@@ -22,7 +23,6 @@ impl Default for SignupTransmitter{
 pub struct SignupData {
     pub email: String,
     pub password: String,
-    pub password2: String, //send through frontend differently
     pub username: String,
     pub displayname: String,
     pub location: String,
@@ -93,7 +93,7 @@ pub async fn signup() -> impl Responder{
 }
 
 #[post("/verify-email")]
-pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, request: HttpRequest) -> impl Responder{
+pub async fn verify_email(app_data: web::Data<AppData>, form: Json<SignupData>, request: HttpRequest) -> impl Responder{
     let SignupData { email: to_email, password, password2, username, displayname, location } = form.0;
 
     if password != password2{
@@ -152,7 +152,9 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
 pub async fn settings_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     if code.0.code != app_data.transmitters.signup.lock().await.code{
-        HttpResponse::Ok().body(EMAIL)
+        //^feh
+        // HttpResponse::Ok().body(EMAIL)
+        todo!()
     }
     else{
         HttpResponse::Ok().body(HOMEPAGE)
