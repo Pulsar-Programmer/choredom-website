@@ -34,9 +34,9 @@ pub async fn post() -> impl Responder{
     HttpResponse::Ok().body(POST)
 }
 
-#[post("/post-job")]
-async fn post_job(user: Option<actix_identity::Identity>, form: Form<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
-
+#[post("/post-job-2")]
+async fn post_job(user: Option<actix_identity::Identity>, form: web::Json<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
+    println!("HELP!");
     let username = user.unwrap().id().unwrap();
     
     let JobData { title, body, time, price, location } = form.0;

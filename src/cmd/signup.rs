@@ -148,7 +148,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
     HttpResponse::Ok().body(EMAIL)
 }
 
-#[post("/settings")]
+#[post("/")]
 pub async fn settings_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     if code.0.code != app_data.transmitters.signup.lock().await.code{

@@ -26,7 +26,7 @@
   <main>
     <div class="container">
       <h2>Post a Job</h2>
-      <form id="jobForm">
+      <!-- <form id="jobForm"> -->
         <input id="title" name="title" type="text" placeholder="Title of your job">
         <input id="body" name="body" type="text" placeholder="Body of your job description">
         <div id="dropdown" class="dropdown">
@@ -37,7 +37,7 @@
         <input id="time" name="time" type="date" placeholder="Date and time of your job">
         <input id="price" name="price" type="number" placeholder="Price you are willing to pay">
         <button type="submit" id='btn1'>Post</button>
-      </form>
+      <!-- </form> -->
     </div>
   </main>
   <footer>
@@ -55,7 +55,7 @@
       const time = document.getElementById('time').value;
       const price = document.getElementById('price').value;
 
-      fetch('/post-job', {
+      fetch('/post-job-2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
