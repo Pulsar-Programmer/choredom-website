@@ -8,21 +8,20 @@
 </head>
 <body>
   <h1 class="main-title">Sign Up</h1>
-  <!-- <div id="dropdown" class="dropdown">
-    <input id="filterInput" type="text" placeholder="Filter towns...">
-    <div id="dropdownOptions" class="dropdown-options">
-    </div>
-  </div> -->
   <form action="/verify-email" method="POST">
     <input name="email" type="text" class="email-input" placeholder="Email">
     <input name="password" type="password" class="password-input" placeholder="Password">
     <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
     <input name="username" type="text" class="username-input" placeholder="Username">
     <input name="displayname" type="text" class="displayname-input" placeholder="Display Name">
-    <input type="text" name="location" placeholder="location">
+    <div id="dropdown" class="dropdown">
+        <input id="filterInput" type="text" placeholder="Filter towns...">
+        <div id="dropdownOptions" class="dropdown-options">
+        </div>
+    </div>
     <input type="submit" class="continue">
   </form>
-  <!-- <script>
+  <script>
     let allTowns = [];
 
     function populateDropdown(data) {
@@ -109,6 +108,6 @@
             console.error('There has been a problem with your fetch operation: ', error);
         });
     }
-  </script> -->
+  </script>
 </body>
 </html>

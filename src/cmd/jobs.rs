@@ -1,5 +1,5 @@
 use crate::{db::{dissolve, query, query_value}, AppData};
-use actix_web::{web::{Form, Data}, Responder, get, post, HttpResponse, HttpRequest, http::header::q};
+use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest, http::header::q};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
 
@@ -35,14 +35,9 @@ pub async fn post() -> impl Responder{
 }
 
 #[post("/post-job")]
-async fn post_job(form: Form<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
+async fn post_job(user: Option<actix_identity::Identity>, form: Form<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
 
-    let cookie: String = req.cookie("login").map(|c|{c.value().to_string()}).unwrap_or("false;0".into());
-    let (cookie, username) = cookie.split_once(';').unwrap_or(("false", "0"));
-    let cookie = cookie.parse().unwrap_or(false);
-    if !cookie{
-        return HttpResponse::Forbidden().body("Cannot access contents; log in.")
-    }
+    let username = user.unwrap().id().unwrap();
     
     let JobData { title, body, time, price, location } = form.0;
 
@@ -90,15 +85,15 @@ pub async fn tasks() -> impl Responder{
     HttpResponse::Ok().body(TASK)
 }
 
-#[post("/tasks")]
-async fn tasks_in_area(app_data: Data<AppData>, form: Form<Address>) -> impl Responder{
+#[actix_web::route("/job-handling", method="GET", method="POST")]
+pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> impl Responder{
     
     // in the future allow filtering of multiple addresses.
-    let address = form.into_inner().location;
+    let address = js.into_inner();
     let res2 = query::<Job>(&mut *app_data.db.lock().await, "SELECT VALUE data FROM jobs WHERE data.location = type::string($location);", Some(("location", address))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
-    //give vector of jobs to frontend
-    HttpResponse::Ok().body(super::sites::TASK)
+
+    serde_json::to_string(result)
 }
 
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS

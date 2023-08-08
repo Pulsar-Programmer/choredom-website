@@ -27,4 +27,7 @@ reqwest = "0.11.18"
 serde_yaml = "0.9.25"
 actix-rt = "2.8.0"
 actix-telepathy = "0.5.3"
+actix-cors = "0.6.4"
+actix-identity = "0.5.2"
+actix-session = { version = "0.7.2", features = ["cookie-session"] }
 

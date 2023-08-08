@@ -12,7 +12,7 @@
 <body>
   <header>
     <div id="dropdown" class="dropdown">
-      <form action="/location-handling" method="post">
+      <form action="/job-handling" method="post">
         <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
         <div id="dropdownOptions" class="dropdown-options"></div>
         <input type="submit" value="Submit">
@@ -45,19 +45,7 @@
   <button id="toggle-button">Toggle Dark Mode</button>
   <script src="/src-web/static/lolll.js"></script>
   <script>
-    // Example data for posts
-    const posts = [
-      {
-        displayName: "John Doe",
-        username: "@johndoe",
-        title: "Task 1",
-        body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        location: "Town A",
-        dateTime: "2023-07-28T10:00",
-        price: 50,
-      },
-      // Add more posts here
-    ]
+
 
     // Function to generate the HTML for each post
     function generatePostHTML(post) {
@@ -139,7 +127,7 @@
 
         const location = document.getElementById('filterInput').value;
 
-        fetch('/location-handling', {
+        fetch('/tasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -151,7 +139,7 @@
             console.log('Location Success:', data);
 
             // Fetch jobs data
-            fetch('/jobs-endpoint') // Replace with your actual jobs endpoint
+            fetch('/job-handling') // Replace with your actual jobs endpoint
             .then(response => response.json())
             .then(jobsData => {
                 console.log('Jobs Success:', jobsData);

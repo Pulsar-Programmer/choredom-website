@@ -89,11 +89,11 @@ pub async fn settings(app_data: Data<AppData>) -> impl Responder{
 }
 
 #[post("/settings-post")]
-pub async fn settings_post(setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
+pub async fn settings_post(user: Option<actix_identity::Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     // let accounts
     // let SettingsData { username, password: _, displayname, bio } = setting.0;
     //have a separate password and username changing mechanism 
-
+    let username = user.unwrap().id().unwrap();
 
     let surrealql = "UPDATE accounts SET 
         display_name = type::string($display_name),

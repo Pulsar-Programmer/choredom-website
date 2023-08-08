@@ -1,4 +1,6 @@
-use actix_web::{ web, App, HttpServer};
+use actix_web::{ web, App, HttpServer, cookie::Key};
+use actix_identity::IdentityMiddleware;
+use actix_session::{SessionMiddleware, storage::CookieSessionStore};
 
 mod structs;
 mod cmd;
@@ -14,6 +16,11 @@ use db::setup_db;
 macro_rules! wapp {
     ($($i:ident),+) => {
         App::new()
+            .wrap(IdentityMiddleware::default())
+            .wrap(SessionMiddleware::new(
+                CookieSessionStore::default(),
+                Key::generate()
+            ))
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing())
             $(
                 .service($i)

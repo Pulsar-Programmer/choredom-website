@@ -2,8 +2,10 @@ use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
-use actix_web::{Responder, HttpResponse, get, web::{Form, self}, post};
+use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
+use actix_identity::Identity;
 use rand::Rng;
+
 
 pub struct SignupTransmitter{
     pub state: AccountState,
@@ -56,7 +58,6 @@ impl Account{
             password, 
             balance: Money(0.), 
             page: AccountPage::new(),
-            // last_location: todo!(),
             state: AccountState::Consumer,
             location,
         }
@@ -92,7 +93,7 @@ pub async fn signup() -> impl Responder{
 }
 
 #[post("/verify-email")]
-pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
+pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, request: HttpRequest) -> impl Responder{
     let SignupData { email: to_email, password, password2, username, displayname, location } = form.0;
 
     if password != password2{
@@ -124,9 +125,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
 
     email(&to_email, "Welcome to Choredom!", body);
 
-    let cookie = login_cookie(&username);
-
-    let account: Account = Account::new(username, displayname , password, to_email, location);
+    let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
 
     // let mut db = app_data.db.lock().unwrap();
 
@@ -144,12 +143,9 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>) 
     location = type::string($location);
     "#, Some(account)).await, 0);
 
-    let mut resp = HttpResponse::Ok().body(EMAIL);
-    if let Err(e) = resp.add_cookie(&cookie){
-        return HttpResponse::Ok().body(e.to_string())
-    }
-    resp
-    
+    login_user(request, username);
+
+    HttpResponse::Ok().body(EMAIL)
 }
 
 #[post("/settings")]
@@ -224,7 +220,7 @@ pub async fn login() -> impl Responder{
 }
 
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
-pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Responder{
+pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: HttpRequest) -> impl Responder{
     //Send email?
     let LoginData { email, password } = form.0;
     let mut db = data.db.lock().await;
@@ -245,26 +241,32 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>) -> impl Re
         HttpResponse::Ok().body(LOGIN)
     }
     else{
-        login_cookie_response(HttpResponse::Ok().body(HOMEPAGE), &account.username)
+        login_user(request, account.username.clone());
+        HttpResponse::Ok().body(HOMEPAGE)
     }
 }
-use actix_web::cookie::*;
 
-pub fn login_cookie<'a>(username: &str) -> Cookie<'a>{
-    // make sure you SANTIIZE THE USERNAME (what if it has special characters)
-    // todo!()
-    let value = format!("true;{username}");
-    Cookie::build("login", value)
-        .domain("localhost:8080")
-        .path("/")
-        .secure(true)
-        .http_only(true)
-        .finish()
+
+#[get("/")]
+async fn index(user: Option<Identity>) -> impl Responder {
+    if let Some(user) = user {
+        format!("Welcome! {}", user.id().unwrap())
+    } else {
+        "Welcome Anonymous!".to_owned()
+    }
 }
 
-pub fn login_cookie_response(mut resp: HttpResponse, username: &str) -> HttpResponse{
-    if let Err(e) = resp.add_cookie(&login_cookie(username)){
-        return HttpResponse::Ok().body(e.to_string())
-    }
-    resp
+fn login_user(request: HttpRequest, username: String) -> impl Responder {
+    // Some kind of authentication should happen here
+    // e.g. password-based, biometric, etc.
+    // [...]
+    // attach a verified user identity to the active session
+    Identity::login(&request.extensions(), username).unwrap();
+    HttpResponse::Ok()
+}
+
+#[post("/logout")]
+async fn logout(user: Identity) -> impl Responder {
+    user.logout();
+    HttpResponse::Ok().body("Logged out.")
 }

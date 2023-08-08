@@ -5,6 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="post.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body style="background-color: black;">
   <header>
@@ -23,10 +26,14 @@
   <main>
     <div class="container">
       <h2>Post a Job</h2>
-      <form action="post-job" method="POST">
+      <form id="jobForm">
         <input id="title" name="title" type="text" placeholder="Title of your job">
         <input id="body" name="body" type="text" placeholder="Body of your job description">
-        <input id="location" name="location" type="text" placeholder="Location of your job (Town)">
+        <div id="dropdown" class="dropdown">
+          <input id="location" name="location" type="text" placeholder="Location of your job (Town)">
+          <div id="dropdownOptions" class="dropdown-options">
+          </div>
+        </div>
         <input id="time" name="time" type="date" placeholder="Date and time of your job">
         <input id="price" name="price" type="number" placeholder="Price you are willing to pay">
         <button type="submit" id='btn1'>Post</button>
@@ -38,5 +45,79 @@
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
   <script src="post.js"></script>
+  <script>
+    document.getElementById('jobForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const body = document.getElementById('body').value;
+      const location = document.getElementById('location').value;
+      const time = document.getElementById('time').value;
+      const price = document.getElementById('price').value;
+
+      fetch('/post-job', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title,
+          body: body,
+          location: location,
+          time: time,
+          price: price,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+    });
+
+    let allTowns = [];
+
+    function populateDropdown(data) {
+        allTowns = data;
+    }
+
+    function filterOptions() {
+      const dropdown = document.getElementById('dropdownOptions');
+      dropdown.innerHTML = '';
+
+      let count = 0;
+      const filterValue = this.value.toLowerCase();
+      allTowns.forEach(town => {
+          const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
+          if (optionText.includes(filterValue) && count < 10) {
+              const option = document.createElement('div');
+              option.setAttribute('value', town.ID);
+              option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
+              dropdown.appendChild(option);
+              count++;
+          }
+      });
+      dropdown.style.display = (count > 0) ? 'block' : 'none';
+    }
+
+    let selectedOption = null;
+
+    const dropdown = document.getElementById('dropdown');
+    dropdown.addEventListener('click', function(e) {
+      if (e.target.tagName === 'DIV' && e.target.parentNode.id === 'dropdownOptions') {
+          selectedOption = e.target.textContent;
+          document.getElementById('location').value = selectedOption;
+      }
+    });
+
+    fetch('us_cities.json')
+      .then(response => response.json())
+      .then(data => populateDropdown(data));
+
+    const input = document.getElementById('location');
+    input.addEventListener('input', filterOptions);
+  </script>
 </body>
 </html>
