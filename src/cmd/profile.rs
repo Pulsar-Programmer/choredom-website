@@ -9,7 +9,7 @@ struct Username{
 async fn profile_data(app_data: web::Data<AppData>, username: Form<Username>) -> impl Responder{
     
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username.0.username))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username.into_inner().username))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
@@ -36,7 +36,7 @@ pub struct RatingData{
 
 #[post("/rate/{username}")]
 async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>) -> impl Responder{
-    let review = rating_data.0;
+    let review = rating_data.into_inner();
     let mut sum = review.stars.clamp(0., 5.);
 
 
@@ -101,7 +101,7 @@ pub async fn settings_post(user: Option<actix_identity::Identity>, setting: Form
     WHERE username = type::string($username);
     ";
     let mut db = data.db.lock().await;
-    dissolve(query_value(&mut db, surrealql, Some(setting.0)).await, 44);
+    dissolve(query_value(&mut db, surrealql, Some(setting.into_inner())).await, 44);
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::Ok()

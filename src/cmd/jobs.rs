@@ -39,7 +39,7 @@ async fn post_job(user: Option<actix_identity::Identity>, form: web::Json<JobDat
     println!("HELP!");
     let username = user.unwrap().id().unwrap();
     
-    let JobData { title, body, time, price, location } = form.0;
+    let JobData { title, body, time, price, location } = form.into_inner();
 
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database

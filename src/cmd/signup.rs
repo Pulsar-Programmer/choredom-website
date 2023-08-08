@@ -93,13 +93,8 @@ pub async fn signup() -> impl Responder{
 }
 
 #[post("/verify-email")]
-pub async fn verify_email(app_data: web::Data<AppData>, form: Json<SignupData>, request: HttpRequest) -> impl Responder{
-    let SignupData { email: to_email, password, password2, username, displayname, location } = form.0;
-
-    if password != password2{
-        // ^feh 1
-        return HttpResponse::Ok().body(SIGNUP);
-    }
+pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, request: HttpRequest) -> impl Responder{
+    let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
 
     let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
@@ -121,9 +116,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Json<SignupData>, 
     let mut code = app_data.transmitters.signup.lock().await;
     let codea = rand::thread_rng().gen_range(100000..1000000);
     (*code).code = codea;
-    let body = format!("Welcome to Choredom, {}. Your verification code is {}", displayname, codea);
-
-    email(&to_email, "Welcome to Choredom!", body);
+    confirmation_email(&to_email, &displayname, codea);
 
     let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
 
@@ -148,31 +141,34 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Json<SignupData>, 
     HttpResponse::Ok().body(EMAIL)
 }
 
-#[post("/")]
-pub async fn settings_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
+#[post("/ve")]
+pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    if code.0.code != app_data.transmitters.signup.lock().await.code{
+    if code.into_inner().code != app_data.transmitters.signup.lock().await.code{
         //^feh
         // HttpResponse::Ok().body(EMAIL)
         todo!()
     }
     else{
-        HttpResponse::Ok().body(HOMEPAGE)
+        HttpResponse::TemporaryRedirect().append_header(("Location", "/")).finish()
     }
 }
 
 
+fn confirmation_email(to_email: &str, displayname: &str, code: i64){
+    let body = format!("Welcome to Choredom, {}. Your verification code is {}.", displayname, code);
+    email_user(to_email, "Welcome to Choredom!", body)
+}
 
 
-
-fn email(to_email: &str, subject: &str, body: String){
+fn email_user(to_email: &str, subject: &str, body: String){
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
 
     // let smtp_key: &str = "Brokies129gg";
     let smtp_key = "pjefpqhvsxmzomjf"; //app password
-    let from_email: &str = "business@quannt.net";
+    let from_email: &str = "choredom@quannt.net";
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
@@ -224,7 +220,7 @@ pub async fn login() -> impl Responder{
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
 pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: HttpRequest) -> impl Responder{
     //Send email?
-    let LoginData { email, password } = form.0;
+    let LoginData { email, password } = form.into_inner();
     let mut db = data.db.lock().await;
     let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = type::string($email);", Some(("email", email))).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
@@ -243,26 +239,23 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
         HttpResponse::Ok().body(LOGIN)
     }
     else{
+        // email_user(email, subject, body);
         login_user(request, account.username.clone());
         HttpResponse::Ok().body(HOMEPAGE)
     }
 }
 
 
-#[get("/")]
-async fn index(user: Option<Identity>) -> impl Responder {
-    if let Some(user) = user {
-        format!("Welcome! {}", user.id().unwrap())
-    } else {
-        "Welcome Anonymous!".to_owned()
-    }
-}
+// #[get("/index")]
+// async fn index(user: Option<Identity>) -> impl Responder {
+//     if let Some(user) = user {
+//         format!("Welcome! {}", user.id().unwrap())
+//     } else {
+//         "Welcome Anonymous!".to_owned()
+//     }
+// }
 
 fn login_user(request: HttpRequest, username: String) -> impl Responder {
-    // Some kind of authentication should happen here
-    // e.g. password-based, biometric, etc.
-    // [...]
-    // attach a verified user identity to the active session
     Identity::login(&request.extensions(), username).unwrap();
     HttpResponse::Ok()
 }

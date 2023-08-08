@@ -44,7 +44,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             homepage,
-            signup, verify_email, settings_redirect,
+            signup, verify_email, home_redirect,
             login, signin,
             settings, settings_post,
             upload, upload_auth,
