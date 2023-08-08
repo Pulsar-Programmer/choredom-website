@@ -8,7 +8,7 @@
 </head>
 <body>
   <h1 class="main-title">Sign Up</h1>
-  <form action="/verify-email" method="POST">
+  <!-- <form action="/verify-email" method="POST"> -->
     <input name="email" type="text" class="email-input" placeholder="Email">
     <input name="password" type="password" class="password-input" placeholder="Password">
     <input name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password">
@@ -20,94 +20,95 @@
         </div>
     </div>
     <input type="submit" class="continue">
-  </form>
-  <!-- <script>
+  <!-- </form> -->
+  <script>
     let allTowns = [];
-
+  
     function populateDropdown(data) {
-        allTowns = data;
+      allTowns = data;
     }
-
+  
     function filterOptions() {
-        const dropdown = document.getElementById('dropdownOptions');
-        dropdown.innerHTML = '';
-
-        let count = 0;
-        const filterValue = this.value.toLowerCase();
-        allTowns.forEach(town => {
-            const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
-            if (optionText.includes(filterValue) && count < 10) {
-                const option = document.createElement('div');
-                option.setAttribute('value', town.ID);
-                option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
-                dropdown.appendChild(option);
-                count++;
-            }
-        });
-        dropdown.style.display = (count > 0) ? 'block' : 'none';
+      const dropdown = document.getElementById('dropdownOptions');
+      dropdown.innerHTML = '';
+  
+      let count = 0;
+      const filterValue = this.value.toLowerCase();
+      allTowns.forEach(town => {
+        const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
+        if (optionText.includes(filterValue) && count < 10) {
+          const option = document.createElement('div');
+          option.setAttribute('value', town.ID);
+          option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
+          dropdown.appendChild(option);
+          count++;
+        }
+      });
+      dropdown.style.display = (count > 0) ? 'block' : 'none';
     }
-
+  
     let selectedOption = null;
-
+  
     const dropdown = document.getElementById('dropdown');
     dropdown.addEventListener('click', function(e) {
-        if (e.target.tagName === 'DIV' && e.target.parentNode.id === 'dropdownOptions') {
-            selectedOption = e.target.textContent;
-            document.getElementById('filterInput').value = selectedOption;
-        }
+      if (e.target.tagName === 'DIV' && e.target.parentNode.id === 'dropdownOptions') {
+        selectedOption = e.target.textContent;
+        document.getElementById('filterInput').value = selectedOption;
+      }
     });
-
+  
     fetch('us_cities.json')
-        .then(response => response.json())
-        .then(data => populateDropdown(data));
-
+      .then(response => response.json())
+      .then(data => populateDropdown(data));
+  
     const input = document.getElementById('filterInput');
     input.addEventListener('input', filterOptions);
-
+  
     const form = document.querySelector('form');
-    form.addEventListener('submit', validateForm);
-
-    function validateForm(e) {
-        e.preventDefault();
-
-        const formData = new FormData(form);
-        let dataString = '';
-
-        for (const [key, value] of formData.entries()) {
-            if (dataString !== '') {
-                dataString += '&';
-            }
-            dataString += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+  
+      const formData = new FormData(form);
+      let dataString = '';
+  
+      for (const [key, value] of formData.entries()) {
+        if (dataString !== '') {
+          dataString += '&';
         }
-
-        if (!formData.get('email') || !formData.get('password') || !formData.get('password2') || !formData.get('username') || !formData.get('displayname')) {
-            alert('Please fill in all fields');
-            return;
+        dataString += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+      }
+  
+      if (!formData.get('email') || !formData.get('password') || !formData.get('password2') || !formData.get('username') || !formData.get('displayname')) {
+        alert('Please fill in all fields');
+        return;
+      }
+  
+      if (formData.get('password') !== formData.get('password2')) {
+        alert('Passwords do not match');
+        return;
+      }
+  
+      fetch('/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: dataString
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        if (formData.get('password') !== formData.get('password2')) {
-            alert('Passwords do not match');
-            return;
-        }
-
-        sendData(dataString);
-    }
-
-    function sendData(data) {
-        fetch('/verify-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: data
-        })
-        .then(response => {
-            // handle the response
-        })
-        .catch(error => {
-            console.error('There has been a problem with your fetch operation: ', error);
-        });
-    }
-  </script> -->
+        return response.json();
+      })
+      .then(data => {
+        console.log('Success:', data);
+        window.location = 'email.html'; // Updated code for redirection
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+    });
+  </script>  
 </body>
 </html>
