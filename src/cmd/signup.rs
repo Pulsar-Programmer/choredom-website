@@ -150,18 +150,18 @@ pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> im
         todo!()
     }
     else{
-        HttpResponse::TemporaryRedirect().append_header(("Location", "/")).finish()
+        HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     }
 }
 
 
-fn confirmation_email(to_email: &str, displayname: &str, code: i64){
+fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<(), anyhow::Error>{
     let body = format!("Welcome to Choredom, {}. Your verification code is {}.", displayname, code);
     email_user(to_email, "Welcome to Choredom!", body)
 }
 
 
-fn email_user(to_email: &str, subject: &str, body: String){
+fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<(), anyhow::Error>{
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
@@ -172,17 +172,15 @@ fn email_user(to_email: &str, subject: &str, body: String){
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
-        .from(from_email.parse().unwrap())
-        .to(to_email.parse().unwrap())
+        .from(from_email.parse()?)
+        .to(to_email.parse()?)
         .subject(subject)
-        .body(body)
-        .unwrap();
+        .body(body)?;
 
     let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
 
     // Open a remote connection to gmail
-    let mailer: SmtpTransport = SmtpTransport::relay(&host)
-        .unwrap()
+    let mailer: SmtpTransport = SmtpTransport::relay(&host)?
         .credentials(creds)
         .build();
 
@@ -191,6 +189,7 @@ fn email_user(to_email: &str, subject: &str, body: String){
         Ok(_) => {println!("Email sent successfully!");},
         Err(e) => println!("{e}"), //invalid email ^feh 4
     };
+    Ok(())
 }
 
 // #[get("/accounts")]
@@ -239,7 +238,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
         HttpResponse::Ok().body(LOGIN)
     }
     else{
-        // email_user(email, subject, body);
+        // confirmation_email(&account.email, &account.display_name, code); 
         login_user(request, account.username.clone());
         HttpResponse::Ok().body(HOMEPAGE)
     }
