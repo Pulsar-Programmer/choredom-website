@@ -28,10 +28,21 @@ macro_rules! wapp {
     };
 }
 
+// How to do Path extractor
 // #[get("/hello/{name}")]
 // async fn greet(name: web::Path<String>) -> impl Responder {
 //     let p = format!("<p>Hello {}</p>", name);
 //     HttpResponse::Ok().body(p)
+// }
+
+// How to do Identity login 
+// #[get("/index")]
+// async fn index(user: Option<Identity>) -> impl Responder {
+//     if let Some(user) = user {
+//         format!("Welcome! {}", user.id().unwrap())
+//     } else {
+//         "Welcome Anonymous!".to_owned()
+//     }
 // }
 
 #[actix_web::main] // or #[tokio::main]

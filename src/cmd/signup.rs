@@ -5,6 +5,7 @@ use crate::db::{dissolve, query, query_value};
 use actix_web::web::Json;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use actix_identity::Identity;
+use lettre::transport::smtp::response::Response;
 use rand::Rng;
 
 
@@ -155,13 +156,13 @@ pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> im
 }
 
 
-fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<(), anyhow::Error>{
+fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response, anyhow::Error>{
     let body = format!("Welcome to Choredom, {}. Your verification code is {}.", displayname, code);
     email_user(to_email, "Welcome to Choredom!", body)
 }
 
 
-fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<(), anyhow::Error>{
+fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response, anyhow::Error>{
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
@@ -184,12 +185,13 @@ fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<(),
         .credentials(creds)
         .build();
 
+
+    //check for invalid email ^feh
+
     // Send the email
-    match mailer.send(&email) {
-        Ok(_) => {println!("Email sent successfully!");},
-        Err(e) => println!("{e}"), //invalid email ^feh 4
-    };
-    Ok(())
+    mailer.send(&email).map_err(|err|err.into())
+
+
 }
 
 // #[get("/accounts")]
@@ -245,22 +247,12 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
 }
 
 
-// #[get("/index")]
-// async fn index(user: Option<Identity>) -> impl Responder {
-//     if let Some(user) = user {
-//         format!("Welcome! {}", user.id().unwrap())
-//     } else {
-//         "Welcome Anonymous!".to_owned()
-//     }
+
+
+// fn login_user(request: HttpRequest, username: String) -> {
+//     Identity::login(&request.extensions(), username)
 // }
 
-fn login_user(request: HttpRequest, username: String) -> impl Responder {
-    Identity::login(&request.extensions(), username).unwrap();
-    HttpResponse::Ok()
-}
-
-#[post("/logout")]
-async fn logout(user: Identity) -> impl Responder {
-    user.logout();
-    HttpResponse::Ok().body("Logged out.")
-}
+// fn logout_user(user: Identity) -> impl Responder {
+//     user.logout()
+// }

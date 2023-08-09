@@ -1,5 +1,6 @@
 use crate::{db::{dissolve, query, query_value}, AppData};
-use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest, http::header::q};
+use actix_identity::Identity;
+use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
 
@@ -35,7 +36,7 @@ pub async fn post() -> impl Responder{
 }
 
 #[post("/post-job-2")]
-async fn post_job(user: Option<actix_identity::Identity>, form: web::Json<JobData>, req: HttpRequest, data: Data<AppData>) -> impl Responder{
+async fn post_job(user: Option<Identity>, form: web::Form<JobData>, data: Data<AppData>) -> impl Responder{
     println!("HELP!");
     let username = user.unwrap().id().unwrap();
     
