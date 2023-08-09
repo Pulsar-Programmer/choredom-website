@@ -107,6 +107,10 @@
       .then(response => response.json())
       .then(data => {
         console.log('Success:', data);
+
+        // Open a chat with the poster after successfully applying for the job
+        startChat(username);
+
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -123,41 +127,41 @@
 
     // Fetch location data when form is submitted
     document.querySelector('form').addEventListener('submit', function(event) {
-        event.preventDefault();
+      event.preventDefault();
 
-        const location = document.getElementById('filterInput').value;
+      const location = document.getElementById('filterInput').value;
 
-        fetch('/tasks', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ location }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Location Success:', data);
+      fetch('/tasks', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ location }),
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log('Location Success:', data);
 
-            // Fetch jobs data
-            fetch('/job-handling') // Replace with your actual jobs endpoint
-            .then(response => response.json())
-            .then(jobsData => {
-                console.log('Jobs Success:', jobsData);
-                displayJobs(jobsData);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    });
+          // Fetch jobs data
+          fetch('/job-handling') // Replace with your actual jobs endpoint
+          .then(response => response.json())
+          .then(jobsData => {
+              console.log('Jobs Success:', jobsData);
+              displayJobs(jobsData);
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+      });
+  });
 
-    // Function to toggle dark mode
-    document.getElementById('toggle-button').addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-    });
-  </script>
+  // Function to toggle dark mode
+  document.getElementById('toggle-button').addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+  });
+</script>
 </body>
 </html>
