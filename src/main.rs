@@ -1,6 +1,8 @@
 use actix_web::{ web, App, HttpServer, cookie::Key};
 use actix_identity::IdentityMiddleware;
-use actix_session::{SessionMiddleware, storage::CookieSessionStore};
+use actix_session::SessionMiddleware;
+use actix_session_surrealdb::SurrealSessionStore;
+
 
 mod structs;
 mod cmd;
@@ -43,7 +45,7 @@ macro_rules! wapp {
 async fn main() -> std::io::Result<()> {
     let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppData {
-        db: Arc::new(Mutex::new(db)),
+        db: Arc::new(Mutex::new(db.clone())),
         transmitters: Arc::new(Transmitters::default())
     });
     HttpServer::new(move|| {
@@ -51,7 +53,7 @@ async fn main() -> std::io::Result<()> {
             App::new()
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
-                CookieSessionStore::default(),
+                SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 Key::generate()
             ))
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
