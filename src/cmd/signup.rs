@@ -114,7 +114,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
     }
     
     let mut code = app_data.transmitters.signup.lock().await;
-    let codea = rand::thread_rng().gen_range(100000..1000000);
+    code.code = rand::thread_rng().gen_range(100000..1000000);
     confirmation_email(&to_email, &displayname, code.code).unwrap();
 
     let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
