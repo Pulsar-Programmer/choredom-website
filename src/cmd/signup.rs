@@ -2,7 +2,6 @@ use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
 use crate::db::{dissolve, query, query_value};
-use actix_web::web::Json;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use actix_identity::Identity;
 use lettre::transport::smtp::response::Response;
@@ -116,8 +115,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
     
     let mut code = app_data.transmitters.signup.lock().await;
     let codea = rand::thread_rng().gen_range(100000..1000000);
-    (*code).code = codea;
-    confirmation_email(&to_email, &displayname, codea);
+    confirmation_email(&to_email, &displayname, code.code).unwrap();
 
     let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
 
@@ -137,8 +135,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
     location = type::string($location);
     "#, Some(account)).await, 0);
 
-    login_user(request, username);
-
+    let ident = login_user(request, username).unwrap();
     HttpResponse::Ok().body(EMAIL)
 }
 
@@ -156,13 +153,13 @@ pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> im
 }
 
 
-fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response, anyhow::Error>{
+fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response>{
     let body = format!("Welcome to Choredom, {}. Your verification code is {}.", displayname, code);
     email_user(to_email, "Welcome to Choredom!", body)
 }
 
 
-fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response, anyhow::Error>{
+fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response>{
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
@@ -181,7 +178,7 @@ fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Res
     let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
 
     // Open a remote connection to gmail
-    let mailer: SmtpTransport = SmtpTransport::relay(&host)?
+    let mailer: SmtpTransport = SmtpTransport::relay(host)?
         .credentials(creds)
         .build();
 
@@ -231,12 +228,12 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
         todo!() // should never happen if correct things are true
     }
     else if len < 1{
-        // ^feh 3
+        // ^feh
         return HttpResponse::Ok().body(SIGNUP)
     }
     let account = result.get(0).unwrap();
     if account.password != password{
-        // ^feh 2
+        // ^feh
         HttpResponse::Ok().body(LOGIN)
     }
     else{
@@ -246,13 +243,10 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
     }
 }
 
+fn login_user(request: HttpRequest, username: String) -> anyhow::Result<Identity>{
+    Identity::login(&request.extensions(), username)
+}
 
-
-
-// fn login_user(request: HttpRequest, username: String) -> {
-//     Identity::login(&request.extensions(), username)
-// }
-
-// fn logout_user(user: Identity) -> impl Responder {
-//     user.logout()
-// }
+fn logout_user(user: Identity) {
+    user.logout()
+}
