@@ -5,7 +5,7 @@ use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
 
 #[derive(serde::Deserialize)]
-struct JobData{
+pub struct JobData{
     title: String,
     body: String,
     time: String, 
@@ -36,7 +36,7 @@ pub async fn post() -> impl Responder{
 }
 
 #[post("/post-job-2")]
-async fn post_job(user: Option<Identity>, form: web::Form<JobData>, data: Data<AppData>) -> impl Responder{
+pub async fn post_job(user: Option<Identity>, form: web::Form<JobData>, data: Data<AppData>) -> impl Responder{
     println!("HELP!");
     let username = user.unwrap().id().unwrap();
     

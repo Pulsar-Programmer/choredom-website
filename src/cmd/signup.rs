@@ -135,7 +135,7 @@ pub async fn verify_email(app_data: web::Data<AppData>, form: Form<SignupData>, 
     location = type::string($location);
     "#, Some(account)).await, 0);
 
-    let ident = login_user(request, username).unwrap();
+    Identity::login(&request.extensions(), username).unwrap();
     HttpResponse::Ok().body(EMAIL)
 }
 
@@ -238,15 +238,17 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, request: H
     }
     else{
         // confirmation_email(&account.email, &account.display_name, code); 
-        login_user(request, account.username.clone());
+        Identity::login(&request.extensions(), account.username.clone()).unwrap();
         HttpResponse::Ok().body(HOMEPAGE)
     }
 }
 
-fn login_user(request: HttpRequest, username: String) -> anyhow::Result<Identity>{
-    Identity::login(&request.extensions(), username)
-}
+// fn login_user(request: HttpRequest, username: String) -> anyhow::Result<Identity>{
+//     Identity::login(&request.extensions(), username)
+// }
 
-fn logout_user(user: Identity) {
-    user.logout()
-}
+// fn logout_user(user: Identity) {
+//     user.logout()
+// }
+
+// ^^^^ THESE MUST BE CALLED INDEPENDENTLY. They cannot be packaged like this.

@@ -14,14 +14,8 @@ mod db;
 use db::setup_db;
 
 macro_rules! wapp {
-    ($($i:ident),+) => {
-        App::new()
-            .wrap(IdentityMiddleware::default())
-            .wrap(SessionMiddleware::new(
-                CookieSessionStore::default(),
-                Key::generate()
-            ))
-            .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing())
+    ($e:expr; $($i:ident),+) => {
+        $e
             $(
                 .service($i)
             )+
@@ -54,6 +48,13 @@ async fn main() -> std::io::Result<()> {
     });
     HttpServer::new(move|| {
         wapp!(
+            App::new()
+            .wrap(IdentityMiddleware::default())
+            .wrap(SessionMiddleware::new(
+                CookieSessionStore::default(),
+                Key::generate()
+            ))
+            .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect,
             login, signin,
