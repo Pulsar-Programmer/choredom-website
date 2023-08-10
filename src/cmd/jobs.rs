@@ -1,8 +1,9 @@
 use crate::{db::{dissolve, query, query_value}, AppData};
-use actix_identity::Identity;
+use actix_identity::{Identity, IdentityExt};
 use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
+use actix_session::storage::SessionStore;
 
 #[derive(serde::Deserialize)]
 pub struct JobData{
@@ -36,9 +37,10 @@ pub async fn post() -> impl Responder{
 }
 
 #[post("/post-job-2")]
-pub async fn post_job(user: Option<Identity>, form: web::Form<JobData>, data: Data<AppData>) -> impl Responder{
-    println!("HELP!");
-    let username = user.unwrap().id().unwrap();
+pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>) -> impl Responder{
+    // let user = request.get_identity();
+    // let username = user.unwrap().id().unwrap();
+    //ditch actix-identity and now use pure actix-session
     
     let JobData { title, body, time, price, location } = form.into_inner();
 
