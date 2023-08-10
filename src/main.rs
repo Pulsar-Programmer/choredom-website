@@ -1,5 +1,5 @@
 use actix_web::{ web, App, HttpServer, cookie::Key};
-use actix_identity::IdentityMiddleware;
+// use actix_identity::IdentityMiddleware;
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
 
@@ -51,7 +51,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             App::new()
-            .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 Key::generate()
