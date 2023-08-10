@@ -41,7 +41,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
     // let user = request.get_identity();
     // let username = user.unwrap().id().unwrap();
     //ditch actix-identity and now use pure actix-session
-    let username = retrieve_user(session).unwrap().unwrap().username;
+    let username = retrieve_user(session).unwrap().unwrap();
     
     let JobData { title, body, time, price, location } = form.into_inner();
 

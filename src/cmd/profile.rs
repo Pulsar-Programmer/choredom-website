@@ -94,7 +94,7 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     // let accounts
     // let SettingsData { username, password: _, displayname, bio } = setting.0;
     //have a separate password and username changing mechanism 
-    let username = retrieve_user(session).unwrap().unwrap().username;
+    let username = retrieve_user(session).unwrap().unwrap();
 
     let surrealql = "UPDATE accounts SET 
         display_name = type::string($display_name),

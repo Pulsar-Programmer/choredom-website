@@ -133,9 +133,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     password = type::string($password),
     balance = $balance,
     location = type::string($location);
-    "#, Some(account.clone())).await, 0);
+    "#, Some(account)).await, 0);
 
-    login_user(session, &account);
+    login_user(session, &username);
     HttpResponse::Ok().body(EMAIL)
 }
 
@@ -234,20 +234,20 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     else{
         // confirmation_email(&account.email, &account.display_name, code); 
-        login_user(session, account);
+        login_user(session, &account.username);
         HttpResponse::Ok().body(HOMEPAGE)
     }
 }
 
-pub fn login_user(session: Session, account: &Account) -> Result<(), SessionInsertError>{
+pub fn login_user(session: Session, account: &str) -> Result<(), SessionInsertError>{
     // session.renew();
-    session.insert("account", account)
+    session.insert("username", account)
 }
 
-pub fn retrieve_user(session: Session) -> Result<Option<Account>, SessionGetError>{
-    session.get("account")
+pub fn retrieve_user(session: Session) -> Result<Option<String>, SessionGetError>{
+    session.get("username")
 }
 
-pub fn logout_user(session: Session, username: String) -> Option<String>{
-    session.remove("account")
+pub fn logout_user(session: Session) -> Option<String>{
+    session.remove("username")
 }
