@@ -49,12 +49,14 @@ async fn main() -> std::io::Result<()> {
         db: Arc::new(Mutex::new(db.clone())),
         transmitters: Arc::new(Transmitters::default())
     });
+    // key needs to be generated outside the closure or else each worker gonna get a diff key
+    let key = Key::generate();
     HttpServer::new(move|| {
         wapp!(
             App::new()
             .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
-                Key::generate()
+                key.clone(),
             ).cookie_same_site(SameSite::None).build())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
