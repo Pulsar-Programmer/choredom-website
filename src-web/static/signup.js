@@ -1,8 +1,4 @@
 
-
-
-
-
 window.addEventListener("load", function() {
     const form = document.getElementById("signupForm");
     form.addEventListener("submit", function(event) {
@@ -24,7 +20,6 @@ window.addEventListener("load", function() {
 
 
 
-/*
 let allTowns = [];
 
     function populateDropdown(data) {
@@ -67,5 +62,3 @@ let allTowns = [];
     const input = document.getElementById('location');
     input.addEventListener('input', filterOptions);
 
-
-*/
