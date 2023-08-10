@@ -2,7 +2,7 @@
 
 //ALL FROM BELOW: ADD THEIR RESPECTIVE LIBRARIES
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Money(pub f32);// use from another lib like color
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]

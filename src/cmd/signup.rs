@@ -33,7 +33,7 @@ pub struct Code{
     pub code: i64
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Account{
     pub display_name: String,
     pub username: String, //USERNAME STORED IN DB AS ID
@@ -63,14 +63,14 @@ impl Account{
         }
     }
 }
-#[derive(serde::Serialize, Debug, serde::Deserialize)]
+#[derive(serde::Serialize, Debug, serde::Deserialize, Clone)]
 pub enum AccountState{
     Consumer,
     Pending,
     Worker,
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct AccountPage{
     pfp_url: String,
     avg_rating: f64,
@@ -133,9 +133,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     password = type::string($password),
     balance = $balance,
     location = type::string($location);
-    "#, Some(account)).await, 0);
+    "#, Some(account.clone())).await, 0);
 
-    login_user(session, username);
+    login_user(session, &account);
     HttpResponse::Ok().body(EMAIL)
 }
 
@@ -234,24 +234,20 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     else{
         // confirmation_email(&account.email, &account.display_name, code); 
-        login_user(session, account.username.clone());
+        login_user(session, account);
         HttpResponse::Ok().body(HOMEPAGE)
     }
 }
 
-fn login_user(session: Session, account: Account) -> Result<(), SessionInsertError>{
+pub fn login_user(session: Session, account: &Account) -> Result<(), SessionInsertError>{
     // session.renew();
     session.insert("account", account)
 }
 
-fn retrieve_user(session: Session) -> Result<Option<Account>, SessionGetError>{
+pub fn retrieve_user(session: Session) -> Result<Option<Account>, SessionGetError>{
     session.get("account")
 }
-// enum SessionError{
-//     Get(SessionGetError),
-// }
 
-fn logout_user(session: Session, username: String) -> anyhow::Result<()>{
-    let user = retrieve_user(session)?.ok_or("No existing field 'account'.".to_string())?;
-    todo!()
+pub fn logout_user(session: Session, username: String) -> Option<String>{
+    session.remove("account")
 }

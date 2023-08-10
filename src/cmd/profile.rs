@@ -1,6 +1,7 @@
 use crate::{db::{query, query_value, dissolve}, AppData};
-use super::{signup::Account, jobs::Job};
+use super::{signup::{Account, login_user, retrieve_user}, jobs::Job};
 use super::sites::*;
+use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, HttpResponseBuilder};
 struct Username{
     username: String,
@@ -27,7 +28,7 @@ async fn profile(username: web::Path<String>) -> HttpResponse{
     todo!()
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct RatingData{
     stars: f32,
     body: String,
@@ -89,11 +90,11 @@ pub async fn settings(app_data: Data<AppData>) -> impl Responder{
 }
 
 #[post("/settings-post")]
-pub async fn settings_post(user: Option<actix_identity::Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
+pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     // let accounts
     // let SettingsData { username, password: _, displayname, bio } = setting.0;
     //have a separate password and username changing mechanism 
-    let username = user.unwrap().id().unwrap();
+    let username = retrieve_user(session).unwrap().unwrap().username;
 
     let surrealql = "UPDATE accounts SET 
         display_name = type::string($display_name),
