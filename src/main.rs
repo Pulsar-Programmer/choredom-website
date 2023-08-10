@@ -1,3 +1,4 @@
+use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 // use actix_identity::IdentityMiddleware;
 use actix_session::SessionMiddleware;
@@ -51,10 +52,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             App::new()
-            .wrap(SessionMiddleware::new(
+            .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 Key::generate()
-            ))
+            ).cookie_same_site(SameSite::None).build())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect,
