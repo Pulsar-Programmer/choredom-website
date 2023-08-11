@@ -1,7 +1,7 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
-use crate::{AppData, Transmitter};
+use crate::AppData;
 use crate::structs::Money;
-use crate::db::{query, query_value};
+use crate::db::{query, query_value, transmission_transmit, transmission_receive};
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
@@ -10,9 +10,6 @@ use rand::Rng;
 #[derive(serde::Deserialize)]
 pub struct SignupTransmitter{
     pub code: i64,
-}
-impl Transmitter for SignupTransmitter{
-    const FIELD: &'static str = "signup";
 }
 
 #[derive(serde::Deserialize)]
@@ -108,10 +105,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
         //^feh
         todo!()
     }
-    
-    let mut code = app_data.transmitters.signup.lock().await;
-    code.code = rand::thread_rng().gen_range(100000..1000000);
-    confirmation_email(&to_email, &displayname, code.code).unwrap();
+    let code = rand::thread_rng().gen_range(100000..1000000);
+    transmission_transmit("signup", &session, code).unwrap();
+    confirmation_email(&to_email, &displayname, code).unwrap();
 
     let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
 
@@ -136,9 +132,10 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 }
 
 #[post("/ve")]
-pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> impl Responder{
+pub async fn home_redirect(session: Session, code: Form<Code>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    if code.into_inner().code != app_data.transmitters.signup.lock().await.code{
+    let true_code: i64 = transmission_receive("signup", &session).unwrap();
+    if code.into_inner().code != true_code{
         //^feh
         // HttpResponse::Ok().body(EMAIL)
         todo!()

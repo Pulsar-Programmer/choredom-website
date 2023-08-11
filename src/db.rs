@@ -141,3 +141,14 @@ pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db
 // async fn query__wrapper(s: s::Result<Vec<s::Result<Vec<Value>>>>) -> Value{
 //     todo!()
 // }
+
+
+pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &actix_session::Session, args: Args) -> Result<(), actix_session::SessionInsertError>{
+    let derived_field = format!("{}_transmitter", field);
+    session.insert(derived_field, args)
+}
+pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
+    let derived_field = format!("{}_transmitter", field);
+    let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
+    Ok(serde_json::from_str(&value)?)
+}
