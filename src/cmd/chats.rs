@@ -4,15 +4,17 @@ use crate::{Transmitter, AppData};
 use super::sites::CHAT;
 
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize)]
 pub struct ChatClientTransmitter{
     clients: HashMap<u32, EventualData>, // For simplicity, we'll use a HashMap to store connected clients.
     msgs: Vec<(u32, String)>, 
 }
 type CCT = ChatClientTransmitter;
-impl Transmitter for CCT{}
+impl Transmitter for CCT{
+    const FIELD: &'static str = "cct";
+}
 
-
+#[derive(serde::Deserialize)]
 struct EventualData;
 
 #[get("/chats/connect/{client_id}")]

@@ -1,7 +1,7 @@
 use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 // use actix_identity::IdentityMiddleware;
-use actix_session::SessionMiddleware;
+use actix_session::{SessionMiddleware, Session};
 use actix_session_surrealdb::SurrealSessionStore;
 
 
@@ -11,10 +11,10 @@ use cmd::*;
 use cmd::signup::*;
 use cmd::profile::*;
 use cmd::jobs::*;
-// use cmd::settings::*;
 // use cmd::
 mod db;
 use db::setup_db;
+use serde_json::Value;
 
 macro_rules! wapp {
     ($e:expr; $($i:ident),+) => {
@@ -47,7 +47,6 @@ async fn main() -> std::io::Result<()> {
     let db = setup_db().await.unwrap();
     let app_state = web::Data::new(AppData {
         db: Arc::new(Mutex::new(db.clone())),
-        transmitters: Arc::new(Transmitters::default())
     });
     // key needs to be generated outside the closure or else each worker gonna get a diff key
     let key = Key::generate();
@@ -75,16 +74,27 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
+use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,
-    pub transmitters: Arc<Transmitters> //add new transmitters as necessary and manually
 }
-#[derive(Default)]
+
+
 pub struct Transmitters{
-    signup: Mutex<crate::cmd::signup::SignupTransmitter>,
-    cct: Mutex<crate::cmd::chats::ChatClientTransmitter>,
+    signup: cmd::signup::SignupTransmitter,
+    cct: cmd::chats::ChatClientTransmitter,
 }
-pub trait Transmitter: Default{}
+pub trait Transmitter where Self: Sized + serde::de::DeserializeOwned{
+    const FIELD: &'static str;
+    const DERIVED_FIELD: &'static str = &format!("{}_transmitter", Self::FIELD);
+    fn transmit<Args: serde::Serialize>(session: Session, args: Args) -> Result<(), actix_session::SessionInsertError>{
+        session.insert(Self::DERIVED_FIELD, args)
+    }
+    fn retrieve(session: Session) -> Result<Self, Box<dyn std::error::Error>>{
+        let value = session.remove(Self::DERIVED_FIELD).ok_or("Failed to transmit using transmitter.")?;
+        Ok(serde_json::from_str(&value)?)
+    }
+}

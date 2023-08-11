@@ -7,16 +7,12 @@ use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
 use rand::Rng;
 
-
+#[derive(serde::Deserialize)]
 pub struct SignupTransmitter{
-    pub state: AccountState,
     pub code: i64,
 }
-impl Transmitter for SignupTransmitter{}
-impl Default for SignupTransmitter{
-    fn default() -> Self {
-        Self { state: AccountState::Consumer, code: 0 }
-    }
+impl Transmitter for SignupTransmitter{
+    const FIELD: &'static str = "signup";
 }
 
 #[derive(serde::Deserialize)]
@@ -240,9 +236,9 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
 }
 
-pub fn login_user(session: Session, account: &str) -> Result<(), SessionInsertError>{
+pub fn login_user(session: Session, username: &str) -> Result<(), SessionInsertError>{
     // session.renew();
-    session.insert("username", account)
+    session.insert("username", username)
 }
 
 pub fn retrieve_user(session: Session) -> Result<Option<String>, SessionGetError>{
