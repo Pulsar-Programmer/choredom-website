@@ -1,7 +1,7 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::{AppData, Transmitter};
 use crate::structs::Money;
-use crate::db::{dissolve, query, query_value};
+use crate::db::{query, query_value};
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
@@ -121,7 +121,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 
     // let mut db = app_data.db.lock().unwrap();
 
-    dissolve(query_value(&mut db, r#"
+    query_value(&mut db, r#"
     CREATE accounts
     SET
     username = type::string($username),
@@ -133,7 +133,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     password = type::string($password),
     balance = $balance,
     location = type::string($location);
-    "#, Some(account)).await, 0);
+    "#, Some(account)).await.unwrap();
 
     login_user(session, &username);
     HttpResponse::Ok().body(EMAIL)
@@ -148,6 +148,7 @@ pub async fn home_redirect(app_data: web::Data<AppData>, code: Form<Code>) -> im
         todo!()
     }
     else{
+        //login user here instead
         HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     }
 }

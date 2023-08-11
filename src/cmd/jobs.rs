@@ -1,4 +1,4 @@
-use crate::{db::{dissolve, query, query_value}, AppData};
+use crate::{db::{query, query_value}, AppData};
 use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest};
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
@@ -57,7 +57,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
     let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price), location);
 
     let mut db = data.db.lock().await;
-    dissolve(query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await, 1);
+    query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await.unwrap();
 
 
     // todo!();

@@ -81,7 +81,7 @@ use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,
     pub transmitters: Arc<Transmitters> //add new transmitters as necessary and manually
-} //nig
+}
 #[derive(Default)]
 pub struct Transmitters{
     signup: Mutex<crate::cmd::signup::SignupTransmitter>,

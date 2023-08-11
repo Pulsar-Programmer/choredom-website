@@ -1,5 +1,5 @@
 use crate::AppData;
-use crate::db::{dissolve, query_value};
+use crate::db::query_value;
 use actix_web::{Responder, HttpResponse, web::{Form, self}, post};
 
 
@@ -14,7 +14,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>) -> impl Respond
     
     let mut db = data.db.lock().await;
     let surrealql = "UPDATE accounts SET balance += $balance;";
-    dissolve(query_value(&mut db, surrealql, Some(("balance", form.0.changed_funds))).await, 45);
+    query_value(&mut db, surrealql, Some(("balance", form.0.changed_funds))).await.unwrap();
     HttpResponse::Ok()
 }
 
@@ -23,7 +23,7 @@ async fn spend(form: Form<FundData>, data: web::Data<AppData>) -> impl Responder
     
     let mut db = data.db.lock().await;
     let surrealql = "UPDATE accounts SET balance -= $balance;";
-    dissolve(query_value(&mut db, surrealql, Some(("balance", form.0.changed_funds))).await, 46);
+    query_value(&mut db, surrealql, Some(("balance", form.0.changed_funds))).await.unwrap();
     HttpResponse::Ok()
 }
 

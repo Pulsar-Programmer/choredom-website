@@ -1,4 +1,4 @@
-use crate::{db::{query, query_value, dissolve}, AppData};
+use crate::{db::{query, query_value}, AppData};
 use super::{signup::{Account, login_user, retrieve_user}, jobs::Job};
 use super::sites::*;
 use actix_session::Session;
@@ -65,7 +65,7 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
     page.avg_rating = $rating,
     page.reviews += $review,
     WHERE username = type::string($username);";
-    crate::db::dissolve(query::<Account>(&mut db, q, Some((("rating", "review", "username"), (new_avg, review, username.as_str())))).await, 34);
+    query::<Account>(&mut db, q, Some((("rating", "review", "username"), (new_avg, review, username.as_str())))).await.unwrap();
 
     HttpResponse::Ok()
 }
@@ -102,7 +102,7 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     WHERE username = type::string($username);
     ";
     let mut db = data.db.lock().await;
-    dissolve(query_value(&mut db, surrealql, Some(setting.into_inner())).await, 44);
+    query_value(&mut db, surrealql, Some(setting.into_inner())).await.unwrap();
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::Ok()

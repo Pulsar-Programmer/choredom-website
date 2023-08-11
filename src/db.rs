@@ -56,12 +56,12 @@ pub async fn setup_db() -> s::Result<Db>{
 
 pub type Db = Surreal<Client>;
 
-pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
-    match s{
-        Ok(t) => println!("Success w/ DB Interaction #{num}: {t:?}"),
-        Err(e) => println!("Error w/ DB Interaction #{num}: {e}"),
-    }
-}
+// pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
+//     match s{
+//         Ok(t) => println!("Success w/ DB Interaction #{num}: {t:?}"),
+//         Err(e) => println!("Error w/ DB Interaction #{num}: {e}"),
+//     }
+// }
 
 //Create
 // pub async fn register<V: serde::Serialize>(db: &mut Db, table: &str, id: &str, value: V) -> s::Result<()>{
