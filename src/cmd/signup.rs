@@ -2,6 +2,7 @@ use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::AppData;
 use crate::structs::Money;
 use crate::db::{query, query_value, transmission_transmit, transmission_receive};
+use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
@@ -88,7 +89,7 @@ pub async fn signup() -> impl Responder{
 #[post("/verify-email")]
 pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Form<SignupData>, request: HttpRequest) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
-
+    let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
     let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
@@ -109,7 +110,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     transmission_transmit("signup", &session, code).unwrap();
     confirmation_email(&to_email, &displayname, code).unwrap();
 
-    let account: Account = Account::new(username.clone(), displayname , password, to_email, location);
+    let account: Account = Account::new(username.clone(), displayname , password, to_email.to_string(), location);
 
     // let mut db = app_data.db.lock().unwrap();
 
@@ -137,13 +138,11 @@ pub async fn home_redirect(session: Session, code: Form<Code>) -> impl Responder
     let true_code: i64 = transmission_receive("signup", &session).unwrap();
     if code.into_inner().code != true_code{
         //^feh
-        // HttpResponse::Ok().body(EMAIL)
-        todo!()
+        return HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(SIGNUP)
+        // todo!()
     }
-    else{
-        //login user here instead
-        HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
-    }
+    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
+    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
 
 
@@ -229,7 +228,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     else{
         // confirmation_email(&account.email, &account.display_name, code); 
         login_user(session, &account.username);
-        HttpResponse::Ok().body(HOMEPAGE)
+        HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
     }
 }
 

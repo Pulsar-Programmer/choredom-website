@@ -62,7 +62,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
 
 
     // todo!();
-    HttpResponse::Ok().body(POST)
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
 }
 
 

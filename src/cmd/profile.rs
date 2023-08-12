@@ -106,7 +106,7 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     query_value(&mut db, surrealql, Some(setting.into_inner())).await.unwrap();
     //might get a runtime error bcs of surrealql since password field is unused?
 
-    HttpResponse::Ok()
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
 #[get("/settings/upload")]
@@ -143,5 +143,5 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
     query_value(db, surrealql, Some(params)).await.unwrap();
 
     //review: is it really smooth or ok to have this return a Result?
-    Ok(HttpResponse::Ok().body(SETTINGS))
+    Ok(HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS))
 }
