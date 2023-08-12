@@ -21,12 +21,13 @@ pub struct Job{
     body: String,
     // location: Location, todo!()
     time: DateTime<Utc>,
-    price: crate::structs::Money, 
+    // price: crate::structs::Money,
+    price: f32, 
     username: String,
     location: String,
 }
 impl Job{
-    pub fn new(username: String, title: String, body: String, time: DateTime<Utc>, price: crate::structs::Money, location: String) -> Job{
+    pub fn new(username: String, title: String, body: String, time: DateTime<Utc>, price: f32, location: String) -> Job{
         Job { username, title, body, time, price, location}
     }
 }
@@ -54,7 +55,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
     //time is written in the format: yyyy-mm-dd
 
-    let job = Job::new(username.to_string(), title, body, time, crate::structs::Money(price), location);
+    let job = Job::new(username.to_string(), title, body, time, price, location);
 
     let mut db = data.db.lock().await;
     query_value(&mut db, "CREATE jobs SET data = $job", Some(("job", job))).await.unwrap();
@@ -124,5 +125,4 @@ struct JobRecordLink{
     username: String,
 }
 
-// ISSUE WITH TAS: 1. Undefineds
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS

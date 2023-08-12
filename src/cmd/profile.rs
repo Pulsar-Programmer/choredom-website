@@ -115,7 +115,7 @@ pub async fn upload() -> impl Responder{
 }
 
 #[post("/settings/upload-auth")]
-pub async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpResponse, actix_web::Error>{
+pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, session: Session) -> Result<HttpResponse, actix_web::Error>{
     
     use futures::TryStreamExt;
     use futures::StreamExt;
@@ -133,5 +133,15 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart) -> Result<HttpRes
             f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap()?;
         }
     }
+
+    let new_state = super::signup::AccountState::Pending;
+    let username = super::signup::retrieve_user(session).unwrap().unwrap();
+    let params = (("state", "username"), (new_state, username));
+    let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
+    
+    let db = &mut data.db.lock().await;
+    query_value(db, surrealql, Some(params)).await.unwrap();
+
+    //review: is it really smooth or ok to have this return a Result?
     Ok(HttpResponse::Ok().body(SETTINGS))
 }
