@@ -7,11 +7,13 @@
   <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" required>
   <input name="username" type="text" class="username-input" placeholder="Username" required>
   <input name="displayname" type="text" class="displayname-input" placeholder="Display Name" required>
-  <div id="dropdown" class="dropdown">
-      <input name="location" id="filterInput" type="text" placeholder="Filter towns..." required>
-      <div id="dropdownOptions" class="dropdown-options">
+  <!-- HERE: -->
+  <div class="dropdown">
+    <button onclick="myFunction()" class="dropbtn">Dropdown</button>
+      <div id="myDropdown" class="dropdown-content">
+        <input name="location" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
       </div>
-  </div>
+    </div>
   <input type="submit" class="continue">
 </form>
 <script src="./src-web/static/signup.js"></script>

@@ -11,12 +11,13 @@
 </head>
 <body>
   <header>
-    <div id="dropdown" class="dropdown">
-      <form action="/job-handling" method="post">
+    <!-- <div id="dropdown" class="dropdown">
         <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
         <div id="dropdownOptions" class="dropdown-options"></div>
-        <input type="submit" value="Submit">
-      </form>
+    </div> -->
+    <div id="jobs_add">
+      <input type="button" onclick="get_location_data()">
+      <input id="filterInput" type="text" placeholder="Filter towns...">
     </div>
     <h1>Choredom</h1>
     <a href="#">
@@ -31,9 +32,6 @@
     </nav>
   </header>
   <main>
-    <div id="post-container">
-      <!-- Posts will be added here -->
-    </div>
     <div id="job-container">
       <!-- Jobs will be added here -->
     </div>
@@ -43,125 +41,6 @@
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
   <button id="toggle-button">Toggle Dark Mode</button>
-  <script src="/src-web/static/lolll.js"></script>
-  <script>
-
-
-    // Function to generate the HTML for each post
-    function generatePostHTML(post) {
-      return `
-        <div class="post">
-          <h3>${post.displayName} (${post.username})</h3>
-          <h4>${post.title}</h4>
-          <p>${post.body}</p>
-          <p>Location: ${post.location}</p>
-          <p>Date and Time: ${post.dateTime}</p>
-          <p>Price: $${post.price}</p>
-          <button onclick="startChat('${post.username}')">Chat</button>
-          <button onclick="applyForJob('${post.username}')">Apply</button>
-        </div>
-      `;
-    }
-
-    // Function to generate the HTML for each job
-    function generateJobHTML(job) {
-      return `
-        <div class="job">
-          <h3>${job.title}</h3>
-          <p>${job.description}</p>
-          <p>Location: ${job.location}</p>
-          <p>Date and Time: ${job.dateTime}</p>
-          <p>Price: $${job.price}</p>
-          <button onclick="applyForJob('${job.username}')">Apply</button>
-        </div>
-      `;
-    }
-
-    // Get the post container element
-    const postContainer = document.getElementById("post-container");
-    const jobContainer = document.getElementById("job-container");
-
-    // Generate the HTML for each post and append it to the container
-    posts.forEach((post) => {
-      const postHTML = generatePostHTML(post);
-      postContainer.innerHTML += postHTML;
-    });
-
-    // Function to start a chat with the poster
-    function startChat(username) {
-      // Open a new chat or space with the poster's username
-    }
-
-    // Function to apply for a job
-    function applyForJob(username) {
-      const url = '/apply'; // URL of server-side script to process applications
-
-      // Use Fetch API to send a POST request
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-
-        // Open a chat with the poster after successfully applying for the job
-        startChat(username);
-
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-    }
-
-    // Function to display jobs on the frontend
-    function displayJobs(jobsData) {
-        jobsData.forEach((job) => {
-            const jobHTML = generateJobHTML(job);
-            jobContainer.innerHTML += jobHTML;
-        });
-    }
-
-    // Fetch location data when form is submitted
-    document.querySelector('form').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const location = document.getElementById('filterInput').value;
-
-      fetch('/tasks', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ location }),
-      })
-      .then(response => response.json())
-      .then(data => {
-          console.log('Location Success:', data);
-
-          // Fetch jobs data
-          fetch('/job-handling') // Replace with your actual jobs endpoint
-          .then(response => response.json())
-          .then(jobsData => {
-              console.log('Jobs Success:', jobsData);
-              displayJobs(jobsData);
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-          });
-      })
-      .catch((error) => {
-          console.error('Error:', error);
-      });
-  });
-
-  // Function to toggle dark mode
-  document.getElementById('toggle-button').addEventListener('click', function() {
-      document.body.classList.toggle('dark-mode');
-  });
-</script>
+  <script src="/src-web/static/task.js"></script>
 </body>
 </html>

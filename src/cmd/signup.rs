@@ -28,7 +28,7 @@ pub struct Code{
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Account{
-    pub display_name: String,
+    pub displayname: String,
     pub username: String, //USERNAME STORED IN DB AS ID
     pub creation_date: chrono::DateTime<chrono::Utc>,
     // pub last_location: Location,
@@ -42,9 +42,9 @@ pub struct Account{
     pub balance: Money,
 }
 impl Account{
-    pub fn new(username: String, display_name: String, password: String, email: String, location: String) -> Self {
+    pub fn new(username: String, displayname: String, password: String, email: String, location: String) -> Self {
         Self { 
-            display_name, 
+            displayname, 
             username, 
             creation_date: chrono::Utc::now(), 
             email, 
@@ -117,7 +117,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     CREATE accounts
     SET
     username = type::string($username),
-    display_name = type::string($display_name),
+    displayname = type::string($displayname),
     creation_date = $creation_date,
     email = type::string($email),
     page = $page,

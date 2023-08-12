@@ -65,7 +65,8 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
     page.avg_rating = $rating,
     page.reviews += $review,
     WHERE username = type::string($username);";
-    query::<Account>(&mut db, q, Some((("rating", "review", "username"), (new_avg, review, username.as_str())))).await.unwrap();
+    query::<Account>(&mut db, q, Some((("rating", "review", "username"), (new_avg, review, username.as_str())))).await.unwrap()
+    ;
 
     HttpResponse::Ok()
 }
@@ -74,7 +75,7 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
 pub struct SettingsData{
     username: String,
     password: String,
-    display_name: String,
+    displayname: String,
     location: String,
     bio: String,
     // pfp_pic: 
@@ -97,7 +98,7 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     let username = retrieve_user(session).unwrap().unwrap();
 
     let surrealql = "UPDATE accounts SET 
-        display_name = type::string($display_name),
+        displayname = type::string($displayname),
         page.bio = type::string($bio)
     WHERE username = type::string($username);
     ";

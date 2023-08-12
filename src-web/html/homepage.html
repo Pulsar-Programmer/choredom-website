@@ -18,6 +18,7 @@
       <a href="tasks">Tasks in your Area</a>
       <a href="settings">Settings</a>
       <a href="post-job" id="post-button">Post</a>
+      <a href="#" id="signout-button">Sign Out</a>
     </nav>
   </header>
   <main>
@@ -42,6 +43,11 @@
     });
     document.getElementById("chat-button").addEventListener("click", function() {
       window.location.href = "chat";
+    });
+    document.getElementById("signout-button").addEventListener("click", function() {
+      // Here you would typically clear any user-specific data or tokens and redirect to a login or home page
+      // For this example, we'll just redirect to the home page
+      window.location.href = "/";
     });
   </script>
 </body>
