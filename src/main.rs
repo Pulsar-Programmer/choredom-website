@@ -1,3 +1,4 @@
+use actix_identity::{Identity, IdentityMiddleware};
 use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 // use actix_identity::IdentityMiddleware;
@@ -53,6 +54,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             App::new()
+            // .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone(),
@@ -74,7 +76,6 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::db::Db;

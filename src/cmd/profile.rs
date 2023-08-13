@@ -145,3 +145,59 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
     //review: is it really smooth or ok to have this return a Result?
     Ok(HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS))
 }
+
+
+
+
+#[get("/settings/password")]
+pub async fn password_change() -> impl Responder{
+    // HttpResponse::Ok().body(UPLOAD)
+    todo!() as HttpResponse
+}
+
+#[get("/settings/funds")]
+pub async fn funds() -> impl Responder{
+    // HttpResponse::Ok().body(UPLOAD)
+    todo!() as HttpResponse
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FundData{
+    changed_funds: f32,
+    password: String,
+    //make an abstraction based on parts and forms and links in the js and buttons
+    //add: bool,
+}
+
+
+#[post("/settings/funds/add")]
+async fn deposit(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
+    let FundData { changed_funds, password } = form.into_inner();
+    let username = super::signup::retrieve_user(session).unwrap().unwrap();
+
+    fund(true, &mut *data.db.lock().await, changed_funds).await.unwrap();
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+}
+
+#[post("/settings/funds/subtract")]
+async fn spend(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
+    let FundData { changed_funds, password } = form.into_inner();
+    let username = super::signup::retrieve_user(session).unwrap().unwrap();
+    fund(false, &mut *data.db.lock().await, changed_funds).await.unwrap();
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+}
+
+
+
+async fn fund(add: bool, db: &mut crate::db::Db, changed_funds: f32) -> anyhow::Result<()>{
+    let surrealql = {
+        if add{
+            "UPDATE accounts SET balance += $balance;"
+        }
+        else{
+            "UPDATE accounts SET balance -= $balance;"
+        }
+    };
+    query_value(db, surrealql, Some(("balance", changed_funds))).await?;
+    Ok(())
+}

@@ -35,8 +35,6 @@ pub mod profile;
 
 pub mod chats;
 
-mod payment;
-
 #[get("/")]
 pub async fn homepage() -> impl Responder{
     HttpResponse::Ok().body(sites::HOMEPAGE)
