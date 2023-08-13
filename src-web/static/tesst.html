@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 200px;
+    }
+
+    .dropdown-options {
+      display: none;
+      position: absolute;
+      background-color: #f6f6f6;
+      min-width: 160px;
+      overflow: auto;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .dropdown-options div {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-options div:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div id="dropdown" class="dropdown">
+    <input id="filterInput" type="text" placeholder="Filter towns...">
+    <div id="dropdownOptions" class="dropdown-options">
+    </div>
+  </div>
+  <script>
+    fetch('us_cities.json')
+      .then(response => response.json())
+      .then(data => populateDropdown(data));
+  
+    function populateDropdown(data) {
+      const dropdown = document.getElementById('dropdownOptions');
+      data.forEach(town => {
+        const option = document.createElement('div');
+        option.setAttribute('value', town.ID);
+        option.textContent = `${town.CITY}, ${town.STATE_NAME}`; // include state in the option text
+        dropdown.appendChild(option);
+      });
+    }
+  
+    const input = document.getElementById('filterInput');
+    input.addEventListener('input', filterOptions);
+  
+    function filterOptions() {
+      const filterValue = this.value.toLowerCase();
+      const dropdown = document.getElementById('dropdownOptions');
+      const options = Array.from(dropdown.children);
+      options.forEach(option => option.style.display = "none"); // hide all options initially
+  
+      if (!filterValue) { // if filterValue is empty, do not display any options
+        dropdown.style.display = 'none';
+        return;
+      }
+  
+      const relevantOptions = options
+        .filter(option => option.textContent.toLowerCase().includes(filterValue))
+        .sort((option1, option2) => {
+          // sort by the position of filterValue in the option text
+          return option1.textContent.toLowerCase().indexOf(filterValue) -
+            option2.textContent.toLowerCase().indexOf(filterValue);
+        })
+        .slice(0, 10); // take only the top 10 options
+  
+      relevantOptions.forEach(option => option.style.display = ""); // display the top 10 options
+  
+      if (relevantOptions.length > 0) {
+        dropdown.style.display = 'block'; // display the dropdown if there are relevant options
+      } else {
+        dropdown.style.display = 'none'; // hide the dropdown if there are no relevant options
+      }
+    }
+  </script>  
+</body>
+</html>
