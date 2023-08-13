@@ -58,16 +58,24 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
 
     let job = Job::new(title, body, time, price, location);
 
+    let surrealql = 
+    r#"
+    BEGIN TRANSACTION;
+        LET $id = (SELECT id FROM accounts WHERE username=type::string("Potato"))[0].id;
+        CREATE jobs SET data $job, user = type::thing("accounts", $id);
+    COMMIT TRANSACTION;"#;
     let mut db = data.db.lock().await;
-    query_value(&mut db, "CREATE jobs SET data = $job, user = type::thing(SELECT id FROM accounts WHERE username=$username);", Some((("job", "username"), (job, username)))).await.unwrap();
+    query_value(&mut db, surrealql, Some(JobUsername{ job, username })).await.unwrap();
 
-
-    // todo!();
+    
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
 }
 
-
-
+#[derive(serde::Serialize)]
+struct JobUsername{
+    job: Job,
+    username: String,
+}
 
 
 
@@ -102,15 +110,15 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
     
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH accounts;", Some(("location", address))).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let mut res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
+    let result = res2.get_mut(0).unwrap().as_mut().unwrap();
     // println!("{result:?}");
     HttpResponse::Ok().content_type("application/json").json(result)
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct JobPost{
-    id: String,
+    id: Thing,
     
     data: JobData,
 

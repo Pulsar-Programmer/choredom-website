@@ -208,6 +208,7 @@ pub async fn login() -> impl Responder{
 pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
     //Send email?
     let LoginData { email, password } = form.into_inner();
+    let email = email.trim();
     let mut db = data.db.lock().await;
     let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = type::string($email);", Some(("email", email))).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();

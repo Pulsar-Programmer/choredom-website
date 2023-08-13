@@ -65,7 +65,7 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
     page.avg_rating = $rating,
     page.reviews += $review,
     WHERE username = type::string($username);";
-    query::<Account>(&mut db, q, Some((("rating", "review", "username"), (new_avg, review, username.as_str())))).await.unwrap()
+    query::<Account>(&mut db, q, Some((("rating", new_avg), ("review",review), ("username", username.as_str())))).await.unwrap()
     ;
 
     HttpResponse::Ok()
