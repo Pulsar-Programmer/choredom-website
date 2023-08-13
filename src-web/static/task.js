@@ -3,12 +3,13 @@
 function generateJobHTML(job) {
     return `
         <div class="job">
-        <h3>${job.title}</h3>
-        <h4>${job.displayName} (${job.username})</h4>
-        <p>${job.description}</p>
-        <p>Date and Time: ${job.dateTime}</p>
-        <p>Price: $${job.price}</p>
-        <button onclick="applyForJob('${job.username}')">Apply</button>
+        <h3>${job.data.title}</h3>
+        <h4>${job.user.displayname} (${job.user.username})</h4>
+        <p>${job.data.body}</p>
+        <p>Date and Time: ${job.data.time}</p>
+        <p>Price: $${job.data.price}</p>
+        <button onclick="applyForJob('${job.user.username}')">Apply</button>
+        <a href="/${job.id}">Visit Job Post</a>
         </div>
     `;
 }
