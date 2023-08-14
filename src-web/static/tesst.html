@@ -47,8 +47,17 @@
         const option = document.createElement('div');
         option.setAttribute('value', town.ID);
         option.textContent = `${town.CITY}, ${town.STATE_NAME}`; // include state in the option text
+        option.addEventListener('click', selectOption); // add event listener to each option
         dropdown.appendChild(option);
       });
+    }
+  
+    function selectOption() {
+      const input = document.getElementById('filterInput');
+      input.value = this.textContent; // set the input field's value to the option's text
+      const dropdown = document.getElementById('dropdownOptions');
+      dropdown.style.display = 'none'; // hide the dropdown
+      input.blur(); // remove focus from the input field
     }
   
     const input = document.getElementById('filterInput');
@@ -84,4 +93,4 @@
     }
   </script>  
 </body>
-</html>
+</html
