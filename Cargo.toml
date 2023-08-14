@@ -14,7 +14,7 @@ actix-rt = "2.8.0"
 actix-telepathy = "0.5.3"
 actix-cors = "0.6.4"
 actix-session = "0.7.2"
-# actix-identity = "0.5.2"
+actix-identity = "0.5.2"
 
 
 serde = { version = "1.0", features = ["derive"] }
@@ -29,12 +29,11 @@ lettre_email = "0.9.4"
 rand = "0.8.5"
 chrono = "0.4.26"
 futures = "0.3.28"
-tokio = "1.29.1"
+tokio = "1.31.0"
 reqwest = "0.11.18"
 anyhow = "1.0.72"
 surrealdb = "1.0.0-beta.9+20230402"
 actix-session-surrealdb = "0.1.3"
 tracing = "0.1.37"
-actix-identity = "0.5.2"
 
 # dotenv = "0.15.0"

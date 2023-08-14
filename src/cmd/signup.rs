@@ -222,6 +222,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
         return HttpResponse::Ok().body(SIGNUP)
     }
     let account = result.get(0).unwrap();
+    // let password = 
     if account.password != password{
         // ^feh
         HttpResponse::Ok().body(LOGIN)
