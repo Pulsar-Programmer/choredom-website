@@ -1,65 +1,52 @@
-
-
-
-
-// function saveJob() {
-//   const jobData = {
-//     title: document.getElementById("title").value,
-//     body: document.getElementById("body").value,
-//     location: document.getElementById("location").value,
-//     time: document.getElementById("time").value,
-//     price: document.getElementById("price").value,
-//   };
-// }
-
-/*
-
-let allTowns = [];
+// Include the JavaScript code here...
+fetch('us_cities.json')
+.then(response => response.json())
+.then(data => populateDropdown(data));
 
 function populateDropdown(data) {
-    allTowns = data;
+  const dropdown = document.getElementById('dropdownOptions');
+  dropdown.style.display = 'none'; // Hide the dropdown initially
+  data.forEach(town => {
+    const option = document.createElement('div');
+    option.setAttribute('value', town.ID);
+    option.textContent = `${town.CITY}, ${town.STATE_NAME}`; 
+    option.addEventListener('click', selectOption); 
+    dropdown.appendChild(option);
+  });
 }
+
+function selectOption() {
+const input = document.getElementById('filterInput');
+input.value = this.textContent; 
+const dropdown = document.getElementById('dropdownOptions');
+dropdown.style.display = 'none'; 
+input.blur(); 
+}
+
+const input = document.getElementById('filterInput');
+input.addEventListener('input', filterOptions);
 
 function filterOptions() {
-  const dropdown = document.getElementById('dropdownOptions');
-  dropdown.innerHTML = '';
-
-  let count = 0;
   const filterValue = this.value.toLowerCase();
-  allTowns.forEach(town => {
-      const optionText = `${town.CITY}, ${town.STATE_NAME}`.toLowerCase();
-      if (optionText.includes(filterValue) && count < 10) {
-          const option = document.createElement('div');
-          option.setAttribute('value', town.ID);
-          option.textContent = `${town.CITY}, ${town.STATE_NAME}`;
-          dropdown.appendChild(option);
-          count++;
-      }
-  });
-  dropdown.style.display = (count > 0) ? 'block' : 'none';
-}
+  const dropdown = document.getElementById('dropdownOptions');
+  const options = Array.from(dropdown.children);
+  options.forEach(option => option.style.display = "none"); 
 
-let selectedOption = null;
-
-const dropdown = document.getElementById('dropdown');
-dropdown.addEventListener('click', function(e) {
-  if (e.target.tagName === 'DIV' && e.target.parentNode.id === 'dropdownOptions') {
-      selectedOption = e.target.textContent;
-      document.getElementById('location').value = selectedOption;
+  if (!filterValue) { 
+    return; // Do nothing when the input field isn't touched or is empty
   }
-});
 
-fetch('us_cities.json')
-  .then(response => response.json())
-  .then(data => populateDropdown(data));
+  const relevantOptions = options
+    .filter(option => option.textContent.toLowerCase().includes(filterValue))
+    .sort((option1, option2) => {
+      return option1.textContent.toLowerCase().indexOf(filterValue) -
+        option2.textContent.toLowerCase().indexOf(filterValue);
+    })
+    .slice(0, 10); 
 
-const input = document.getElementById('location');
-input.addEventListener('input', filterOptions);
-*/
+  relevantOptions.forEach(option => option.style.display = ""); 
 
-  
-
-
-
-
-
+  if (relevantOptions.length > 0) {
+    dropdown.style.display = 'block'; 
+  }
+}
