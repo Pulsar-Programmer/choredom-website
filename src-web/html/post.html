@@ -27,16 +27,15 @@
     <div class="container">
       <h2>Post a Job</h2>
       <form id="jobForm" action="/post-job-2" method="post">
-        <input id="title" name="title" type="text" placeholder="Title of your job">
-        <input id="body" name="body" type="text" placeholder="Body of your job description">
+        <input id="title" name="title" type="text" placeholder="Title of your job" pattern="^[a-zA-Z0-9]*$">
+        <input id="body" name="body" type="text" placeholder="Body of your job description" pattern="^[a-zA-Z0-9]*$">
         <div id="dropdown" class="dropdown">
-          <input name="location" id="filterInput" type="text" placeholder="Filter towns...">
+          <input name="location" id="filterInput" type="text" placeholder="Filter towns..." pattern="^[a-zA-Z0-9]*$">
           <div id="dropdownOptions" class="dropdown-options">
           </div>
         </div>
         <input id="time" name="time" type="date" placeholder="Date and time of your job">
         <input id="price" name="price" type="number" placeholder="Price you are willing to pay">
-        <!-- <button type="submit" id='btn1'>Post</button> -->
         <input type="submit">
       </form>
     </div>

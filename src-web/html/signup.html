@@ -2,19 +2,17 @@
 
 
 <form id="signupForm" action="/verify-email" method="post">
-  <input name="email" type="text" class="email-input" placeholder="Email" required>
-  <input id="password" name="password" type="password" class="password-input" placeholder="Password" required>
-  <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" required>
-  <input name="username" type="text" class="username-input" placeholder="Username" required>
-  <input name="displayname" type="text" class="displayname-input" placeholder="Display Name" required>
-  <!-- HERE: -->
-  <div class="dropdown">
-    <button onclick="myFunction()" class="dropbtn">Dropdown</button>
-      <div id="myDropdown" class="dropdown-content">
-        <input name="location" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-      </div>
-    </div>
+  <input name="email" type="email" class="email-input" placeholder="Email" required>
+  <input id="password" name="password" type="password" class="password-input" placeholder="Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
+  <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
+  <input name="username" type="text" class="username-input" placeholder="Username" pattern="[A-Za-z0-9]+" title="Username should only contain letters and numbers." required>
+  <input name="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="[A-Za-z0-9 ]+" title="Display Name should only contain letters, numbers, and spaces." required>
+  <div id="dropdown" class="dropdown">
+    <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
+    <div id="dropdownOptions" class="dropdown-options"></div>
+  </div>
   <input type="submit" class="continue">
 </form>
+
 <script src="./src-web/static/signup.js"></script>
 <link rel="stylesheet" href="./src-web/static/signup.css">
