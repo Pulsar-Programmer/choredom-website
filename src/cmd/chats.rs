@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder, get};
+use actix_web::{web, post, HttpResponse, Responder, get};
 use std::collections::HashMap;
 use crate::AppData;
 use super::sites::CHAT;
@@ -9,6 +9,21 @@ use super::sites::CHAT;
 
 
 
+
+
+
+
+
+#[get("/send-message")]
+async fn send_message() -> impl Responder{
+    todo!() as HttpResponse
+}
+
+
+#[post("/receive_messages")]
+async fn receive_messages() -> impl Responder{
+    todo!() as HttpResponse
+}
 
 
 
