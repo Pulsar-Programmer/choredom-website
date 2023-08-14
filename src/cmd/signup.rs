@@ -40,10 +40,11 @@ pub struct Account{
     pub state: AccountState,
 
     pub password: String,
+    pub password_salt: String,
     pub balance: Money,
 }
 impl Account{
-    pub fn new(username: String, displayname: String, password: String, email: String, location: String) -> Self {
+    pub fn new(username: String, displayname: String, password: String, password_salt: String, email: String, location: String) -> Self {
         Self { 
             displayname, 
             username, 
@@ -54,6 +55,7 @@ impl Account{
             page: AccountPage::new(),
             state: AccountState::Consumer,
             location,
+            password_salt,
         }
     }
 }
@@ -110,7 +112,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     transmission_transmit("signup", &session, code).unwrap();
     confirmation_email(&to_email, &displayname, code).unwrap();
 
-    let account: Account = Account::new(username.clone(), displayname , password, to_email.to_string(), location);
+    let (password, salt) = password_hash_argon2(password).unwrap();
+
+    let account: Account = Account::new(username.clone(), displayname , password, salt.to_string(), to_email.to_string(), location);
 
     // let mut db = app_data.db.lock().unwrap();
 
@@ -123,7 +127,8 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     email = type::string($email),
     page = $page,
     state = $state,
-    password = type::string($password),
+    password = $password,
+    password_salt = $password_salt,
     balance = $balance,
     location = type::string($location);
     "#, Some(account)).await.unwrap();
@@ -223,7 +228,8 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     let account = result.get(0).unwrap();
     // let password = 
-    if account.password != password{
+
+    if verify_password(&password, &account.password, &account.password_salt).unwrap(){
         // ^feh
         HttpResponse::Ok().body(LOGIN)
     }
@@ -245,4 +251,33 @@ pub fn retrieve_user(session: Session) -> Result<Option<String>, SessionGetError
 
 pub fn logout_user(session: Session) -> Option<String>{
     session.remove("username")
+}
+
+
+use password_hash::{SaltString, PasswordHasher};
+use argon2::Argon2;
+pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltString)>{
+    
+    
+    let salt = SaltString::generate(&mut rand::thread_rng());
+
+    // Create an Argon2 password hasher
+    let argon2 = Argon2::default();
+
+    // Hash the password
+    let string = argon2.hash_password(password.as_bytes(), &salt)?.to_string();
+    Ok((string, salt))
+}
+
+use password_hash::{PasswordHash, PasswordVerifier};
+
+pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str) -> anyhow::Result<bool> {
+    
+    let salt = SaltString::from_b64(salt)?;
+    
+    let argon2 = Argon2::default();
+
+    let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
+
+    Ok(argon2.verify_password(stored_password.as_bytes(), &entered_password_hash).is_ok())
 }

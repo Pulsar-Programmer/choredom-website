@@ -74,7 +74,6 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SettingsData{
     username: String,
-    password: String,
     displayname: String,
     location: String,
     bio: String,
@@ -95,15 +94,18 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     // let accounts
     // let SettingsData { username, password: _, displayname, bio } = setting.0;
     //have a separate password and username changing mechanism 
+    let mut settings_data = setting.into_inner();
     let username = retrieve_user(session).unwrap().unwrap();
+    settings_data.username = username;
+    //edit stuff NOT together, as in, independently?
 
-    let surrealql = "UPDATE accounts SET 
+    let surrealql = "UPDATE accounts SET
         displayname = type::string($displayname),
         page.bio = type::string($bio)
     WHERE username = type::string($username);
     ";
     let mut db = data.db.lock().await;
-    query_value(&mut db, surrealql, Some(setting.into_inner())).await.unwrap();
+    query_value(&mut db, surrealql, Some(settings_data)).await.unwrap();
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
