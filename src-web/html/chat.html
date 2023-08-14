@@ -4,56 +4,7 @@
   <title>Choredom: Chat</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    /* General styles */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    /* Chat container */
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    /* Chat box */
-    #chat-box {
-      height: 400px;
-      border: 1px solid #ddd;
-      padding: 20px;
-      margin-bottom: 20px;
-      overflow-y: scroll;
-      background-color: #ffffff;
-    }
-    /* Chat messages */
-    #chat-box p {
-      margin: 0 0 1em;
-      padding: 0.5em;
-      border-radius: 10px;
-      background: #e6e6e6;
-    }
-    /* Message input field */
-    #message {
-      width: 70%;
-      padding: 10px;
-    }
-    /* Send button */
-    #send-message {
-      width: 20%;
-      padding: 10px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    /* Send button on hover */
-    #send-message:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <link rel="stylesheet" href="/src-web/static/chat.css">
 </head>
 <body>
   <header>
@@ -83,21 +34,6 @@
     <p>&copy; 2023 Choredom</p>
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
-  <script>
-    var socket = new WebSocket('ws://localhost:8080/ws');
-    socket.onmessage = function(event) {
-        var chatBox = document.getElementById('chat-box');
-        var message = document.createElement('p');
-        message.textContent = event.data;
-        chatBox.appendChild(message);
-    };
-    var button = document.getElementById('send-message');
-    button.addEventListener('click', function(event) {
-        event.preventDefault();
-        var input = document.getElementById('message');
-        socket.send(input.value);
-        input.value = '';
-    });
-  </script>
+  <script src="src-web/static/chat.js"></script>
 </body>
 </html>
