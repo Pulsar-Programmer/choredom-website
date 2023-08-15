@@ -1,6 +1,5 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::AppData;
-use crate::structs::Money;
 use crate::db::{query, query_value, transmission_transmit, transmission_receive};
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
@@ -41,7 +40,7 @@ pub struct Account{
 
     pub password: String,
     pub password_salt: String,
-    pub balance: Money,
+    pub balance: usize,
 }
 impl Account{
     pub fn new(username: String, displayname: String, password: String, password_salt: String, email: String, location: String) -> Self {
@@ -51,7 +50,7 @@ impl Account{
             creation_date: chrono::Utc::now(), 
             email, 
             password, 
-            balance: Money(0.), 
+            balance: 0, // divide by 10 to account for usize and not float
             page: AccountPage::new(),
             state: AccountState::Consumer,
             location,

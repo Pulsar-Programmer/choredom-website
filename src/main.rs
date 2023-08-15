@@ -6,7 +6,6 @@ use actix_session::{SessionMiddleware, Session};
 use actix_session_surrealdb::SurrealSessionStore;
 
 
-mod structs;
 mod cmd;
 use cmd::*;
 use cmd::signup::*;
