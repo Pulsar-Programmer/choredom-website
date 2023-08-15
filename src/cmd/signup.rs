@@ -163,7 +163,7 @@ fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Res
 
     // let smtp_key: &str = "Brokies129gg";
     let smtp_key = "pjefpqhvsxmzomjf"; //app password
-    let from_email: &str = "choredom@quannt.net";
+    let from_email: &str = "choredom1@quannt.net";
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
@@ -239,6 +239,12 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
 }
 
+#[post("/signout")]
+pub async fn signout(session: Session) -> impl Responder{
+    println!("Goodbye: {:?}!", logout_user(session));
+    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+}
+
 pub fn login_user(session: Session, username: &str) -> Result<(), SessionInsertError>{
     // session.renew();
     session.insert("username", username)
@@ -251,7 +257,6 @@ pub fn retrieve_user(session: Session) -> Result<Option<String>, SessionGetError
 pub fn logout_user(session: Session) -> Option<String>{
     session.remove("username")
 }
-
 
 use password_hash::{SaltString, PasswordHasher};
 use argon2::Argon2;

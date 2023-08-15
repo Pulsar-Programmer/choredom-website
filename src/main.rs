@@ -60,7 +60,7 @@ async fn main() -> std::io::Result<()> {
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect,
-            login, signin,
+            login, signin, signout,
             settings, settings_post,
             upload, upload_auth,
             post, post_job,

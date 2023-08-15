@@ -1,11 +1,17 @@
 
 
+document.getElementById("signout-button").addEventListener("click", function() {
 
+    fetch('/signout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    // .then(data => data)
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 
-
-
-// document.getElementById("signout-button").addEventListener("click", function() {
-//     // Here you would typically clear any user-specific data or tokens and redirect to a login or home page
-//     // For this example, we'll just redirect to the home page
-//     window.location.href = "/";
-// });
+});
