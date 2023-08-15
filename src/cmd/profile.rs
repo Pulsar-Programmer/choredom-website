@@ -77,8 +77,27 @@ pub struct SettingsData{
     displayname: String,
     location: String,
     bio: String,
+    email: String,
     // pfp_pic: 
 }
+
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct SettingsData2{
+    username1: String,
+    username2: String,
+    displayname: String,
+    location: String,
+    bio: String,
+    email: String,
+    // pfp_pic: 
+}
+impl SettingsData2{
+    fn new(data: SettingsData, username2: String) -> Self{
+        let SettingsData { username, displayname, location, bio, email } = data;
+        Self { username1: username, username2, displayname, location, bio, email }
+    }
+}
+
 
 
 #[get("/settings")]
@@ -96,13 +115,17 @@ pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: 
     //have a separate password and username changing mechanism 
     let mut settings_data = setting.into_inner();
     let username = retrieve_user(session).unwrap().unwrap();
-    settings_data.username = username;
     //edit stuff NOT together, as in, independently?
+
+    let settings_data = SettingsData2::new(settings_data, username);
 
     let surrealql = "UPDATE accounts SET
         displayname = type::string($displayname),
-        page.bio = type::string($bio)
-    WHERE username = type::string($username);
+        page.bio = type::string($bio),
+        username = $username1,
+        location = $location,
+        email = $email
+    WHERE username = type::string($username2);
     ";
     let mut db = data.db.lock().await;
     query_value(&mut db, surrealql, Some(settings_data)).await.unwrap();
@@ -163,21 +186,26 @@ pub async fn funds() -> impl Responder{
     todo!() as HttpResponse
 }
 
+#[get("/settings/transfer-funds")]
+pub async fn transfer_funds() -> impl Responder{
+    // HttpResponse::Ok().body(UPLOAD)
+    todo!() as HttpResponse
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FundData{
-    changed_funds: f32,
+    changed_funds: usize,
     password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
     //add: bool,
 }
-
 
 #[post("/settings/funds/add")]
 async fn deposit(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
     let FundData { changed_funds, password } = form.into_inner();
     let username = super::signup::retrieve_user(session).unwrap().unwrap();
 
-    fund(true, &mut *data.db.lock().await, changed_funds).await.unwrap();
+    change_funds(true, &mut *data.db.lock().await, changed_funds).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -185,21 +213,65 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, session: Sessio
 async fn spend(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
     let FundData { changed_funds, password } = form.into_inner();
     let username = super::signup::retrieve_user(session).unwrap().unwrap();
-    fund(false, &mut *data.db.lock().await, changed_funds).await.unwrap();
+    change_funds(false, &mut *data.db.lock().await, changed_funds).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
-
-
-async fn fund(add: bool, db: &mut crate::db::Db, changed_funds: f32) -> anyhow::Result<()>{
+async fn change_funds(add: bool, db: &mut crate::db::Db, changed_funds: usize) -> anyhow::Result<()>{
     let surrealql = {
         if add{
-            "UPDATE accounts SET balance += $balance;"
+            "UPDATE accounts SET balance += $balance WHERE username=$username;"
         }
         else{
-            "UPDATE accounts SET balance -= $balance;"
+            "UPDATE accounts SET balance -= $balance WHERE username=$username;"
         }
     };
     query_value(db, surrealql, Some(("balance", changed_funds))).await?;
     Ok(())
+}
+
+
+
+
+
+
+
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct CreditsData{
+    credits: usize,
+    to_username: String,
+    self_password: String,
+    //make an abstraction based on parts and forms and links in the js and buttons
+    //add: bool,
+}
+
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct TransferData{
+    credits: usize,
+    to_username: String,
+    self_username: String,
+}
+
+
+#[post("/settings/transfer-funds/transfer")]
+async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Session) -> impl Responder{
+    
+    let url = format!("https://www.paypal.com/sdk/js?client-id={}&currency=USD", 69696969);
+
+
+
+    let CreditsData { credits, self_password, to_username } = form.into_inner();
+    let self_username = super::signup::retrieve_user(session).unwrap().unwrap();
+    let transferdata = TransferData{credits, self_username, to_username};
+
+    let surrealql = "
+    UPDATE accounts SET balance -= $credits WHERE username = $self_username;
+    UPDATE accounts SET balance += $credits WHERE username = $to_username;
+    ";
+    query_value(&mut *data.db.lock().await, surrealql, Some(transferdata)).await.unwrap();
+
+
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
