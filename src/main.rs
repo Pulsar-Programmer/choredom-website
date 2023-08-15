@@ -5,7 +5,6 @@ use actix_web::{ web, App, HttpServer, cookie::Key};
 use actix_session::{SessionMiddleware, Session};
 use actix_session_surrealdb::SurrealSessionStore;
 
-
 mod cmd;
 use cmd::*;
 use cmd::signup::*;
