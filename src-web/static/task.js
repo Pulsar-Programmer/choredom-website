@@ -51,16 +51,6 @@ function displayJobs(jobsData) {
     });
 }
 
-// Function to start a chat with the poster
-function startChat() {
-    // Open a new chat or space with the poster's username
-}
-
-// Function to apply for a job
-function applyForJob() {
-    
-}
-
 function get_location_data(){
     const location = document.getElementById('filterInput').value;
 

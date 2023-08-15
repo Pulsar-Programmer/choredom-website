@@ -1,63 +1,10 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>Choredom: Chat</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    /* General styles */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    /* Chat container */
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    /* Chat list */
-    .chat-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-    }
-    /* Chat box */
-    .chat-box {
-      border: 1px solid #ddd;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 5px;
-    }
-    /* Chat box title */
-    .chat-box h3 {
-      margin: 0 0 1em;
-    }
-    /* Chat box last message */
-    .chat-box p {
-      margin: 0 0 1em;
-      padding: 0.5em;
-      border-radius: 10px;
-      background: #e6e6e6;
-    }
-    /* Send money button */
-    .send-money {
-      padding: 10px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    /* Send money button on hover */
-    .send-money:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <link rel="stylesheet" href="/src-web/static/chat-nav.css">
 </head>
 <body>
   <header>
@@ -81,82 +28,7 @@
       </div>
     </div>
   </main>
-  <script>
-    const chatList = document.querySelector('#chatList');
-  
-    // Fetch chat data from server
-    fetch('/path/to/your/server/endpoint')
-      .then(response => response.json())
-      .then(chatData => {
-        chatData.forEach(chat => {
-          const chatBox = document.createElement('div');
-          chatBox.classList.add('chat-box');
-          chatBox.id = chat.id;
-  
-          const chatTitle = document.createElement('h3');
-          chatTitle.textContent = chat.displayName;
-  
-          const chatLastMessage = document.createElement('p');
-          chatLastMessage.textContent = chat.lastMessage;
-  
-          const chatButton = document.createElement('button');
-          chatButton.classList.add('send-money');
-          chatButton.textContent = 'Send Money';
-  
-          const openChatButton = document.createElement('button');
-          openChatButton.classList.add('open-chat');
-          openChatButton.textContent = 'Open Chat';
-  
-          chatBox.appendChild(chatTitle);
-          chatBox.appendChild(chatLastMessage);
-          chatBox.appendChild(chatButton);
-          chatBox.appendChild(openChatButton);
-  
-          chatList.appendChild(chatBox);
-  
-          // WebSocket code starts here
-          const roomId = chat.id;
-          var socket = null;
-  
-          function connect() {
-            disconnect();
-  
-            const { location } = window;
-            const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
-            const wsUri = `${proto}://${location.host}/chat/ws/${roomId}`;
-  
-            socket = new WebSocket(wsUri);
-  
-            socket.onopen = () => {
-              console.log('Connected to ' + roomId);
-            };
-  
-            socket.onmessage = (ev) => {
-              console.log('Received: ' + ev.data);
-              chatLastMessage.textContent = ev.data; // Update the last message in the chat box
-            };
-  
-            socket.onclose = () => {
-              console.log('Disconnected from ' + roomId);
-              socket = null;
-            };
-          }
-  
-          function disconnect() {
-            if (socket) {
-              socket.close();
-              socket = null;
-            }
-          }
-  
-          openChatButton.addEventListener('click', connect);
-          // WebSocket code ends here
-        });
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-  </script>  
+  <script src="/src-web/static/chat-nav.js"></script>  
   <footer>
     <p>&copy; 2023 Choredom</p>
     <img src="assets/background.jpg" alt="Background Image">

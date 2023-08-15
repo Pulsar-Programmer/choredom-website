@@ -1,84 +1,89 @@
+const $status = document.querySelector('#status')
+const $connectButton = document.querySelector('#connect')
+const $log = document.querySelector('#log')
+const $form = document.querySelector('#chatform')
+const $input = document.querySelector('#text')
 
-var button = document.getElementById('send-message');
-button.addEventListener('click', function(event) {
-    // event.preventDefault();
-    var input = document.getElementById('message');
-    send_message(input.value)
-    input.value = '';
+/** @type {WebSocket | null} */
+var socket = null
 
-    receive_messages();
-});
-
-// Function to generate the HTML for each chat
-function generateMessageHTML(msg) {
-    // Return the HTML string
-    return `
-        <div class="chat-message">
-            <div class="message-info">
-                <span class="sender">${msg.sender}</span>
-                <span class="time">${msg.time}</span>
-            </div>
-            <div class="message-text">${msg.message}</div>
-        </div>g
-    `;
+function log(msg, type = 'status') {
+$log.innerHTML += `<p class="msg msg--${type}">${msg}</p>`
+$log.scrollTop += 1000
 }
 
-// Function to display jobs on the frontend
-function displayMessages(msgData) {
-    const chatContainer = document.getElementById("chat-box");
+function connect() {
+disconnect()
 
-    chatContainer.innerHTML = ``;
-    msgData.forEach((msg) => {
-        const msgHTML = generateMessageHTML(msg);
-        chatContainer.innerHTML += msgHTML;
-    });
+const { location } = window
+
+const proto = location.protocol.startsWith('https') ? 'wss' : 'ws'
+const wsUri = `${proto}://${location.host}/chat/ws`
+
+log('Connecting...')
+socket = new WebSocket(wsUri)
+
+socket.onopen = () => {
+    log('Connected')
+    updateConnectionStatus()
 }
 
-function send_message(msg){
-    fetch('/send-message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(msg),
-    })
-    .then(response => response.json())
-    .then(ok => {
-        console.log('Message Success:', ok);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+socket.onmessage = (ev) => {
+    log('Received: ' + ev.data, 'message')
 }
 
-
-function receive_messages(){
-    fetch('/receive_messages', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(msgs => {
-        displayMessages(msgs);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+socket.onclose = () => {
+    log('Disconnected')
+    socket = null
+    updateConnectionStatus()
+}
 }
 
+function disconnect() {
+if (socket) {
+    log('Disconnecting...')
+    socket.close()
+    socket = null
 
+    updateConnectionStatus()
+}
+}
 
-//FOR EACH CHAT ROOM
-//-> Message from User
-//<- Vector of Messages
+function updateConnectionStatus() {
+if (socket) {
+    $status.style.backgroundColor = 'transparent'
+    $status.style.color = 'green'
+    $status.textContent = `connected`
+    $connectButton.innerHTML = 'Disconnect'
+    $input.focus()
+} else {
+    $status.style.backgroundColor = 'red'
+    $status.style.color = 'white'
+    $status.textContent = 'disconnected'
+    $connectButton.textContent = 'Connect'
+}
+}
 
+$connectButton.addEventListener('click', () => {
+if (socket) {
+    disconnect()
+} else {
+    connect()
+}
 
+updateConnectionStatus()
+})
 
+$form.addEventListener('submit', (ev) => {
+    ev.preventDefault()
 
+    const text = $input.value
 
+    log('Sending: ' + text)
+    socket.send(text)
 
+    $input.value = ''
+    $input.focus()
+})
 
-
-
+updateConnectionStatus()
