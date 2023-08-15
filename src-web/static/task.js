@@ -8,11 +8,36 @@ function generateJobHTML(job) {
         <p>${job.data.body}</p>
         <p>Date and Time: ${job.data.time}</p>
         <p>Price: $${job.data.price}</p>
-        <button onclick="applyForJob('${job.user.username}')">Apply</button>
+        <button onclick="initiateChat('${job.user.userId}', '${currentUserId}')">Apply</button>
         <a href="/${job.id}">Visit Job Post</a>
         </div>
     `;
 }
+
+// function to start chat
+function initiateChat(user1, user2) {
+    // Send a request to the server to create a chat room
+    fetch('/create-chat-room', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user1: user1, 
+            user2: user2
+        }),
+    })
+    .then(response => response.json())
+    .then(roomId => {
+        // Redirect the user to the chat room using the generated room ID
+        let url = `/chats/room=${roomId}`;
+        window.location.href = url;
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
 
 // Get the post container element
 const jobContainer = document.getElementById("job-container");
@@ -73,7 +98,7 @@ function get_location_data(){
 
 
 
-// Include the JavaScript code here...
+// Dropdown menu code
 fetch('us_cities.json')
 .then(response => response.json())
 .then(data => populateDropdown(data));
@@ -125,23 +150,3 @@ function filterOptions() {
     dropdown.style.display = 'block'; 
     }
 }
-
-function initiateChat() {
-    // Send a request to the server to create a chat room
-    fetch('/create-chat-room', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-    })
-    .then(response => response.json())
-    .then(roomId => {
-        // Redirect the user to the chat room using the generated room ID
-        let url = `/chats/room=${roomId}`;
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
-  
