@@ -125,3 +125,23 @@ function filterOptions() {
     dropdown.style.display = 'block'; 
     }
 }
+
+function initiateChat() {
+    // Send a request to the server to create a chat room
+    fetch('/create-chat-room', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => response.json())
+    .then(roomId => {
+        // Redirect the user to the chat room using the generated room ID
+        let url = `/chats/room=${roomId}`;
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+  

@@ -12,10 +12,10 @@ use cmd::*;
 use cmd::signup::*;
 use cmd::profile::*;
 use cmd::jobs::*;
+use cmd::chats::chat::{chat, chat_ws};
 // use cmd::
 mod db;
 use db::setup_db;
-use serde_json::Value;
 
 macro_rules! wapp {
     ($e:expr; $($i:ident),+) => {
@@ -66,7 +66,8 @@ async fn main() -> std::io::Result<()> {
             settings, settings_post,
             upload, upload_auth,
             post, post_job,
-            tasks, tasks_in_area
+            tasks, tasks_in_area,
+            chat, chat_ws
             // accounts
         )
         .app_data(app_state.clone())
