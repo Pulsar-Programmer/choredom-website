@@ -1,6 +1,6 @@
 use crate::{db::{query, query_value}, AppData};
 use super::signup::{Account, retrieve_user};
-use super::sites::*;
+use super::sites::{PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE};
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
@@ -55,7 +55,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
             "#, review.stars, review.username, review.body));
     }
     html.push_str("</div></body>");
-    html.push_str(super::sites::PROFILE);
+    html.push_str(PROFILE);
     HttpResponse::Ok().body(html)
 }
 
@@ -189,9 +189,6 @@ pub async fn settings(app_data: Data<AppData>) -> impl Responder{
 
 #[post("/settings-post")]
 pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
-    // let accounts
-    // let SettingsData { username, password: _, displayname, bio } = setting.0;
-    //have a separate password and username changing mechanism 
     let mut settings_data = setting.into_inner();
     let username = retrieve_user(session).unwrap().unwrap();
     //edit stuff NOT together, as in, independently?
@@ -255,9 +252,55 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
 
 #[get("/settings/password")]
 pub async fn password_change() -> impl Responder{
-    // HttpResponse::Ok().body(UPLOAD)
-    todo!() as HttpResponse
+    HttpResponse::Ok().body(PASSWORD)
 }
+
+#[derive(serde::Deserialize, serde::Serialize)]
+struct PasswordData{
+    p_old: String,
+    p_new: String,
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+struct PasswordChangeData{
+    password: String,
+    password_salt: String,
+    username: String,
+}
+
+#[post("/settings/password/form")]
+pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>, session: Session) -> impl Responder{
+
+    let PasswordData { p_old, p_new } = form.into_inner();
+
+    let username = retrieve_user(session).unwrap().unwrap();
+
+    let mut db = data.db.lock().await;
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    let result = result.get(0).unwrap().as_ref().unwrap();
+    if result.len() != 1{
+        //^feh
+        todo!() // should never happen if correct things are true
+    }
+    let Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ } = result.get(0).unwrap();
+
+    super::signup::email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)).unwrap();
+
+    if !super::signup::verify_password(&p_old, p_old_2, salt).unwrap() {
+        //^feh incorrect passwords
+        todo!()
+    }
+
+    let (password, password_salt) = super::signup::password_hash_argon2(p_new).unwrap();
+    query_value(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", Some(PasswordChangeData{password, password_salt: password_salt.to_string(), username}));
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+}
+
+
+
+
+
+
 
 #[get("/settings/funds")]
 pub async fn funds() -> impl Responder{

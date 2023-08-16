@@ -1,12 +1,7 @@
-// use crate::structs::{Account, Job, Money};
 use actix_web::{get, Responder, HttpResponse};
-
-
-// use {signup::Account, jobs::Job};
 
 pub mod sites{
     #[macro_export]
-    #[macro_use]
     macro_rules! website {
         ($($i:ident; $e:expr),+) => {
             $(
@@ -25,7 +20,8 @@ pub mod sites{
         UPLOAD; "upload",
         SETTINGS; "settings",
         PROFILE; "profile",
-        CONTACT; "contact"
+        CONTACT; "contact",
+        PASSWORD; "password"
     );
 }
 
@@ -42,9 +38,5 @@ pub async fn homepage() -> impl Responder{
     HttpResponse::Ok().body(sites::HOMEPAGE)
 }
 
-// #[get("debug/{debug}")]
-// pub async fn debug(debug: actix_web::web::Path<String>) -> impl Responder{
-//     let ooga = include_str!(format!("../../src-web/html/{}.html", dbg));
-//     HttpResponse::Ok().body(ooga)
-// }
+
 

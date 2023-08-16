@@ -5,11 +5,10 @@
     <label for="username">Username:</label><br>
     <input type="text" id="username" name="username"><br>
     
-    <label for="password">Password:</label><br>
-    <input type="password" id="password" name="password"><br>
+    <a href="/settings/password">Change Password</a>
 
     <label for="displayname">Display Name:</label><br>
-    <input type="text" id="displayname" name="displayname"><br>
+    <input type="text" id="displayname" name="displayname"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"><br>
 
     <label for="location">Location:</label><br>
     <input type="text" id="location" name="location"><br>

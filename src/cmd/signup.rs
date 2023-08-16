@@ -3,6 +3,7 @@ use crate::AppData;
 use crate::db::{query, query_value, transmission_transmit, transmission_receive};
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
+use futures::executor::enter;
 use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
 use rand::Rng;
@@ -170,7 +171,7 @@ fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::R
 }
 
 
-fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response>{
+pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response>{
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
@@ -242,7 +243,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     let account = result.get(0).unwrap();
     // let password = 
 
-    if verify_password(&password, &account.password, &account.password_salt).unwrap(){
+    if !verify_password(&password, &account.password, &account.password_salt).unwrap(){
         // ^feh
         HttpResponse::Ok().body(LOGIN)
     }
@@ -295,7 +296,10 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
     
     let argon2 = Argon2::default();
 
+
     let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
+    
+    println!("{}, {}, {}, {}", salt, entered_password_hash, entered_password, stored_password);
 
     Ok(argon2.verify_password(stored_password.as_bytes(), &entered_password_hash).is_ok())
 }
