@@ -6,22 +6,8 @@ use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, Htt
 
 
 #[get("/users/{username}")]
-async fn profile(username: web::Path<String>) -> impl Responder{
-    HttpResponse::Ok().body(super::sites::PROFILE)
-}
-#[derive(serde::Deserialize, serde::Serialize)]
-struct ProfileData<'a>{
-    username: &'a str,
-    displayname: &'a str,
-    average_rating: f64,
-    bio: &'a str,
-    state: &'a str,
-    time: String,
-    // reviews: String,
-}
+pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
 
-#[post("/users/{username}/profile-data")]
-async fn profile_data(app_data: web::Data<AppData>, username: web::Path<String>) -> impl Responder{
     let username = username.into_inner();
     
 
@@ -31,13 +17,27 @@ async fn profile_data(app_data: web::Data<AppData>, username: web::Path<String>)
     let result = res1.as_ref().unwrap();
     let len = result.len();
     if len != 1 {
-        //^feh
         return HttpResponse::BadRequest().finish() // should never happen
     }
     let Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_} = result.get(0).unwrap();
-    let pd = ProfileData{username, displayname, average_rating: page.avg_rating, bio: &page.bio, state: state.as_str(), time: creation_date.to_string()}; //, reviews: page.reviews
 
-    HttpResponse::Ok().json(pd)
+    let mut html = format!(r#"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Profile Page</title>
+    </head>
+    <body>
+        <div class="profile">
+            <h1 id="displayName">{}</h1>
+            <h2 id="username">{}</h2>
+            <h3 id="AvgRating">{}</h3>
+            <h4 id="CreationDate">{}</h4>
+            <h5 id="State">{}</h5>
+            <p id="bio">{}</p>
+    "#, displayname, username, page.avg_rating, creation_date, state.as_str(), page.bio);
+    html.push_str(super::sites::PROFILE);
+    HttpResponse::Ok().body(html)
 }
 
 
@@ -89,34 +89,8 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 

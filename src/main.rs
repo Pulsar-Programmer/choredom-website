@@ -64,7 +64,8 @@ async fn main() -> std::io::Result<()> {
             settings, settings_post,
             upload, upload_auth,
             post, post_job,
-            tasks, tasks_in_area
+            tasks, tasks_in_area,
+            profile
             // chat, chat_ws
             // accounts
         )
