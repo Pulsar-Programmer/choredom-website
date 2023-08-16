@@ -4,15 +4,15 @@ function generateJobHTML(job) {
     return `
         <div class="job">
         <h3>${job.data.title}</h3>
-        <h4><a href="/profile/${job.user.userId}">${job.user.displayname}</a> (${job.user.username})</h4>
+        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
         <p>${job.data.body}</p>
         <p>Date and Time: ${job.data.time}</p>
         <p>Price: $${job.data.price}</p>
-        <button onclick="initiateChat('${job.user.userId}', '${currentUserId}')">Apply</button>
         <a href="/${job.id}">Visit Job Post</a>
         </div>
     `;
 }
+//<button onclick="initiateChat('${job.user.userId}', '${currentUserId}')">Apply</button>`
 
 // function to start chat
 function initiateChat(user1, user2) {
