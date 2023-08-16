@@ -62,7 +62,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
     r#"
     BEGIN TRANSACTION;
         LET $id = (SELECT id FROM accounts WHERE username=type::string("Potato"))[0].id;
-        CREATE jobs SET data $job, user = type::thing("accounts", $id);
+        CREATE jobs SET data = $job, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
     let mut db = data.db.lock().await;
     query_value(&mut db, surrealql, Some(JobUsername{ job, username })).await.unwrap();
