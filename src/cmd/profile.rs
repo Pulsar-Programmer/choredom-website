@@ -1,8 +1,8 @@
 use crate::{db::{query, query_value}, AppData};
-use super::{signup::{Account, login_user, retrieve_user}, jobs::Job};
+use super::signup::{Account, retrieve_user};
 use super::sites::*;
 use actix_session::Session;
-use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, HttpResponseBuilder};
+use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
 
 #[get("/users/{username}")]
@@ -10,16 +10,22 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
 
     let username = username.into_inner();
     
-
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await.unwrap();
-    let res1 = res2.get(0).unwrap();
-    let result = res1.as_ref().unwrap();
-    let len = result.len();
-    if len != 1 {
-        return HttpResponse::BadRequest().finish() // should never happen
+    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await else {
+        return HttpResponse::BadRequest().finish();
+    };
+    let Some(res1) = res2.get(0) else {
+        return HttpResponse::BadRequest().finish();
+    };
+    let Ok(result) = res1.as_ref() else{
+        return HttpResponse::BadRequest().finish();
+    };
+    if result.len() != 1 {
+        return HttpResponse::BadRequest().finish();
     }
-    let Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_} = result.get(0).unwrap();
+    let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.get(0) else{
+        return HttpResponse::BadRequest().finish();
+    };
 
     let mut html = format!(r#"
     <!DOCTYPE html>

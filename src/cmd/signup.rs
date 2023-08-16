@@ -177,7 +177,7 @@ fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Res
 
     // let smtp_key: &str = "Brokies129gg";
     let smtp_key = "pjefpqhvsxmzomjf"; //app password
-    let from_email: &str = "choredom2@quannt.net";
+    let from_email: &str = "choredom3@quannt.net";
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
