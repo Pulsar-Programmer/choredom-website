@@ -23,7 +23,8 @@ pub mod sites{
         SIGNUP; "signup",
         EMAIL; "email",
         UPLOAD; "upload",
-        SETTINGS; "settings"
+        SETTINGS; "settings",
+        PROFILE; "profile"
     );
 }
 

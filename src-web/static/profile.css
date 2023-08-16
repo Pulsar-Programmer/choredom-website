@@ -1,0 +1,73 @@
+/* CSS for star rating */
+.rating {
+    unicode-bidi: bidi-override;
+    direction: rtl;
+}
+.rating > span {
+    display: inline-block;
+    position: relative;
+    width: 1.1em;
+}
+.rating > span:before {
+   content: "\2605";
+   position: absolute;
+}
+/* CSS for dark mode */
+.dark-mode {
+    background-color: #222;
+    color: #e6e6e6;
+}
+/* CSS for review form */
+.review-form {
+    margin-top: 20px;
+}
+/* CSS for reviews container */
+.reviews-container {
+    height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+/* CSS for individual reviews */
+.review {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+.review h3 {
+    margin-top: 0;
+}
+.review .rating {
+    margin-bottom: 10px;
+}
+.review .review-text {
+    margin-top: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+.profile {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.rating {
+    display: flex;
+    gap: 10px;
+}
+.rating input {
+    display: none;
+}
+.rating label {
+    font-size: 30px;
+    color: grey;
+    cursor: pointer;
+}
+.rating input:checked ~ label {
+    color: gold;
+}

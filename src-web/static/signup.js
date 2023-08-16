@@ -18,7 +18,7 @@ window.addEventListener("load", function() {
 
 
 // Include the JavaScript code here...
-fetch('/src-web/assets/us_cities.json')
+fetch('/us_cities.json')
 .then(response => response.json())
 .then(data => populateDropdown(data));
 

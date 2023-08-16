@@ -3,30 +3,44 @@ use super::{signup::{Account, login_user, retrieve_user}, jobs::Job};
 use super::sites::*;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse, HttpResponseBuilder};
-struct Username{
-    username: String,
+
+
+#[get("/users/{username}")]
+async fn profile(username: web::Path<String>) -> impl Responder{
+    HttpResponse::Ok().body(super::sites::PROFILE)
+}
+#[derive(serde::Deserialize, serde::Serialize)]
+struct ProfileData<'a>{
+    username: &'a str,
+    displayname: &'a str,
+    average_rating: f64,
+    bio: &'a str,
+    state: &'a str,
+    time: String,
+    // reviews: String,
 }
 
-async fn profile_data(app_data: web::Data<AppData>, username: Form<Username>) -> impl Responder{
+#[post("/users/{username}/profile-data")]
+async fn profile_data(app_data: web::Data<AppData>, username: web::Path<String>) -> impl Responder{
+    let username = username.into_inner();
     
+
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username.into_inner().username))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
     if len != 1 {
-        return HttpResponse::BadRequest() // should never happen
+        //^feh
+        return HttpResponse::BadRequest().finish() // should never happen
     }
+    let Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_} = result.get(0).unwrap();
+    let pd = ProfileData{username, displayname, average_rating: page.avg_rating, bio: &page.bio, state: state.as_str(), time: creation_date.to_string()}; //, reviews: page.reviews
 
-    HttpResponse::Ok()
+    HttpResponse::Ok().json(pd)
 }
 
 
-#[get("/users/{username}")]
-async fn profile(username: web::Path<String>) -> HttpResponse{
-    //create a profile for username
-    todo!()
-}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct RatingData{
@@ -70,6 +84,42 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
 
     HttpResponse::Ok()
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SettingsData{

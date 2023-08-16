@@ -64,13 +64,27 @@ pub enum AccountState{
     Pending,
     Worker,
 }
+impl AccountState{
+    pub fn as_str(&self) -> &str{
+        match self{
+            AccountState::Consumer => "Consumer",
+            AccountState::Pending => "Pending",
+            AccountState::Worker => "Worker",
+        }
+    }
+}
+impl ToString for AccountState{
+    fn to_string(&self) -> String {
+        String::from(self.as_str())
+    }
+}
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct AccountPage{
-    pfp_url: String,
-    avg_rating: f64,
-    reviews: Vec<super::profile::RatingData>,
-    bio: String,
+    pub pfp_url: String,
+    pub avg_rating: f64,
+    pub reviews: Vec<super::profile::RatingData>,
+    pub bio: String,
 }
 impl AccountPage{
     fn new() -> Self{
@@ -163,7 +177,7 @@ fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Res
 
     // let smtp_key: &str = "Brokies129gg";
     let smtp_key = "pjefpqhvsxmzomjf"; //app password
-    let from_email: &str = "choredom1@quannt.net";
+    let from_email: &str = "choredom2@quannt.net";
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
