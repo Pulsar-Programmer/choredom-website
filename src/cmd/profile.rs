@@ -35,31 +35,59 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
     </head>
     <body>
         <div class="profile">
-            <h1 id="displayName">{}</h1>
-            <h2 id="username">{}</h2>
-            <h3 id="AvgRating">{}</h3>
-            <h4 id="CreationDate">{}</h4>
+            <img href="{}"></img>
+            <h1 id="displayName">Name: {}</h1>
+            <h2 id="username">Username: {}</h2>
+            <h3 id="AvgRating">Rating: {}</h3>
+            <h4 id="CreationDate">Joined: {}</h4>
             <h5 id="State">{}</h5>
             <p id="bio">{}</p>
-    "#, displayname, username, page.avg_rating, creation_date, state.as_str(), page.bio);
+        </div><div class=ratings>
+    "#, page.pfp_url, displayname, username, page.avg_rating, creation_date, state.as_str(), page.bio);
+    for review in &page.reviews{
+        html.push_str(&format!(
+            r#"
+            <div id="review">
+            <h1 id="Rating">Rating: {}</h1>
+            <h2>Poster Username: {}</h2>
+            <p>{}</p>
+            </div>
+            "#, review.stars, review.username, review.body));
+    }
+    html.push_str("</div></body>");
     html.push_str(super::sites::PROFILE);
     HttpResponse::Ok().body(html)
 }
 
 
 
+
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct RatingData{
-    stars: f32,
+    stars: usize,
+    body: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct PageRatingData{
+    stars: usize,
     body: String,
     username: String,
 }
 
-#[post("/rate/{username}")]
-async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>) -> impl Responder{
-    let review = rating_data.into_inner();
-    let mut sum = review.stars.clamp(0., 5.);
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct GroupRatingData{
+    username: String,
+    review: PageRatingData,
+    new_avg: rust_decimal::Decimal,
+}
 
+#[post("/users/{username}/rate")]
+pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, session: Session) -> impl Responder{
+    let RatingData { stars: sums, body } = rating_data.into_inner();
+    let mut sum = sums.clamp(0, 5);
+    let session_username = retrieve_user(session).unwrap().unwrap(); //make sure you cannot submit form if you are not signed in
+    println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
     let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = type::string($username);", Some(("username", username.as_str()))).await.unwrap();
@@ -67,36 +95,57 @@ async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username:
     let result = res1.as_ref().unwrap();
     let len = result.len();
     if len != 1{
-        //error but should not happen yada yada you know the drill
-        return HttpResponse::BadRequest();
+        return HttpResponse::BadRequest().finish();
     }
     let res = result.get(0).unwrap();
     let stars = res.get("page").unwrap().get("reviews").unwrap().get("stars").unwrap().as_array().unwrap();
     // let mut sum = s;
     let div = stars.len() + 1;
     for i in stars{
-        let j = i.as_f64().unwrap() as f32;
+        let j = i.as_u64().unwrap() as usize;
         sum += j;
     }
-    let new_avg = sum / div as f32;
+    let new_avg = sum as f32 / div as f32;
+    let new_avg = rust_decimal::Decimal::from_f32_retain(new_avg).unwrap();
 
     let q = "UPDATE accounts
     SET 
-    page.avg_rating = $rating,
-    page.reviews += $review,
+    page.avg_rating = $new_avg,
+    page.reviews += $review
     WHERE username = type::string($username);";
-    query::<Account>(&mut db, q, Some((("rating", new_avg), ("review",review), ("username", username.as_str())))).await.unwrap()
-    ;
 
-    HttpResponse::Ok()
+    let review = PageRatingData{stars: sums, body, username: session_username};
+    println!("{review:?}");
+
+    query_value(&mut db, q, Some(GroupRatingData{username: username.into_inner(), review, new_avg})).await.unwrap();
+
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
 
 
 
 
 
+
+
+
+
+
+
+
+
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -304,4 +353,34 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Se
 
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#[get("/contacts")]
+async fn dispute_management() -> impl Responder{
+    HttpResponse::Ok().body(crate::sites::CONTACT)
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ContactsInfo{
+
+}
+
+#[post("/contacts/form")]
+async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
+
+    todo!() as HttpResponse
 }

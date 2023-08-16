@@ -61,9 +61,10 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Se
     let surrealql = 
     r#"
     BEGIN TRANSACTION;
-        LET $id = (SELECT id FROM accounts WHERE username=type::string("Potato"))[0].id;
+        LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
         CREATE jobs SET data = $job, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
+    //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNA<E
     let mut db = data.db.lock().await;
     query_value(&mut db, surrealql, Some(JobUsername{ job, username })).await.unwrap();
 

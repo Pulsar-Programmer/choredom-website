@@ -82,15 +82,15 @@ impl ToString for AccountState{
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct AccountPage{
     pub pfp_url: String,
-    pub avg_rating: f64,
-    pub reviews: Vec<super::profile::RatingData>,
+    pub avg_rating: rust_decimal::Decimal,
+    pub reviews: Vec<super::profile::PageRatingData>,
     pub bio: String,
 }
 impl AccountPage{
     fn new() -> Self{
         Self{ 
             pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),
-            avg_rating: 0., reviews: Vec::new(),
+            avg_rating: rust_decimal::Decimal::ZERO, reviews: Vec::new(),
             bio: String::new(),
         }
     }

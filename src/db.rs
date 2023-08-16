@@ -132,7 +132,7 @@ pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
         let result: Result<Vec<T>, _> = result.take(i);
-        println!("{result:?}");
+        // println!("{result:?}");
         vec.push(result)
     }
     Ok(vec)

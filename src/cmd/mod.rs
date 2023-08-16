@@ -24,7 +24,8 @@ pub mod sites{
         EMAIL; "email",
         UPLOAD; "upload",
         SETTINGS; "settings",
-        PROFILE; "profile"
+        PROFILE; "profile",
+        CONTACT; "contact"
     );
 }
 

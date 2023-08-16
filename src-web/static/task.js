@@ -1,4 +1,3 @@
-
 // Function to generate the HTML for each job
 function generateJobHTML(job) {
     return `
@@ -12,7 +11,7 @@ function generateJobHTML(job) {
         </div>
     `;
 }
-//<button onclick="initiateChat('${job.user.userId}', '${currentUserId}')">Apply</button>`
+//<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
 
 // function to start chat
 function initiateChat(user1, user2) {
