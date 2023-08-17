@@ -1,21 +1,20 @@
-
 window.addEventListener("load", function() {
     const form = document.getElementById("signupForm");
-    form.addEventListener("submit", function(event) {
-
+    const submitButton = form.querySelector('input[type="submit"]');
+    
+    submitButton.addEventListener("click", function(event) {
         let password1Field = document.getElementById("password");
         let password2Field = document.getElementById("password2");
+        
         if (password2Field.value !== password1Field.value){
             alert('Passwords do not match. Please try again.');
-            event.preventDefault();
-            // return
+            event.preventDefault(); // prevents the form from submitting
+        } else {
+            password2Field.disabled = true; // disables the password2 field
         }
-        password2Field.disabled = true; // disables the password2 field
-
-        // now submit the form as is
-        form.submit();
     });
 });
+
 
 
 // window.addEventListener("load", function() {
