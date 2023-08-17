@@ -300,7 +300,5 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
     let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
     
     println!("{}, {}, {}", stored_password, entered_password_hash, entered_password);
-
-    
-    Ok(argon2.verify_password(stored_password.as_bytes(), &entered_password_hash).is_ok())
+    Ok(stored_password == entered_password_hash.to_string())
 }

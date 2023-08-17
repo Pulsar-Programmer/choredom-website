@@ -1,5 +1,5 @@
 use crate::{db::{query, query_value}, AppData};
-use super::signup::{Account, retrieve_user, verify_password};
+use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
@@ -284,9 +284,9 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     }
     let Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ } = result.get(0).unwrap();
 
-    super::signup::email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)).unwrap();
+    email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)).unwrap();
 
-    if !super::signup::verify_password(&p_old, p_old_2, salt).unwrap() {
+    if !verify_password(&p_old, p_old_2, salt).unwrap() {
         //^feh incorrect passwords
         todo!()
     }
