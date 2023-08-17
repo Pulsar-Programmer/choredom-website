@@ -1,6 +1,6 @@
 use crate::{db::{query, query_value}, AppData};
-use super::signup::{Account, retrieve_user};
-use super::sites::{PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
+use super::signup::{Account, retrieve_user, verify_password};
+use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
@@ -308,12 +308,6 @@ pub async fn funds() -> impl Responder{
     todo!() as HttpResponse
 }
 
-#[get("/settings/transfer-funds")]
-pub async fn transfer_funds() -> impl Responder{
-    // HttpResponse::Ok().body(UPLOAD)
-    todo!() as HttpResponse
-}
-
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FundData{
     changed_funds: usize,
@@ -340,6 +334,7 @@ async fn spend(form: Form<FundData>, data: web::Data<AppData>, session: Session)
 }
 
 async fn change_funds(add: bool, db: &mut crate::db::Db, changed_funds: usize) -> anyhow::Result<()>{
+    // let url = format!("https://www.paypal.com/sdk/js?client-id={}&currency=USD", 69696969);
     let surrealql = {
         if add{
             "UPDATE accounts SET balance += $balance WHERE username=$username;"
@@ -356,7 +351,10 @@ async fn change_funds(add: bool, db: &mut crate::db::Db, changed_funds: usize) -
 
 
 
-
+#[get("/settings/transfer-funds")]
+pub async fn transfer_funds() -> impl Responder{
+    HttpResponse::Ok().body(TRANSFER)
+}
 
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -380,23 +378,40 @@ pub struct TransferData{
 #[post("/settings/transfer-funds/transfer")]
 async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Session) -> impl Responder{
     
-    let url = format!("https://www.paypal.com/sdk/js?client-id={}&currency=USD", 69696969);
-
-
-
     let CreditsData { credits, self_password, to_username } = form.into_inner();
-    let self_username = super::signup::retrieve_user(session).unwrap().unwrap();
+    let self_username = retrieve_user(session).unwrap().unwrap();
+
+
+    let mut db = data.db.lock().await;
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &to_username))).await.unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
+    if result.len() != 1 {
+        //^feh
+        //account does not exist
+        todo!()
+    }
+    let password = &result.get(0).unwrap().password;
+    let password_salt = &result.get(0).unwrap().password_salt;
+
+    if !verify_password(&self_password, password, password_salt).unwrap(){
+        //^feh
+        todo!()
+    }
+
     let transferdata = TransferData{credits, self_username, to_username};
 
     let surrealql = "
-    UPDATE accounts SET balance -= $credits WHERE username = $self_username;
-    UPDATE accounts SET balance += $credits WHERE username = $to_username;
+    UPDATE accounts SET balance -= $credits WHERE username = type::string($self_username);
+    UPDATE accounts SET balance += $credits WHERE username = type::string($to_username);
     ";
-    query_value(&mut *data.db.lock().await, surrealql, Some(transferdata)).await.unwrap();
-
+    query_value(&mut db, surrealql, Some(transferdata)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
+
+
+
+
 
 
 

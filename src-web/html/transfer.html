@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transfer Credits</title>
+    <!-- <script>
+        function validateForm() {
+            var recipientUsername = document.getElementById("recipientUsername").value;
+            var amount = document.getElementById("amount").value;
+            var password = document.getElementById("password").value;
+
+            // Check if recipient username is not empty
+            if (recipientUsername === "") {
+                alert("Please enter the username of the recipient");
+                return false;
+            }
+
+            // Check if amount is a positive number
+            if (amount <= 0) {
+                alert("Please enter a positive amount of credits to transfer");
+                return false;
+            }
+
+            // Check if password is not empty
+            if (password === "") {
+                alert("Please enter your password to confirm the transfer");
+                return false;
+            }
+
+            // Additional validation checks can be added here
+
+            return true;
+        }
+    </script> -->
+</head>
+<body>
+    <h2>Transfer Credits</h2>
+
+    <form onsubmit="">
+        <label for="recipientUsername">Recipient Username:</label><br>
+        <input type="text" id="recipientUsername" name="to_username" required><br>
+
+        <label for="amount">Amount of Credits:</label><br>
+        <input type="number" id="amount" name="credits" min="1" required><br>
+
+        <label for="password">Your Password:</label><br>
+        <input type="password" id="password" name="self_password" required><br>
+
+        <input type="submit" value="Transfer Credits">
+    </form>
+</body>
+</html>

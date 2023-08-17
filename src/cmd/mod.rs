@@ -21,7 +21,8 @@ pub mod sites{
         SETTINGS; "settings",
         PROFILE; "profile",
         CONTACT; "contact",
-        PASSWORD; "password"
+        PASSWORD; "password",
+        TRANSFER; "transfer"
     );
 }
 
