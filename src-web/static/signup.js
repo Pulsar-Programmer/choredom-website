@@ -1,8 +1,11 @@
+
+
+
 window.addEventListener("load", function() {
+        // const submitButton = form.querySelector('input[type="submit"]');
+    // submitButton.addEventListener("click", function(event) {
     const form = document.getElementById("signupForm");
-    const submitButton = form.querySelector('input[type="submit"]');
-    
-    submitButton.addEventListener("click", function(event) {
+    form.addEventListener("submit", function(event) {
         let password1Field = document.getElementById("password");
         let password2Field = document.getElementById("password2");
         
@@ -11,6 +14,7 @@ window.addEventListener("load", function() {
             event.preventDefault(); // prevents the form from submitting
         } else {
             password2Field.disabled = true; // disables the password2 field
+            form.submit(); // now submit the form as is
         }
     });
 });
