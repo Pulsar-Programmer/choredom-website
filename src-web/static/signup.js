@@ -7,7 +7,7 @@ window.addEventListener("load", function() {
         let password2Field = document.getElementById("password2");
         if (password2Field.value !== password1Field.value){
             alert('Passwords do not match. Please try again.');
-            // event.preventDefault();
+            event.preventDefault();
             // return
         }
         password2Field.disabled = true; // disables the password2 field

@@ -66,7 +66,9 @@ async fn main() -> std::io::Result<()> {
             post, post_job,
             tasks, tasks_in_area,
             profile, rate,
-            password_change, password_change_form
+            password_change, password_change_form,
+            dispute_management, contacts_form,
+            transfer, transfer_funds
             // chat, chat_ws
             // accounts
         )

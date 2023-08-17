@@ -428,12 +428,12 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Se
 
 
 #[get("/contacts")]
-async fn dispute_management() -> impl Responder{
+pub async fn dispute_management() -> impl Responder{
     HttpResponse::Ok().body(CONTACT)
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct ContactsInfo{
+pub struct ContactsInfo{
     username: String,
     email: String,
     title: String,
@@ -441,8 +441,7 @@ struct ContactsInfo{
 }
 
 #[post("/contacts/form")]
-async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
-
+pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
      let surrealql = r#"
     BEGIN TRANSACTION;
         LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;

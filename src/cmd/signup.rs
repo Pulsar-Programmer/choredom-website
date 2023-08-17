@@ -288,8 +288,6 @@ pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltStr
     Ok((string, salt))
 }
 
-use password_hash::{PasswordHash, PasswordVerifier};
-
 pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str) -> anyhow::Result<bool> {
     
     let salt = SaltString::from_b64(salt)?;
@@ -299,6 +297,5 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
 
     let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
     
-    println!("{}, {}, {}", stored_password, entered_password_hash, entered_password);
     Ok(stored_password == entered_password_hash.to_string())
 }
