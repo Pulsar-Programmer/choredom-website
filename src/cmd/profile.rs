@@ -313,45 +313,56 @@ struct FundData{
     changed_funds: usize,
     password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
-    //add: bool,
+    add: bool,
 }
 
-#[post("/settings/funds/add")]
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ChangeFundData{
+    changed_funds: usize,
+    username: String,
+}
+
+
+#[post("/settings/funds/change")]
 async fn deposit(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
-    let FundData { changed_funds, password } = form.into_inner();
-    let username = super::signup::retrieve_user(session).unwrap().unwrap();
+    let FundData { changed_funds, password, add } = form.into_inner();
+    let username = retrieve_user(session).unwrap().unwrap();
 
-    change_funds(true, &mut *data.db.lock().await, changed_funds).await.unwrap();
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
-}
+    let mut db = data.db.lock().await;
+    
+    let surrealql = "SELECT * FROM accounts WHERE username=$username;";
+    let res = query::<Account>(&mut db, surrealql, Some(("username", &username))).await.unwrap();
+    let res = res.get(0).unwrap().as_ref().unwrap();
+    if res.len() != 1{
 
-#[post("/settings/funds/subtract")]
-async fn spend(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
-    let FundData { changed_funds, password } = form.into_inner();
-    let username = super::signup::retrieve_user(session).unwrap().unwrap();
-    change_funds(false, &mut *data.db.lock().await, changed_funds).await.unwrap();
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
-}
+    }
+    let res = res.get(0).unwrap();
 
-async fn change_funds(add: bool, db: &mut crate::db::Db, changed_funds: usize) -> anyhow::Result<()>{
+    if !verify_password(&password, &res.password, &res.password_salt).unwrap(){
+        return todo!();
+    }
+
+
     // let url = format!("https://www.paypal.com/sdk/js?client-id={}&currency=USD", 69696969);
-    let surrealql = {
-        if add{
-            "UPDATE accounts SET balance += $balance WHERE username=$username;"
+    let surrealql = 
+    format!("UPDATE accounts SET balance {}= $balance WHERE username=$username;",
+        if add {
+            "+"
         }
-        else{
-            "UPDATE accounts SET balance -= $balance WHERE username=$username;"
+        else {
+            "-"
         }
-    };
-    query_value(db, surrealql, Some(("balance", changed_funds))).await?;
-    Ok(())
+    );
+    query_value(&mut db, &surrealql, Some(ChangeFundData{username, changed_funds})).await.unwrap();
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
 
 
 
 
-#[get("/settings/transfer-funds")]
+#[get("/settings/funds/transfer")]
 pub async fn transfer_funds() -> impl Responder{
     HttpResponse::Ok().body(TRANSFER)
 }
@@ -375,7 +386,7 @@ pub struct TransferData{
 }
 
 
-#[post("/settings/transfer-funds/transfer")]
+#[post("/settings/funds/transfer/form")]
 async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Session) -> impl Responder{
     
     let CreditsData { credits, self_password, to_username } = form.into_inner();
@@ -406,7 +417,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Se
     ";
     query_value(&mut db, surrealql, Some(transferdata)).await.unwrap();
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
 
 
