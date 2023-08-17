@@ -2,7 +2,7 @@ use actix_identity::{Identity, IdentityMiddleware};
 use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 // use actix_identity::IdentityMiddleware;
-use actix_session::{SessionMiddleware, Session};
+use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;

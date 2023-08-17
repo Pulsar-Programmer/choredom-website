@@ -6,12 +6,15 @@
 <body>
     <h2>Contact Us</h2>
 
-    <form action="submit_form.php" method="post">
+    <form action="/contact/form" method="post">
         <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br>
+        <input type="text" id="username" name="username" required><br>
 
         <label for="email">Email:</label><br>
         <input type="email" id="email" name="email" required><br>
+
+        <label for="title">Title:</label><br>
+        <input type="title" id="title" name="title" required><br>
 
         <label for="message">Message:</label><br>
         <textarea id="message" name="message" required></textarea><br>

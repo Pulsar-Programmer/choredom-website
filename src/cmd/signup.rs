@@ -301,5 +301,6 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
     
     println!("{}, {}, {}, {}", salt, entered_password_hash, entered_password, stored_password);
 
+    
     Ok(argon2.verify_password(stored_password.as_bytes(), &entered_password_hash).is_ok())
 }

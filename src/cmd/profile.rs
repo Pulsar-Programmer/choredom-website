@@ -1,6 +1,6 @@
 use crate::{db::{query, query_value}, AppData};
 use super::signup::{Account, retrieve_user};
-use super::sites::{PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE};
+use super::sites::{PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
@@ -414,16 +414,27 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Se
 
 #[get("/contacts")]
 async fn dispute_management() -> impl Responder{
-    HttpResponse::Ok().body(crate::sites::CONTACT)
+    HttpResponse::Ok().body(CONTACT)
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct ContactsInfo{
-
+    username: String,
+    email: String,
+    title: String,
+    message: String,
 }
 
 #[post("/contacts/form")]
 async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
 
-    todo!() as HttpResponse
+     let surrealql = r#"
+    BEGIN TRANSACTION;
+        LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
+        CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
+    COMMIT TRANSACTION;"#;
+    //if there is no account it will be -> id: account:NONE
+    query_value(&mut * data.db.lock().await, surrealql, Some(form.into_inner())).await.unwrap();
+
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
 }
