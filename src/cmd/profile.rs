@@ -226,12 +226,26 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
         let content_disposition = field.content_disposition();
         let filename = content_disposition.get_filename().unwrap();
         let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+        
+
+        use image::ImageFormat;
+        use std::path::Path;
+
+        let format = ImageFormat::from_path(Path::new(&filepath)).unwrap();
+
+        match format {
+            ImageFormat::Png => println!("The file is a PNG"),
+            ImageFormat::Jpeg => println!("The file is a JPEG"),
+            _ => todo!(), //^feh
+        }
+
         let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap().unwrap();
+
 
         // Field in turn is stream of *Bytes* object
         while let Some(chunk) = field.next().await {
             let data = chunk.unwrap();
-            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap()?;
+            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap().unwrap();
         }
     }
 
