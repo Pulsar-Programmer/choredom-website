@@ -243,15 +243,18 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     let account = result.get(0).unwrap();
     // let password = 
-
     if !verify_password(&password, &account.password, &account.password_salt).unwrap(){
         // ^feh
         HttpResponse::Ok().body(LOGIN)
     }
     else{
-        // confirmation_email(&account.email, &account.display_name, code); 
+        let code = rand::thread_rng().gen_range(100000..1000000);
+        transmission_transmit("signup", &session, code).unwrap();
+        confirmation_email(&account.email, &account.displayname, code).unwrap();
+
         login_user(session, &account.username);
-        HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+        HttpResponse::Ok().body(EMAIL)
+        // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
     }
 }
 
