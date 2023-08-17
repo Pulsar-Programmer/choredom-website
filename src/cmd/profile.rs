@@ -215,7 +215,7 @@ pub async fn upload() -> impl Responder{
     HttpResponse::Ok().body(UPLOAD)
 }
 
-#[post("/settings/upload-auth")]
+#[post("/settings/upload/form")]
 pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, session: Session) -> Result<HttpResponse, actix_web::Error>{
     
     use futures::TryStreamExt;
