@@ -147,7 +147,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     location = type::string($location);
     "#, Some(account)).await.unwrap();
 
-    login_user(session, &username);
+    login_user(session, &username).unwrap();
     HttpResponse::Ok().body(EMAIL)
 }
 
@@ -156,8 +156,9 @@ pub async fn home_redirect(session: Session, code: Form<Code>) -> impl Responder
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     let true_code: i64 = transmission_receive("signup", &session).unwrap();
     if code.into_inner().code != true_code{
+        logout_user(session).unwrap(); //with one line i fixed a massive issue lol
         //^feh
-        return HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(SIGNUP)
+        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
         // todo!()
     }
     // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
