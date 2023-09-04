@@ -7,7 +7,7 @@
 
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, };
 use chrono::{DateTime, Utc};
-use crate::db::Db;
+// use crate::db::Db;
 // use actix_sse::SseEvent;
 // use actix_sse::SseEvent;
 use super::sites::CHAT;
@@ -25,7 +25,7 @@ The frontend part will consist of a field that is a forum that posts to `/chat/s
 Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
-pub async fn chats(receiver: Path<String>, session: actix_session::Session) -> impl Responder{
+pub async fn chats(receiver: Path<String>, session: actix_session::Session, data: Data<crate::AppData>) -> impl Responder{
     // let sender = super::signup:
 
     //build a room and send to db. 
