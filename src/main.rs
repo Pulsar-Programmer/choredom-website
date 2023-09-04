@@ -3,7 +3,7 @@ use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 // use actix_identity::IdentityMiddleware;
 use actix_session::SessionMiddleware;
-use actix_session_surrealdb::SurrealSessionStore;
+// use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;
 use cmd::*;
@@ -53,10 +53,10 @@ async fn main() -> std::io::Result<()> {
         wapp!(
             App::new()
             // .wrap(IdentityMiddleware::default())
-            .wrap(SessionMiddleware::builder(
-                SurrealSessionStore::from_connection(db.clone(), "sessions"),
-                key.clone(),
-            ).cookie_same_site(SameSite::None).build())
+            // .wrap(SessionMiddleware::builder(
+            //     SurrealSessionStore::from_connection(db.clone(), "sessions"),
+            //     key.clone(),
+            // ).cookie_same_site(SameSite::None).build())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect,

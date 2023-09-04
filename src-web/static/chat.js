@@ -1,3 +1,37 @@
+async function subscribe() {
+    let response = await fetch("/subscribe");
+    if (response.status == 502) {
+      // Reconnect on a connection timeout error
+      await subscribe();
+    } else if (response.status != 200) {
+      // Show an error message
+      showMessage(response.statusText);
+      // Reconnect in one second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await subscribe();
+    } else {
+      // Get and show the message
+      let message = await response.text();
+      showMessage(message);
+      // Subscribe again to get the next message
+      await subscribe();
+    }
+  }
+  subscribe();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // const $status = document.querySelector('#status')
 // const $connectButton = document.querySelector('#connect')
 // const $log = document.querySelector('#log')
@@ -88,40 +122,3 @@
 
 // updateConnectionStatus()
 
-
-// Create a WebSocket connection to the server
-let socket = new WebSocket("ws://your-websocket-server.com");
-
-// Get the HTML elements
-let messageBox = document.getElementById('messageBox');
-let messageInput = document.getElementById('messageInput');
-let sendButton = document.getElementById('sendButton');
-
-// When a message is received from the server, append it to the message box
-socket.onmessage = function(event) {
-    let newMessage = document.createElement('p');
-    newMessage.textContent = event.data;
-    messageBox.appendChild(newMessage);
-};
-
-// When the send button is clicked, send the current message to the server
-sendButton.addEventListener('click', function() {
-    let message = messageInput.value;
-    socket.send(message);
-    messageInput.value = '';
-});
-
-// Add an event listener for the WebSocket connection opening
-socket.onopen = function(event) {
-    console.log('Connection opened');
-};
-
-// Add an event listener for the WebSocket connection closing
-socket.onclose = function(event) {
-    console.log('Connection closed');
-};
-
-// Add an event listener for any errors that occur on the WebSocket
-socket.onerror = function(error) {
-    console.log('Error occurred:', error);
-};
