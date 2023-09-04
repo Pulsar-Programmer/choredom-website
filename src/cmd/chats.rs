@@ -11,12 +11,15 @@ use chrono::{DateTime, Utc};
 // use actix_sse::SseEvent;
 // use actix_sse::SseEvent;
 use super::sites::CHAT;
+//start using actix-identity for session store additionally
+//there was an issue with SurrealSessionStore that must get ironed out before we can proceed
 
-
+///This represents a chat room with a bunch of chats.
 struct Room{
     receiver: String, //this serves as the title
     sender: String,
     chats: Vec<ChatData>,
+    //problem: sender and receiver may have a better way to represent this.
 }
 
 /**
