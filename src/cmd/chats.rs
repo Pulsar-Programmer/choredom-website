@@ -5,6 +5,7 @@
 
 //Note: we added Rippedplushie who now has the codebase as of the previous commit.
 
+use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, };
 use chrono::{DateTime, Utc};
 // use crate::db::Db;
@@ -16,10 +17,8 @@ use super::sites::CHAT;
 
 ///This represents a chat room with a bunch of chats.
 struct Room{
-    receiver: String, //this serves as the title
-    sender: String,
+    room: RoomID,
     chats: Vec<ChatData>,
-    //problem: sender and receiver may have a better way to represent this.
 }
 
 /**
@@ -37,6 +36,7 @@ pub async fn chats(receiver: Path<String>, session: actix_session::Session, data
 
     HttpResponse::Ok().body(CHAT)
 }
+
 ///The chat data received from the frontend.
 struct Chat{
     // time: DateTime<Utc>, 
@@ -53,6 +53,7 @@ struct ChatData{
 }
 
 ///The chat data given to the frontend.
+#[derive(serde::Serialize)]
 struct ChatFrontData{
     time: String,
     msg: String,
@@ -61,29 +62,50 @@ struct ChatFrontData{
 
 
 //text_message
+/// This, given the msg and the sender, sends a message and logs it in the Database.
+/// It then can be retrieved from the receive message function.
 #[post("/chat/send")]
-pub async fn send(msg: Json<String>) -> impl Responder{
+pub async fn send(msg: Json<String>, session: Session) -> impl Responder{
 
+    let sender = super::signup::retrieve_user(session).unwrap().unwrap();
+    let time = Utc::now();
+    let msg = msg.into_inner();
+    //get room from db and verify WHO sender is.
+    //also edit the room to include this message when logging
+    let sender = true;
 
-
+    let to_database = ChatData{time, msg, sender};
+    //log in db
     //TO DATABASE:
     //sender, msg, time sent
-    HttpResponse::Ok().body("")
+    "Successfully logged!"
 }
 
-//GIVE THE FRONTEND : Vec<ChatFrontData>\
+///This keeps track of identifying the Room ID.
+struct RoomID{
+    opposite: String, //this serves as the title
+    same: String,
+    //problem: sender and receiver may have a better way to represent this.
+    //hash set? sorted array of 2 items?
+}
+
+//GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
 /// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it. 
 /// This is opposed to the method used above when refreshing the page which simply obtains all of the Vec<ChatFrontData> rather than the new ones.
 #[post("/chat/receive")]
-pub async fn receive() -> impl Responder{
+pub async fn receive(session: Session, opposite: Json<String>) -> impl Responder{
+    //which room receiving from? tell me in js
+    let same = super::signup::retrieve_user(session).unwrap().unwrap();
+    let opposite = opposite.into_inner();
+    let room_id = RoomID{same, opposite};
+    //get room_id from db and return new messages with the LIVE query.
 
 
 
-
-
-
-    HttpResponse::Ok().body("")
+    let vec : Vec<ChatFrontData> = Vec::new();
+    //change vec to be the vec of chatfront data which is what the DOM needs
+    serde_json::to_string(&vec)
 }
 
 

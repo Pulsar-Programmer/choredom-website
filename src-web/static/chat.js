@@ -1,124 +1,79 @@
-async function subscribe() {
-    let response = await fetch("/subscribe");
-    if (response.status == 502) {
-      // Reconnect on a connection timeout error
-      await subscribe();
-    } else if (response.status != 200) {
-      // Show an error message
-      showMessage(response.statusText);
-      // Reconnect in one second
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await subscribe();
-    } else {
-      // Get and show the message
-      let message = await response.text();
-      showMessage(message);
-      // Subscribe again to get the next message
-      await subscribe();
-    }
-  }
-  subscribe();
+//Fix this to make this chat-compatible (not job)
+//Speak w/ Aaron regarding method in which to preform this with HTML
+//As in, how does he want the HTML structured?
 
 
+// Function to generate the HTML for each job
+
+function generateJobHTML(job) {
+  return `
+      <div class="job">
+      <h3>${job.data.title}</h3>
+      <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
+      <p>${job.data.body}</p>
+      <p>Date and Time: ${job.data.time}</p>
+      <p>Price: $${job.data.price}</p>
+      <a href="/${job.id}">Visit Job Post</a>
+      </div>
+  `;
+}
+//<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
+
+// function to start chat
+function initiateChat(user1, user2) {
+  // Send a request to the server to create a chat room
+  fetch('/create-chat-room', {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          user1: user1, 
+          user2: user2
+      }),
+  })
+  .then(response => response.json())
+  .then(roomId => {
+      // Redirect the user to the chat room using the generated room ID
+      let url = `/chats/room=${roomId}`;
+      window.location.href = url;
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+  });
+}
 
 
+// Get the post container element
+const jobContainer = document.getElementById("job-container");
 
+// Function to display jobs on the frontend
+function displayJobs(jobsData) {
+  jobContainer.innerHTML = ``;
+  jobsData.forEach((job) => {
+      const jobHTML = generateJobHTML(job);
+      jobContainer.innerHTML += jobHTML;
+  });
+}
 
+function get_location_data(){
+  const location = document.getElementById('filterInput').value;
 
-
-
-
-
-
-
-
-// const $status = document.querySelector('#status')
-// const $connectButton = document.querySelector('#connect')
-// const $log = document.querySelector('#log')
-// const $form = document.querySelector('#chatform')
-// const $input = document.querySelector('#text')
-
-// /** @type {WebSocket | null} */
-// var socket = null
-
-// function log(msg, type = 'status') {
-// $log.innerHTML += `<p class="msg msg--${type}">${msg}</p>`
-// $log.scrollTop += 1000
-// }
-
-// function connect() {
-// disconnect()
-
-// const { location } = window
-
-// const proto = location.protocol.startsWith('https') ? 'wss' : 'ws'
-// const wsUri = `${proto}://${location.host}/chat/ws`
-
-// log('Connecting...')
-// socket = new WebSocket(wsUri)
-
-// socket.onopen = () => {
-//     log('Connected')
-//     updateConnectionStatus()
-// }
-
-// socket.onmessage = (ev) => {
-//     log('Received: ' + ev.data, 'message')
-// }
-
-// socket.onclose = () => {
-//     log('Disconnected')
-//     socket = null
-//     updateConnectionStatus()
-// }
-// }
-
-// function disconnect() {
-// if (socket) {
-//     log('Disconnecting...')
-//     socket.close()
-//     socket = null
-
-//     updateConnectionStatus()
-// }
-// }
-
-// function updateConnectionStatus() {
-// if (socket) {
-//     $status.style.backgroundColor = 'transparent'
-//     $status.style.color = 'green'
-//     $status.textContent = `connected`
-//     $connectButton.innerHTML = 'Disconnect'
-//     $input.focus()
-// } else {
-//     $status.style.backgroundColor = 'red'
-//     $status.style.color = 'white'
-//     $status.textContent = 'disconnected'
-//     $connectButton.textContent = 'Connect'
-// }
-// }
-
-// $connectButton.addEventListener('click', () => {
-// if (socket) {
-//     disconnect()
-// } else {
-//     connect()
-// }
-
-// updateConnectionStatus()
-// })
-
-// $form.addEventListener('submit', (ev) => {
-//     ev.preventDefault()
-
-//     const text = $input.value
-
-//     log('Sending: ' + text)
-//     socket.send(text)
-
-//     $input.value = ''
-//     $input.focus()
-// })
-
-// updateConnectionStatus()
-
+  fetch('/job-handling', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(location),
+  })
+  .then(response => response.json())
+  .then(jobsData => {
+      console.log('Location Success:', jobsData);
+      
+      console.log('Jobs Success:', jobsData);
+      displayJobs(jobsData);
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+  });
+}
