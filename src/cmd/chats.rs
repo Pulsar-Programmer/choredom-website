@@ -8,6 +8,8 @@
 use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, };
 use chrono::{DateTime, Utc};
+use crate::db::query;
+
 // use crate::db::Db;
 // use actix_sse::SseEvent;
 // use actix_sse::SseEvent;
@@ -65,13 +67,19 @@ struct ChatFrontData{
 /// This, given the msg and the sender, sends a message and logs it in the Database.
 /// It then can be retrieved from the receive message function.
 #[post("/chat/send")]
-pub async fn send(msg: Json<String>, session: Session) -> impl Responder{
+pub async fn send(msg: Json<String>, session: Session, app: Data<crate::AppData>) -> impl Responder{
 
     let sender = super::signup::retrieve_user(session).unwrap().unwrap();
     let time = Utc::now();
     let msg = msg.into_inner();
     //get room from db and verify WHO sender is.
     //also edit the room to include this message when logging
+
+    // let mut db = app.db.lock().await;
+    // let res2 = query::<Room>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    // let result = res2.get(0).unwrap().as_ref().unwrap();
+
+
     let sender = true;
 
     let to_database = ChatData{time, msg, sender};
