@@ -11,7 +11,7 @@ use super::sites::CHAT;
 
 ///This represents a chat room with a bunch of chats.
 struct Room{
-    room: RoomID,
+    room_id: RoomID,
     chats: Vec<ChatData>,
 }
 
@@ -22,23 +22,41 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
 pub async fn chats(receiver: Path<String>, session: actix_session::Session, data: Data<crate::AppData>) -> impl Responder{
-    // let sender = super::signup:
+    let sender = super::signup::retrieve_user(session).unwrap().unwrap();
+    let receiver = receiver.into_inner();
+    let room_id = RoomID::create(&sender, &receiver);
 
     //build a room and send to db if one doesn't exist
+    let one_exists = false; //how do we check if one exists with the database as a shortcut?
+    if !one_exists{
+        let chats = Vec::new();
+        let room = Room{room_id, chats};
+        //send to db now
+    }
 
     //get the most recent chat messages from surrealdb
-    //update it with the most recent chat messages (while having JavaScript add any new ones to the DOM)
+    //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
+    let html = CHAT; 
 
-    HttpResponse::Ok().body(CHAT)
+
+    HttpResponse::Ok().body(html)
 }
 
 ///The chat data stored in the database.
-///The chat data given to the frontend, replacing ChatFrontData from before.
-#[derive(serde::Serialize)]
 struct ChatData{
     timestamp: DateTime<Utc>,
     msg: String,
     ///Be careful here, as we must ensure sender is in the room, as in, it is contained within the `RoomID`.
+    ///There was a thought of using a boolean here to save storage, but we decided not to integrate it.
+    ///Nevermind we are changing this again to a boolean to save immense storage. I am a monkie. Sorry for that.
+    sender: bool, 
+}
+
+///The chat data given to the frontend.
+#[derive(serde::Serialize)]
+struct ChatFrontData{
+    timestamp: DateTime<Utc>,
+    msg: String,
     sender: String, 
 }
 
@@ -52,6 +70,7 @@ pub async fn send(json: Json<(String, String)>, session: Session, app: Data<crat
     let timestamp = Utc::now();
     let (room_title, msg) = json.into_inner();
     let room_id = RoomID::create(&room_title, &sender);
+    let sender = sender == room_id.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
     //get room from db and verify WHO sender is.
     //also edit the room to include this message when logging
@@ -70,7 +89,7 @@ pub async fn send(json: Json<(String, String)>, session: Session, app: Data<crat
     HttpResponse::Ok().body("Successfully logged!")
 }
 
-///This keeps track of identifying the Room ID.
+///This keeps track of identifying the Room ID and who is in it.
 struct RoomID{
     inner: [String; 2], // we must figure out which one serves as the title by finding the one opposite of urself
 }
@@ -92,9 +111,13 @@ pub async fn receive(session: Session, opposite: Json<String>) -> impl Responder
     let room_id = RoomID::create(&same, &opposite);
     //select with room_id from db and return new messages with the LIVE query.
 
-    let vec : Vec<ChatData> = Vec::new();
-    //change vec to be the vec of chatfront data which is what the DOM needs
-    serde_json::to_string(&vec)
+    let chats_vec : Vec<ChatData> = Vec::new(); 
+    // get the newly LIVE query ones and sleep or something until this is given.
+    
+    let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender }|{
+        ChatFrontData { timestamp, msg, sender: room_id.inner[if sender {1} else {0}].clone() }
+    }).collect();
+    serde_json::to_string(&chats_vec)
 }
 
 
