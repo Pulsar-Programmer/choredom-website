@@ -3,75 +3,72 @@
 //As in, how does he want the HTML structured?
 
 
-// Function to generate the HTML for each job
-
-function generateJobHTML(job) {
-  return `
-      <div class="job">
-      <h3>${job.data.title}</h3>
-      <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
-      <p>${job.data.body}</p>
-      <p>Date and Time: ${job.data.time}</p>
-      <p>Price: $${job.data.price}</p>
-      <a href="/${job.id}">Visit Job Post</a>
-      </div>
-  `;
+/// Function to generate the HTML for each chat
+function generateChatHTML(chat) {
+    return `
+        <div class="message">
+          <h4>${chat.sender}</h4>
+          <p>${chat.msg}</p>
+          <p>${chat.timestamp}</p>
+        </div>
+    `;
 }
-//<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
 
-// function to start chat
-function initiateChat(user1, user2) {
-  // Send a request to the server to create a chat room
-  fetch('/create-chat-room', {
+// Get the post container element
+const chatContainer = document.getElementById("chat-box");
+
+// Function to display jobs on the frontend
+function displayChats(chatsData) {
+//   jobContainer.innerHTML = ``; // we don't need to do this anymore because the chat/receive only gives one
+  chatsData.forEach((chat) => {
+      const chatHTML = generateChatHTML(chat);
+      chatContainer.innerHTML += chatHTML;
+  });
+}
+
+
+
+
+function yield_chat_history(){
+    ///This will be done automatically on Rust's side - make sure to delete this function 
+    ///but also understand that it is necessary for the Rust's side
+}
+
+///This function must send a chat to the DB but NOT make it appear on the screen.
+/// We will be receiving our own chat messages and then adding it to the DOM separately.
+function send_chat(){
+    const msg = document.getElementById('message-input').value;
+
+    const roomTitle = document.getElementById('room-title').value;
+
+  fetch('/chat/send', {
       method: 'POST',
       headers: {
-      'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-          user1: user1, 
-          user2: user2
-      }),
-  })
-  .then(response => response.json())
-  .then(roomId => {
-      // Redirect the user to the chat room using the generated room ID
-      let url = `/chats/room=${roomId}`;
-      window.location.href = url;
+      body: JSON.stringify({roomTitle, msg}),
   })
   .catch((error) => {
       console.error('Error:', error);
   });
 }
 
+///Done. This function works 
+function receive_chat(){
 
-// Get the post container element
-const jobContainer = document.getElementById("job-container");
+    const roomTitle = document.getElementById('room-title').value;
 
-// Function to display jobs on the frontend
-function displayJobs(jobsData) {
-  jobContainer.innerHTML = ``;
-  jobsData.forEach((job) => {
-      const jobHTML = generateJobHTML(job);
-      jobContainer.innerHTML += jobHTML;
-  });
-}
-
-function get_location_data(){
-  const location = document.getElementById('filterInput').value;
-
-  fetch('/job-handling', {
+  fetch('/chat/receive', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify(location),
+      body: JSON.stringify(roomTitle),
   })
   .then(response => response.json())
-  .then(jobsData => {
-      console.log('Location Success:', jobsData);
-      
-      console.log('Jobs Success:', jobsData);
-      displayJobs(jobsData);
+  .then(chatsData => {
+      console.log('Chats Success:', chatsData);
+      displayChats(chatsData);
   })
   .catch((error) => {
       console.error('Error:', error);
