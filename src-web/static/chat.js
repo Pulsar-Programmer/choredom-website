@@ -55,8 +55,10 @@ function send_chat(){
 
 ///Done. This function works 
 function receive_chat(){
-
-    const roomTitle = document.getElementById('room-title').value;
+    const roomSplitter = window.location.href.split('/').filter((val) => {
+        return ! (val == "" || val == null);
+    });
+    const roomTitle = roomSplitter[roomSplitter.length - 1];
 
   fetch('/chat/receive', {
       method: 'POST',

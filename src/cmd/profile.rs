@@ -181,7 +181,7 @@ impl SettingsData2{
 
 #[get("/settings")]
 pub async fn settings(app_data: Data<AppData>) -> impl Responder{
-    // todo!();
+    todo!();
     //get login data
     //give acct data
     HttpResponse::Ok().body(super::sites::SETTINGS)
@@ -189,7 +189,7 @@ pub async fn settings(app_data: Data<AppData>) -> impl Responder{
 
 #[post("/settings-post")]
 pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
-    let mut settings_data = setting.into_inner();
+    let settings_data = setting.into_inner();
     let username = retrieve_user(session).unwrap().unwrap();
     //edit stuff NOT together, as in, independently?
 
