@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 use surrealdb::Surreal;
-use surrealdb::sql;
 use surrealdb::opt::auth::{Root, Scope};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb as s;

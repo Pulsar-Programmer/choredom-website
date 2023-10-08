@@ -1,7 +1,7 @@
 use actix_session::Session;
-use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, };
+use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
-use crate::db::query; 
+use crate::{db::query, AppData}; 
 
 // use crate::db::Db;
 // use actix_sse::SseEvent;
@@ -105,12 +105,15 @@ impl RoomID{
 /// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it. 
 /// This is opposed to the method used above when refreshing the page which simply obtains all of the Vec<ChatFrontData> rather than the new ones.
 #[post("/chat/receive")]
-pub async fn receive(session: Session, opposite: Json<String>) -> impl Responder{
+pub async fn receive(session: Session, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
     let same = super::signup::retrieve_user(session).unwrap().unwrap();
     let opposite = opposite.into_inner();
     let room_id = RoomID::create(&same, &opposite);
     //select with room_id from db and return new messages with the LIVE query.
+    let db = data.db.lock().await;
+    // let db = surrealdb::kvs::Datastore::new("memory").await.unwrap().with_capabilities(surrealdb::dbs::Capabilities::all());
 
+    
     let chats_vec : Vec<ChatData> = Vec::new(); 
     // get the newly LIVE query ones and sleep or something until this is given.
     
