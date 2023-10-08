@@ -139,3 +139,30 @@ function filterOptions() {
     dropdown.style.display = 'block'; 
     }
 }
+
+
+function searchPosts() {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+    fetch('/job-handling', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ location: searchQuery }),
+    })
+    .then(response => response.json())
+    .then(jobsData => {
+        console.log('Jobs Success:', jobsData);
+
+        const filteredJobs = jobsData.filter(job => 
+            job.data.title.toLowerCase().includes(searchQuery) || 
+            job.data.body.toLowerCase().includes(searchQuery)
+        );
+
+        displayJobs(filteredJobs);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
