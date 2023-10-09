@@ -179,7 +179,7 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
     use lettre::Message;
 
     // let smtp_key: &str = "Brokies129gg";
-    let smtp_key = "pjefpqhvsxmzomjf"; //app password
+    let smtp_key = "lwpcpxpvncogqaxz"; //app password
     let from_email: &str = "aaron.sachan.bang@gmail.com";
     let host: &str = "smtp.gmail.com";
 
