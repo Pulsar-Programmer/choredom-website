@@ -1,6 +1,7 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::AppData;
 use crate::db::{query, query_value, transmission_transmit, transmission_receive};
+use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use futures::executor::enter;
@@ -147,16 +148,16 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     location = type::string($location);
     "#, Some(account)).await.unwrap();
 
-    login_user(session, &username).unwrap();
+    login_user(&request, username).unwrap();
     HttpResponse::Ok().body(EMAIL)
 }
 
 #[post("/ve")]
-pub async fn home_redirect(session: Session, code: Form<Code>) -> impl Responder{
+pub async fn home_redirect(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
     let true_code: i64 = transmission_receive("signup", &session).unwrap();
     if code.into_inner().code != true_code{
-        logout_user(session).unwrap(); //with one line i fixed a massive issue lol
+        logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
         //^feh
         return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
         // todo!()
@@ -225,7 +226,7 @@ pub async fn login() -> impl Responder{
 }
 
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
-pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
+pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session, request: HttpRequest) -> impl Responder{
     //Send email?
     let LoginData { email, password } = form.into_inner();
     let email = email.trim();
@@ -251,30 +252,29 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
         let code = rand::thread_rng().gen_range(100000..1000000);
         transmission_transmit("signup", &session, code).unwrap();
         confirmation_email(&account.email, &account.displayname, code).unwrap();
-
-        login_user(session, &account.username);
+        login_user(&request, account.username.clone());
         HttpResponse::Ok().body(EMAIL)
         // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
     }
 }
 
 #[post("/signout")]
-pub async fn signout(session: Session) -> impl Responder{
-    println!("Goodbye: {:?}!", logout_user(session));
+pub async fn signout(identity: Option<Identity>) -> impl Responder{
+    println!("Goodbye: {:?}!", logout_user(identity.unwrap()));
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
 
-pub fn login_user(session: Session, username: &str) -> Result<(), SessionInsertError>{
+pub fn login_user(http_request: &HttpRequest, username: String) -> Result<Identity, actix_identity::error::LoginError>{
     // session.renew();
-    session.insert("username", username)
+    Identity::login(&http_request.extensions(), username)
 }
 
-pub fn retrieve_user(session: Session) -> Result<Option<String>, SessionGetError>{
-    session.get("username")
+pub fn retrieve_user(identity: Identity) -> Result<String, actix_identity::error::GetIdentityError>{
+    identity.id()
 }
 
-pub fn logout_user(session: Session) -> Option<String>{
-    session.remove("username")
+pub fn logout_user(identity: Identity){
+    identity.logout()
 }
 
 use password_hash::{SaltString, PasswordHasher};

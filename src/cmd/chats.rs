@@ -1,3 +1,4 @@
+use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
@@ -21,8 +22,8 @@ The frontend part will consist of a field that is a forum that posts to `/chat/s
 Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
-pub async fn chats(receiver: Path<String>, session: actix_session::Session, data: Data<crate::AppData>) -> impl Responder{
-    let sender = super::signup::retrieve_user(session).unwrap().unwrap();
+pub async fn chats(receiver: Path<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
+    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let receiver = receiver.into_inner();
     let room_id = RoomID::create(&sender, &receiver);
 
@@ -64,9 +65,9 @@ struct ChatFrontData{
 /// This, given the msg and the sender, sends a message and logs it in the Database.
 /// It then can be retrieved from the receive message function.
 #[post("/chat/send")]
-pub async fn send(json: Json<(String, String)>, session: Session, app: Data<crate::AppData>) -> impl Responder{
+pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
     //Here, `json` represents the reciever and the msg intended to be sent.
-    let sender = super::signup::retrieve_user(session).unwrap().unwrap();
+    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
     let (room_title, msg) = json.into_inner();
     let room_id = RoomID::create(&room_title, &sender);
@@ -105,8 +106,8 @@ impl RoomID{
 /// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it. 
 /// This is opposed to the method used above when refreshing the page which simply obtains all of the Vec<ChatFrontData> rather than the new ones.
 #[post("/chat/receive")]
-pub async fn receive(session: Session, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
-    let same = super::signup::retrieve_user(session).unwrap().unwrap();
+pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
+    let same = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let opposite = opposite.into_inner();
     let room_id = RoomID::create(&same, &opposite);
     //select with room_id from db and return new messages with the LIVE query.

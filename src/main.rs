@@ -6,6 +6,7 @@ use actix_session_surrealdb::SurrealSessionStore;
 use actix_session::storage::SessionStore;
 
 mod cmd;
+use chrono::Duration;
 use cmd::*;
 use cmd::signup::*;
 use cmd::profile::*;
@@ -53,7 +54,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             App::new()
-            // .wrap(IdentityMiddleware::default())
+            .wrap(IdentityMiddleware::builder()
+                .visit_deadline(Some(Duration::days(30).to_std().unwrap()))
+                .login_deadline(Some(Duration::days(365).to_std().unwrap()))
+                .build()
+            )
             .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()

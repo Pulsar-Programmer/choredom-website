@@ -1,4 +1,5 @@
 use crate::{db::{query, query_value}, AppData};
+use actix_identity::Identity;
 use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest};
 use surrealdb::sql::Thing;
 use super::sites::{POST, TASK};
@@ -39,11 +40,11 @@ pub async fn post() -> impl Responder{
 }
 
 #[post("/post-job-2")]
-pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, session: Session) -> impl Responder{
+pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     // let user = request.get_identity();
     // let username = user.unwrap().id().unwrap();
     //ditch actix-identity and now use pure actix-session
-    let username = retrieve_user(session).unwrap().unwrap();
+    let username = retrieve_user(identity.unwrap()).unwrap();
     
     let JobData { title, body, time, price, location } = form.into_inner();
 

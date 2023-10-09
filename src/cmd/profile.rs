@@ -1,6 +1,7 @@
 use crate::{db::{query, query_value}, AppData};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
+use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
 
@@ -83,10 +84,10 @@ pub struct GroupRatingData{
 }
 
 #[post("/users/{username}/rate")]
-pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, session: Session) -> impl Responder{
+pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
-    let session_username = retrieve_user(session).unwrap().unwrap(); //make sure you cannot submit form if you are not signed in
+    let session_username = retrieve_user(identity.unwrap()).unwrap(); //make sure you cannot submit form if you are not signed in
     println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
@@ -188,9 +189,9 @@ pub async fn settings(app_data: Data<AppData>) -> impl Responder{
 }
 
 #[post("/settings-post")]
-pub async fn settings_post(session: Session, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
+pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
-    let username = retrieve_user(session).unwrap().unwrap();
+    let username = retrieve_user(identity.unwrap()).unwrap();
     //edit stuff NOT together, as in, independently?
 
     let settings_data = SettingsData2::new(settings_data, username);
@@ -216,7 +217,7 @@ pub async fn upload() -> impl Responder{
 }
 
 #[post("/settings/upload/form")]
-pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, session: Session) -> Result<HttpResponse, actix_web::Error>{
+pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> Result<HttpResponse, actix_web::Error>{
     
     use futures::TryStreamExt;
     use futures::StreamExt;
@@ -250,7 +251,7 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
     }
 
     let new_state = super::signup::AccountState::Pending;
-    let username = super::signup::retrieve_user(session).unwrap().unwrap();
+    let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let params = (("state", "username"), (new_state, username));
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
@@ -283,11 +284,11 @@ struct PasswordChangeData{
 }
 
 #[post("/settings/password/form")]
-pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>, session: Session) -> impl Responder{
+pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>, identity: Option<Identity>) -> impl Responder{
 
     let PasswordData { p_old, p_new } = form.into_inner();
 
-    let username = retrieve_user(session).unwrap().unwrap();
+    let username = retrieve_user(identity.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
     let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
@@ -339,9 +340,9 @@ struct ChangeFundData{
 
 
 #[post("/settings/funds/change")]
-async fn deposit(form: Form<FundData>, data: web::Data<AppData>, session: Session) -> impl Responder{
+async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let FundData { changed_funds, password, add } = form.into_inner();
-    let username = retrieve_user(session).unwrap().unwrap();
+    let username = retrieve_user(identity.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
     
@@ -401,10 +402,10 @@ pub struct TransferData{
 
 
 #[post("/settings/funds/transfer/form")]
-async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, session: Session) -> impl Responder{
+async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     
     let CreditsData { credits, self_password, to_username } = form.into_inner();
-    let self_username = retrieve_user(session).unwrap().unwrap();
+    let self_username = retrieve_user(identity.unwrap()).unwrap();
 
 
     let mut db = data.db.lock().await;
