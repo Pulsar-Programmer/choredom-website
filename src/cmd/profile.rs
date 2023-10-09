@@ -320,7 +320,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
 
 
 
-#[get("/settings/delete")]
+#[post("/settings/delete")]
 pub async fn delete(identity: Option<Identity>, password: Form<String>, data: Data<AppData>) -> impl Responder{
     let username = retrieve_user(identity.unwrap()).unwrap();
     let password_entered = password.into_inner();
