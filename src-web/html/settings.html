@@ -22,7 +22,7 @@
     <a href="/settings/upload">Upload a Gov ID</a>
     
     <input type="submit" value="Submit">
-    <form id="delete-account-form" action="/delete-account" method="POST">
+    <form id="delete-account-form" action="/settings/delete" method="POST" >
       <input type="password" id="password-confirmation" placeholder="Confirm with your password">
       <input type="submit" value="Delete Account" onclick="return confirmDeletion()">
   </form>
@@ -34,10 +34,7 @@
           alert("Please enter your password to confirm deletion.");
           return false;
       }
-      if (!pass) {
-          alert("Your password isn't correct");
-          return false;
-      }
+      
       return confirm('Are you sure you want to delete your account? This action cannot be undone.');
   }
   </script>

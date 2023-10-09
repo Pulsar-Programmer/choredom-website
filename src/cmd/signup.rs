@@ -4,7 +4,6 @@ use crate::db::{query, query_value, transmission_transmit, transmission_receive}
 use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
-use futures::executor::enter;
 use lettre::transport::smtp::response::Response;
 use actix_session::{Session, SessionGetError, SessionInsertError};
 use rand::Rng;

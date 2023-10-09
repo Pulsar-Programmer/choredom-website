@@ -3,7 +3,7 @@ use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
 use actix_identity::Identity;
 use actix_session::Session;
-use actix_web::{get, post, Responder, web::{Data, Form, self}, HttpResponse};
+use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
 
 
 #[get("/users/{username}")]
@@ -310,6 +310,43 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     query_value(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", Some(PasswordChangeData{password, password_salt: password_salt.to_string(), username}));
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
+
+
+
+
+
+
+
+
+
+
+#[get("/settings/delete")]
+pub async fn delete(identity: Option<Identity>, password: Json<String>, data: Data<AppData>) -> impl Responder{
+    let username = retrieve_user(identity.unwrap()).unwrap();
+    let password_entered = password.into_inner();
+    let mut db = data.db.lock().await;
+    
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    let result = result.get(0).unwrap().as_ref().unwrap();
+    if result.len() != 1{
+        //^feh
+        todo!() // should never happen if correct things are true
+    }
+    let Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ } = &result[0];
+    
+    if !verify_password(&password_entered, password_db, salt).unwrap() {
+        //^feh incorrect passwords
+        todo!()
+    }
+
+    query::<()>(&mut db, "DELETE accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+}
+
+
+
+
 
 
 
