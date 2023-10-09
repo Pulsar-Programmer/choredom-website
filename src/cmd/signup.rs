@@ -135,16 +135,16 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     query_value(&mut db, r#"
     CREATE accounts
     SET
-    username = type::string($username),
-    displayname = type::string($displayname),
+    username = $username,
+    displayname = $displayname,
     creation_date = $creation_date,
-    email = type::string($email),
+    email = $email,
     page = $page,
     state = $state,
     password = $password,
     password_salt = $password_salt,
     balance = $balance,
-    location = type::string($location);
+    location = $location;
     "#, Some(account)).await.unwrap();
 
     login_user(&request, username).unwrap();
