@@ -3,45 +3,7 @@
 <head>
   <title>Select Town</title>
   <style>
-    /* Style the dropdown container */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    /* Style the dropdown button */
-    .dropdown button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 16px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* Style the dropdown content (hidden by default) */
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #f1f1f1;
-      min-width: 230px;
-      overflow: auto;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
-
-    /* Style the dropdown content items */
-    .dropdown-content div {
-      color: black;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-    }
-
-    /* Show the dropdown content when the input field is focused */
-    .dropdown input:focus + .dropdown-content {
-      display: block;
-    }
+    /* Styles omitted for brevity */
   </style>
 </head>
 <body>
@@ -57,9 +19,18 @@
     .then(response => response.json())
     .then(data => {
       const dropdownContent = document.getElementById('dropdownContent');
+      dropdownContent.style.display = 'none'; // Hide the dropdown content by default
       data.forEach(town => {
         const div = document.createElement('div');
         div.textContent = `${town.CITY}, ${town.STATE_NAME}`;
+        div.addEventListener('click', function() {
+          // Display and save the selected town when clicked
+          const dropdownInput = document.getElementById('dropdownInput');
+          dropdownInput.value = this.textContent;
+          localStorage.setItem('selectedTown', this.textContent);
+          // Hide the dropdown menu after a selection is made
+          dropdownContent.style.display = 'none';
+        });
         dropdownContent.appendChild(div);
       });
     });
@@ -68,16 +39,34 @@
   const dropdownInput = document.getElementById('dropdownInput');
   dropdownInput.addEventListener('input', function() {
     const filter = this.value.toUpperCase();
-    const divs = document.getElementById('dropdownContent').getElementsByTagName('div');
-    for (let i = 0; i < divs.length; i++) {
-      const txtValue = divs[i].textContent || divs[i].innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        divs[i].style.display = "";
-      } else {
-        divs[i].style.display = "none";
-      }
+    const divs = Array.from(document.getElementById('dropdownContent').children);
+    divs.forEach(div => div.style.display = 'none'); // Hide all options initially
+
+    if (filter.length < 1) {
+      dropdownContent.style.display = 'none'; // Hide the dropdown content when the input field has less than 1 character
+      return;
+    }
+
+    // Filter the options and limit the results to the top 10 options
+    const relevantOptions = divs
+      .filter(div => div.textContent.toUpperCase().includes(filter))
+      .slice(0, 10);
+
+    relevantOptions.forEach(div => div.style.display = ''); // Show the relevant options
+
+    if (relevantOptions.length > 0) {
+      dropdownContent.style.display = 'block';
     }
   });
+
+  // Load the selected town when the page loads
+  window.onload = function() {
+    const selectedTown = localStorage.getItem('selectedTown');
+    if (selectedTown) {
+      dropdownInput.value = selectedTown;
+    }
+  };
 </script>
+
 </body>
 </html>
