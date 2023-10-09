@@ -13,9 +13,9 @@ actix-multipart = "0.6.1"
 # actix-rt = "2.9.0"
 # actix-telepathy = "0.5.3"
 # actix-cors = "0.6.4"
-actix-session = "0.7.2" #we have to fix this #115
+actix-session = "0.8.0"
 actix-identity = "0.6.0"
-actix-session-surrealdb = "0.1.6"
+actix-session-surrealdb = "0.1.7"
 
 
 serde = { version = "1.0.188", features = ["derive"] }
