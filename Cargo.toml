@@ -15,7 +15,7 @@ actix-multipart = "0.6.1"
 # actix-cors = "0.6.4"
 actix-session = "0.8.0"
 actix-identity = "0.6.0"
-# actix-session-surrealdb = "0.1.5"
+actix-session-surrealdb = "0.1.6"
 
 
 serde = { version = "1.0.188", features = ["derive"] }
