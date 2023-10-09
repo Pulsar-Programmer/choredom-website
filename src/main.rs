@@ -1,9 +1,9 @@
-use actix_identity::{Identity, IdentityMiddleware};
+use actix_identity::IdentityMiddleware;
 use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
-// use actix_identity::IdentityMiddleware;
 use actix_session::SessionMiddleware;
-// use actix_session_surrealdb::SurrealSessionStore;
+use actix_session_surrealdb::SurrealSessionStore;
+use actix_session::storage::SessionStore;
 
 mod cmd;
 use cmd::*;
@@ -47,16 +47,17 @@ async fn main() -> std::io::Result<()> {
     let app_state = web::Data::new(AppData {
         db: Arc::new(Mutex::new(db.clone())),
     });
+
     // key needs to be generated outside the closure or else each worker gonna get a diff key
     let key = Key::generate();
     HttpServer::new(move|| {
         wapp!(
             App::new()
             // .wrap(IdentityMiddleware::default())
-            // .wrap(SessionMiddleware::builder(
-            //     SurrealSessionStore::from_connection(db.clone(), "sessions"),
-            //     key.clone(),
-            // ).cookie_same_site(SameSite::None).build())
+            .wrap(SessionMiddleware::builder(
+                SurrealSessionStore::from_connection(db.clone(), "sessions"),
+                key.clone()
+            ).build())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect,
