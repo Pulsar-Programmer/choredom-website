@@ -182,8 +182,8 @@ impl SettingsData2{
 
 #[get("/settings")]
 pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    if identity.is_some(){
-        return HttpResponse::BadRequest().finish();
+    if identity.is_none(){
+        return HttpResponse::BadRequest().finish(); //^feh > should have a better body representing the error and bad request..
     }
     // todo!();
     //get login data
@@ -325,6 +325,9 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
 
 #[post("/settings/delete")]
 pub async fn delete(identity: Option<Identity>, password: Form<String>, data: Data<AppData>) -> impl Responder{
+    println!("Test");
+
+
     let username = retrieve_user(identity.unwrap()).unwrap();
     let password_entered = password.into_inner();
     let mut db = data.db.lock().await;

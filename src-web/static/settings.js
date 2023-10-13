@@ -19,3 +19,40 @@ fetch(url, {
 .catch((error) => {
   console.error('Error:', error);
 });
+
+
+
+
+
+
+
+
+
+
+window.addEventListener("load", function() {
+    // const submitButton = form.querySelector('input[type="submit"]');
+// submitButton.addEventListener("click", function(event) {
+const form = document.getElementById("delete-account-form");
+form.addEventListener("submit", function(event) {
+    
+
+    
+    var passwordConfirmation = document.getElementById("password-confirmation").value;
+    if (passwordConfirmation === "") {
+        alert("Please enter your password to confirm deletion.");
+        event.preventDefault();
+    }
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')){
+        form.submit();
+    }
+
+});
+});
+
+
+
+
+    
+    
+    
+    
