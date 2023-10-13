@@ -181,7 +181,10 @@ impl SettingsData2{
 
 
 #[get("/settings")]
-pub async fn settings(app_data: Data<AppData>) -> impl Responder{
+pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+    if identity.is_some(){
+        return HttpResponse::BadRequest().finish();
+    }
     // todo!();
     //get login data
     //give acct data
