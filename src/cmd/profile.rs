@@ -12,7 +12,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
     let username = username.into_inner();
     
     let mut db = app_data.db.lock().await;
-    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", username))).await else {
+    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", username))).await else {
         return HttpResponse::BadRequest().finish();
     };
     let Some(res1) = res2.get(0) else {
@@ -91,7 +91,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
-    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = type::string($username);", Some(("username", username.as_str()))).await.unwrap();
+    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", username.as_str()))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
@@ -113,7 +113,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     SET 
     page.avg_rating = $new_avg,
     page.reviews += $review
-    WHERE username = type::string($username);";
+    WHERE username = $username;";
 
     let review = PageRatingData{stars: sums, body, username: session_username};
     println!("{review:?}");
@@ -200,12 +200,12 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     let settings_data = SettingsData2::new(settings_data, username);
 
     let surrealql = "UPDATE accounts SET
-        displayname = type::string($displayname),
-        page.bio = type::string($bio),
+        displayname = $displayname,
+        page.bio = $bio,
         username = $username1,
         location = $location,
         email = $email
-    WHERE username = type::string($username2);
+    WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
     query_value(&mut db, surrealql, Some(settings_data)).await.unwrap();
@@ -294,7 +294,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     let username = retrieve_user(identity.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1{
         //^feh
@@ -329,7 +329,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<String>, data: Da
     let password_entered = password.into_inner();
     let mut db = data.db.lock().await;
     
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1{
         //^feh
@@ -342,7 +342,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<String>, data: Da
         todo!()
     }
 
-    query::<()>(&mut db, "DELETE accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
+    query::<()>(&mut db, "DELETE accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -449,7 +449,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
     let mut db = data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &to_username))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &to_username))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1 {
         //^feh
@@ -467,8 +467,8 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     let transferdata = TransferData{credits, self_username, to_username};
 
     let surrealql = "
-    UPDATE accounts SET balance -= $credits WHERE username = type::string($self_username);
-    UPDATE accounts SET balance += $credits WHERE username = type::string($to_username);
+    UPDATE accounts SET balance -= $credits WHERE username = $self_username;
+    UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
     query_value(&mut db, surrealql, Some(transferdata)).await.unwrap();
 
@@ -510,7 +510,7 @@ pub struct ContactsInfo{
 pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
      let surrealql = r#"
     BEGIN TRANSACTION;
-        LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
+        LET $id = (SELECT id FROM accounts WHERE username=$username)[0].id;
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
