@@ -1,6 +1,6 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
 use crate::AppData;
-use crate::db::{query, query_value, transmission_transmit, transmission_receive};
+use crate::db::{query, query_value};
 use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
@@ -123,7 +123,8 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
         todo!()
     }
     let code = rand::thread_rng().gen_range(100000..1000000);
-    transmission_transmit("signup", &session, code).unwrap();
+    // transmission_transmit("signup", &session, code).unwrap();
+    signup_transmission_transmit(&session, code.to_string());
     confirmation_email(&to_email, &displayname, code).unwrap();
 
     let (password, salt) = password_hash_argon2(password).unwrap();
@@ -154,8 +155,10 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 #[post("/ve")]
 pub async fn home_redirect(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
     // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    let true_code: i64 = transmission_receive("signup", &session).unwrap();
-    if code.into_inner().code != true_code{
+    // let true_code: i64 = transmission_receive("signup", &session).unwrap();
+    //ERROR HERE: Home redirect is used twice. Once with signup and once with login. Can we factor this out but be more efficient about it? This is why signup works but not login, too.
+    let transmitter = signup_transmission_receive(&session).unwrap();
+    if verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
         logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
         //^feh
         return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
@@ -249,7 +252,8 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     else{
         let code = rand::thread_rng().gen_range(100000..1000000);
-        transmission_transmit("signup", &session, code).unwrap();
+        // transmission_transmit("signup", &session, code).unwrap();
+        login_transmission_transmit(&session, code.to_string()).unwrap();
         confirmation_email(&account.email, &account.displayname, code).unwrap();
         login_user(&request, account.username.clone());
         HttpResponse::Ok().body(EMAIL)
@@ -301,4 +305,59 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
     let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
     
     Ok(stored_password == entered_password_hash.to_string())
+}
+
+
+
+
+
+#[derive(serde::Serialize, serde::Deserialize)]
+///Incorporate this when transferring data.
+pub struct EmailTransmitter{
+    hashed_code: String,
+    salt: String,
+}
+impl EmailTransmitter{
+    fn new(unhashed_code: String) -> anyhow::Result<Self>{
+        let (hashed_code, salt) = password_hash_argon2(unhashed_code)?;
+        Ok(Self{
+            hashed_code,
+            salt: salt.to_string(),
+        })
+    }
+}
+
+
+
+fn login_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
+    let transmitter = EmailTransmitter::new(unhashed_code)?;
+    transmission_transmit("login", session, transmitter)
+}
+
+fn login_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
+    transmission_receive("login", session)
+}
+
+fn signup_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
+    let transmitter = EmailTransmitter::new(unhashed_code)?;
+    transmission_transmit("signup", session, transmitter)
+}
+
+fn signup_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
+    transmission_receive("signup", session)
+}
+
+
+
+
+
+fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &actix_session::Session, args: Args) -> Result<(), Box<dyn std::error::Error>>{
+    let derived_field = format!("{}_transmitter", field);
+    session.insert(derived_field, args)?;
+    Ok(())
+}
+fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
+    let derived_field = format!("{}_transmitter", field);
+    let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
+    Ok(serde_json::from_str(&value)?)
 }
