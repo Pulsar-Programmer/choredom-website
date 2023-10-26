@@ -1,4 +1,4 @@
-use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE};
+use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE, EMAIL_LOG};
 use crate::AppData;
 use crate::db::{query, query_value};
 use actix_identity::Identity;
@@ -153,10 +153,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 }
 
 #[post("/ve")]
-pub async fn home_redirect(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
-    // println!("{} ; {}", code.0.code, *app_data.code.lock().unwrap());
-    // let true_code: i64 = transmission_receive("signup", &session).unwrap();
-    //ERROR HERE: Home redirect is used twice. Once with signup and once with login. Can we factor this out but be more efficient about it? This is why signup works but not login, too.
+pub async fn home_redirect_signup(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
     let transmitter = signup_transmission_receive(&session).unwrap();
     if verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
         logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
@@ -167,6 +164,23 @@ pub async fn home_redirect(session: Session, code: Form<Code>, identity: Option<
     // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
+
+#[post("/ve_log")]
+pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
+    let transmitter = login_transmission_receive(&session).unwrap();
+    if verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+        logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
+        //^feh
+        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+        // todo!()
+    }
+    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
+    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+}
+
+
+
+
 
 
 fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response>{
@@ -256,7 +270,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
         login_transmission_transmit(&session, code.to_string()).unwrap();
         confirmation_email(&account.email, &account.displayname, code).unwrap();
         login_user(&request, account.username.clone());
-        HttpResponse::Ok().body(EMAIL)
+        HttpResponse::Ok().body(EMAIL_LOG)
         // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
     }
 }

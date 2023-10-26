@@ -22,7 +22,8 @@ pub mod sites{
         PROFILE; "profile",
         CONTACT; "contact",
         PASSWORD; "password",
-        TRANSFER; "transfer"
+        TRANSFER; "transfer",
+        EMAIL_LOG; "email_login"
     );
 }
 
