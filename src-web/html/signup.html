@@ -1,6 +1,11 @@
 <!DOCTYPE html>
-
-
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./src-web/signup.css">
+</head>
+<body>
+    <h1>Choredom Sign-up</h1>
 <form id="signupForm" action="/verify-email" method="post">
   <input name="email" type="email" class="email-input" placeholder="Email" required>
   <input id="password" name="password" type="password" class="password-input" placeholder="Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
@@ -11,12 +16,11 @@
     <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
     <div id="dropdownOptions" class="dropdown-options"></div>
   </div>
-  <input type="submit" class="continue">
-</form>
-
-<script src="./src-web/static/signup.js"></script>
+  <input type="submit" class="continue button is-primary">
+<body>
+    
+</body>
 <script>
-    // Include the JavaScript code here...
   fetch('/us_cities.json')
   .then(response => response.json())
   .then(data => populateDropdown(data));
@@ -69,5 +73,3 @@
       }
   }
 </script>
-
-<link rel="stylesheet" href="./src-web/static/signup.css">

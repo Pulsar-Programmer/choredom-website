@@ -1,58 +1,57 @@
-html {
-    background-color: black;
+body {
+  font-family: Arial, sans-serif;
+  background-color: #1E90FF; /* Dodger Blue */
+  color: white;
+  padding: 20px;
 }
 
+h1 {
+  text-align: center;
+  padding: 20px;
+}
 
-.main-title {
-    position: absolute;
-    margin-left: 41%;
-    font-size: 50px;
-    color: white;
+#signupForm {
+  background-color: white;
+  color: #1E90FF; /* Dodger Blue */
+  padding: 20px;
+  border-radius: 5px;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+}
+
+#signupForm input {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  border: 1px solid #1E90FF; /* Dodger Blue */
+}
+
+#signupForm .button {
+  background-color: #1E90FF; /* Dodger Blue */
+  color: white;
+  border: none;
+}
+
+#signupForm .button:hover {
+  background-color: #104E8B; /* Darker Dodger Blue */
+}
+
+@media (min-width: 768px) {
+  #signupForm {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
   
-  .email-input {
-    position: absolute;
-    margin-left: 38%;
-    margin-top: 13%;
-    font-size: 20px;
+  #signupForm input {
+    flex: 1 0 220px;
   }
   
-  .password-input {
-    position: absolute;
-    margin-left: 38%;
-    margin-top: 17%;
-    font-size: 20px;
+  #signupForm .button {
+    flex-basis: 100%;
   }
-  
-  .username-input {
-    position: absolute;
-    margin-left: 38%;
-    margin-top: 25%;
-    font-size: 20px;
-  }
-  
-  .displayname-input {
-    position: absolute;
-    margin-left: 38%;
-    margin-top: 29%;
-    font-size: 20px;
-  }
-  
-  .confirmPW-input {
-    position: absolute;
-    margin-left: 38%;
-    margin-top: 21%;
-    font-size: 20px;
-  }
-  
-  .choose-cities {
-    position: absolute;
-    margin-left: 39%;
-    margin-top: 10%;
-    font-size: 20px;
-  }
-  
-  .continue {
-    position: absolute;
-    margin-left: 20px;
-  }
+}
