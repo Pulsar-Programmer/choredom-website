@@ -183,11 +183,12 @@ impl SettingsData2{
 #[get("/settings")]
 pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     if identity.is_none(){
-        return HttpResponse::BadRequest().finish(); //^feh > should have a better body representing the error and bad request..
+        return HttpResponse::BadRequest().body("To access profile settings, log in."); //^feh > should have a better body representing the error and bad request..
     }
     // todo!();
     //get login data
     //give acct data
+    //present data for them to see
     HttpResponse::Ok().body(super::sites::SETTINGS)
 }
 
@@ -320,16 +321,13 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
 
 
 
-
-
+#[derive(serde::Deserialize)]
+pub struct DeleteConfirmation{password:String}
 
 #[post("/settings/delete")]
-pub async fn delete(identity: Option<Identity>, password: Form<String>, data: Data<AppData>) -> impl Responder{
-    println!("Test");
-
-
+pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
     let username = retrieve_user(identity.unwrap()).unwrap();
-    let password_entered = password.into_inner();
+    let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
     let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();

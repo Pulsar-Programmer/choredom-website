@@ -60,7 +60,8 @@ post_form.addEventListener("submit", function(event) {
         alert("Please enter your password to confirm deletion.");
         event.preventDefault();
     }
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')){
+    let didConfirm = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+    if (didConfirm){
         post_form.submit();
     }
 
