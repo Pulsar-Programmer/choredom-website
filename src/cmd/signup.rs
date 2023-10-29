@@ -5,7 +5,7 @@ use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use lettre::transport::smtp::response::Response;
-use actix_session::{Session, SessionGetError, SessionInsertError};
+use actix_session::Session;
 use rand::Rng;
 
 #[derive(serde::Deserialize)]
@@ -155,7 +155,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 #[post("/ve")]
 pub async fn home_redirect_signup(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
     let transmitter = signup_transmission_receive(&session).unwrap();
-    if verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
         logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
         //^feh
         return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
@@ -168,7 +168,7 @@ pub async fn home_redirect_signup(session: Session, code: Form<Code>, identity: 
 #[post("/ve_log")]
 pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
     let transmitter = login_transmission_receive(&session).unwrap();
-    if verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
         logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
         //^feh
         return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
