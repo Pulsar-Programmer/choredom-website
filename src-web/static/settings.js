@@ -29,8 +29,29 @@ function settings_post(){
 window.addEventListener("load", function() {
     // const submitButton = form.querySelector('input[type="submit"]');
 // submitButton.addEventListener("click", function(event) {
-const form = document.getElementById("delete-account-form");
-form.addEventListener("submit", function(event) {
+
+// const post_form = document.getElementById("delete-account-form");
+// post_form.addEventListener("submit", function(event) {
+    
+
+//     dont let it submit invalid fields(just like in signup or whatever)
+//     if (){
+//         alert("Please don't submit a blank field.")
+//         event.preventDefault();
+//     }
+
+//     post_form.submit();
+
+// });
+
+
+
+
+
+
+
+const delete_form = document.getElementById("delete-account-form");
+post_form.addEventListener("submit", function(event) {
     
 
     
@@ -40,7 +61,7 @@ form.addEventListener("submit", function(event) {
         event.preventDefault();
     }
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')){
-        form.submit();
+        post_form.submit();
     }
 
 });
