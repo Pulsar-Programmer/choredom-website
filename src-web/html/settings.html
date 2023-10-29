@@ -3,27 +3,27 @@
 </head>
 <form action="/settings-post" method="POST">
     <label for="username">Username:</label><br>
-    <input type="text" id="username" name="username"><br>
+    <input type="text" id="username" name="username"pattern="[A-Za-z0-9]+" title="Should only contain letters and numbers"required><br>
     
     <a href="/settings/password">Change Password</a>
 
     <label for="displayname">Display Name:</label><br>
-    <input type="text" id="displayname" name="displayname"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"><br>
+    <input type="text" id="displayname" name="displayname"pattern="[A-Za-z0-9 ]+"title="Should only contain letters, spaces, and numbers"required><br>
 
     <label for="location">Location:</label><br>
-    <input type="text" id="location" name="location"><br>
+    <input type="text" id="location" name="location"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"required><br>
 
-    <label for="email">Location:</label><br>
-    <input type="text" id="emal" name="email"><br>
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email"pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Should only contain valid characters only"required><br>
 
     <label for="bio">Bio:</label><br>
-    <textarea id="bio" name="bio"></textarea><br>
-  </form>
+    <textarea id="bio" name="bio"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"required></textarea><br>
 
-    <a href="/settings/upload">Upload a Gov ID</a>
     <input type="submit" value="Submit">
+  </form>
+    <a href="/settings/upload">Upload a Gov ID</a>
     <form id="delete-account-form" action="/settings/delete" method="POST" >
-      <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password">
+      <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
       <input type="submit" value="Delete Account">
   </form>
   
