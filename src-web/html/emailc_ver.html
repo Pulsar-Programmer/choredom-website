@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Choredom Email Verification</title>
+<script src="/src-web/static/email.js"></script>
+</head>
+<body>
+<h1>Enter your 6-digit email verification code</h1>
+<form action="/ve_set" method="POST">
+    <input type="text" name="code" id="code" placeholder="6-digit code" required maxlength="6" minlength="6">
+    <input type="submit" value="Verify">
+</form>
+</body>
+</html>

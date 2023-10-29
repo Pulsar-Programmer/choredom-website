@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Email</title>
+    <script src="/src-web/static/emailc.js"></script>
+</head>
+<body>
+    <h2>Change Email</h2>
+
+    <form id="emailForm" method="post" action="/settings/email/form">
+        <label for="currentemail">Current email:</label><br>
+        <input type="Email" id="currentemail" name="e_old" required><br>
+
+        <label for="newPassword">New email:</label><br>
+        <input id="newEmail" name="e_new" type="email"pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Should only contain valid characters only"required><br>
+
+        <input type="submit" value="Change Email">
+    </form>
+</body>
+</html>

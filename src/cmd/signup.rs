@@ -328,11 +328,11 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
 #[derive(serde::Serialize, serde::Deserialize)]
 ///Incorporate this when transferring data.
 pub struct EmailTransmitter{
-    hashed_code: String,
-    salt: String,
+    pub hashed_code: String,
+    pub salt: String,
 }
 impl EmailTransmitter{
-    fn new(unhashed_code: String) -> anyhow::Result<Self>{
+    pub fn new(unhashed_code: String) -> anyhow::Result<Self>{
         let (hashed_code, salt) = password_hash_argon2(unhashed_code)?;
         Ok(Self{
             hashed_code,
@@ -362,15 +362,12 @@ fn signup_transmission_receive(session: &actix_session::Session) -> Result<Email
 }
 
 
-
-
-
-fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &actix_session::Session, args: Args) -> Result<(), Box<dyn std::error::Error>>{
+pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &actix_session::Session, args: Args) -> Result<(), Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
     session.insert(derived_field, args)?;
     Ok(())
 }
-fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
+pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
     let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
     Ok(serde_json::from_str(&value)?)

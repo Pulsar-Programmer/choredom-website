@@ -478,11 +478,63 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
 
+use super::signup::{EmailTransmitter, transmission_transmit, transmission_receive};
+fn settings_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
+    let transmitter = EmailTransmitter::new(unhashed_code)?;
+    transmission_transmit("settings", session, transmitter)
+}
+
+fn settings_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
+    transmission_receive("settings", session)
+}
+
+#[get("/settings/email")]
+pub async fn email_change(identity: Option<Identity>) -> impl Responder{
+    HttpResponse::Ok().body(super::sites::EMAIL_CHANGE)
+}
 
 
+#[derive(serde::Serialize, serde::Deserialize)]
+struct EmailData{
+    e_old: String,
+    e_new: String,
+}
 
+#[post("/settings/email/form")]
+pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
+    let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
+    // let current_email_stored =
+    let mut db = app.db.lock().await;
+    let q1 = query::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", Some(("username", retrieve_user(identity.unwrap()).unwrap()))).await.unwrap();
+    let q2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
+    if q2.email != current_email_input{
+        //^feh
+        return HttpResponse::Conflict().finish();
+    }
+    //use current_email_input to email
+    use rand::Rng;
+    let code = rand::thread_rng().gen_range(100000..1000000);
+    settings_transmission_transmit(&session, code.to_string()).unwrap();
+    settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
 
+    HttpResponse::Ok().body(crate::sites::EMAIL_CHANGE_VERIFY)
+}
 
+fn settings_verification_email(email: &String, displayname: &String, new_email: &String, code: i32) -> anyhow::Result<lettre::transport::smtp::response::Response>{
+    let body = format!("Dear {},\nYour account has been sent a request to change emails from {} to {}. Your verification code is {}.", displayname, email, new_email, code);
+    email_user(email, "Choredom - Request to Change Emails", body)
+}
+#[post("/ve_set")]
+pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, identity: Option<Identity>) -> impl Responder{
+    let transmitter = settings_transmission_receive(&session).unwrap();
+    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+        //^feh
+        return HttpResponse::Conflict().finish();
+        // todo!()
+    }
+    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+}
 
 
 

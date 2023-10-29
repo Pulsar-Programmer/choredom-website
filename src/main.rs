@@ -75,7 +75,8 @@ async fn main() -> std::io::Result<()> {
             password_change, password_change_form,
             delete,
             dispute_management, contacts_form,
-            transfer, transfer_funds
+            transfer, transfer_funds,
+            email_change, settings_email, home_redirect_settings
             // chat, chat_ws
             // accounts
         )
