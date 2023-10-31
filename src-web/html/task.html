@@ -11,29 +11,40 @@
 </head>
 <body>
   <header>
-    <div id="dropdown" class="dropdown">
-        <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
-        <div id="dropdownOptions" class="dropdown-options"></div>
-    </div>
-    <div id="jobs_add">
-      <button onclick="get_location_data()">Filter Towns</button>
-      <input id="filterInput" type="text" placeholder="Filter towns...">
-    </div>
-    <div id="search">
-      <input id="searchInput" type="text" placeholder="Search posts...">
-      <button onclick="searchPosts()">Search</button>
-    </div>    
     <h1>Choredom</h1>
     <a href="#">
       <img src="assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
       <a href="/">Home</a>
-      <!-- <a href="/chat">Chat</a> -->
       <a href="/post-job">Post</a>
       <a href="#">Tasks in your Area</a>
       <a href="/settings">Settings</a>
     </nav>
+    <form id="filters" onsubmit="event.preventDefault(); applyFilters();">
+      <label>
+        Title:
+        <input id="titleInput" type="text" placeholder="Filter by title...">
+      </label>
+      <label>
+        Body Text:
+        <input id="bodyInput" type="text" placeholder="Filter by body text...">
+      </label>
+      <label>
+        Poster:
+        <input id="posterInput" type="text" placeholder="Filter by poster...">
+      </label>
+      <label>
+        Location:
+        <input id="locationInput" type="text" placeholder="Filter by location...">
+      </label>
+      <label>
+        Price Range:
+        <input id="minPriceInput" type="number" placeholder="Min price...">
+        <input id="maxPriceInput" type="number" placeholder="Max price...">
+      </label>
+      <button type="submit">Apply Filters</button>
+    </form>
   </header>
   <main>
     <div id="job-container">
