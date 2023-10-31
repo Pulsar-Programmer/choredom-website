@@ -60,4 +60,23 @@ post_form.addEventListener("submit", function(event) {
     }
 
 });
+    fetch('http://localhost:8080/settings/present-data', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        prefill(data.username, data.displayname, data.location)
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 });
+
+function prefill(username, displayname, location){
+    document.getElementById('displayname').value = displayname;
+    document.getElementById('username').value = username;
+    document.getElementById('location').value = location;
+}

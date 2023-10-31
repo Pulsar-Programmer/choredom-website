@@ -191,6 +191,30 @@ pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> im
     //present data for them to see
     HttpResponse::Ok().body(super::sites::SETTINGS)
 }
+#[derive(serde::Serialize)]
+struct SettingsPresentData<'a>{
+    username: &'a str,
+    displayname: &'a str,
+    location: &'a str,
+}
+
+#[post("/settings/present_data")]
+pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+    let mut db = app_data.db.lock().await;
+    let q1 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", Some(("username", retrieve_user(identity.unwrap()).unwrap()))).await.unwrap();
+    let curry_2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
+    let Account { displayname, username, creation_date:_, location, email:_, page:_, state:_, password:_, password_salt:_, balance:_ } = curry_2;
+    let settings_data = SettingsPresentData{username, displayname, location};
+    serde_json::to_string(&settings_data).unwrap()
+}
+
+
+
+
+
+
+
+
 
 #[post("/settings-post")]
 pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{

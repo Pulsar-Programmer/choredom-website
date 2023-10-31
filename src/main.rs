@@ -1,9 +1,7 @@
 use actix_identity::IdentityMiddleware;
-use actix_web::cookie::SameSite;
 use actix_web::{ web, App, HttpServer, cookie::Key};
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
-use actix_session::storage::SessionStore;
 
 mod cmd;
 use chrono::Duration;
