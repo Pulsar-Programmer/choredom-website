@@ -6,19 +6,6 @@ body {
   padding: 0;
 }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-  background-color: #1dbf73;
-  color: white;
-}
-
-header a {
-  color: white;
-  text-decoration: none;
-  margin-right: 15px;
-}
 
 .container {
   max-width: 360px;
@@ -64,3 +51,46 @@ h1 {
 #signupForm .button:hover {
   background-color: #16a45f;
 }
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #1dbf73;
+    color: white;
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+header h1 {
+    font-size: 24px;
+}
+
+.container {
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+form {
+    background-color: white;
+    padding: 40px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.1);
+}
+
+/* Add more styles as needed */
