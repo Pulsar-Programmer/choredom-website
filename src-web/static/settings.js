@@ -80,3 +80,7 @@ function prefill(username, displayname, location){
     document.getElementById('username').value = username;
     document.getElementById('location').value = location;
 }
+
+window.onload = function() {
+    prefill();
+}
