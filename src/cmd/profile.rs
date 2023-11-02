@@ -206,7 +206,8 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let curry_2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
-    serde_json::to_string(&settings_data).unwrap()
+    //YESSS SO COOOLLL
+    HttpResponse::Ok().content_type("application/json").json(settings_data)
 }
 
 
