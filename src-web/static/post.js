@@ -50,3 +50,10 @@ function filterOptions() {
     dropdown.style.display = 'block'; 
   }
 }
+
+document.getElementById('jobForm').addEventListener('submit', function(event) {
+  if (!this.checkValidity()) {
+    event.preventDefault(); // Prevent the form from being submitted
+    alert('Please enter valid formats form.');
+  }
+});
