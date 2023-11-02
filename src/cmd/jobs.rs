@@ -113,7 +113,7 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
     let mut res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
-    let result = res2.get_mut(0).unwrap().as_mut().unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
     // println!("{result:?}");
     HttpResponse::Ok().content_type("application/json").json(result)
 }

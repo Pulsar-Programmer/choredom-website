@@ -157,7 +157,7 @@ pub struct SettingsData{
     displayname: String,
     location: String,
     bio: String,
-    email: String,
+    email: String, //fix this
     // pfp_pic: 
 }
 
