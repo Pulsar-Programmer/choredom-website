@@ -135,4 +135,24 @@ html, body {
   }
 }
 
+.dropdown-options {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
   
+  .dropdown-options div {
+    cursor: pointer;
+    padding: 10px;
+  }
+  
+  .dropdown-options div:hover {
+    background-color: #f1f1f1;
+  }  
