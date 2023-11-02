@@ -1,5 +1,5 @@
 // Include the JavaScript code here...
-fetch('/src-web/assets/us_cities.json')
+fetch('/src-web/html/us_cities.json')
 .then(response => response.json())
 .then(data => populateDropdown(data));
 
@@ -57,3 +57,18 @@ document.getElementById('jobForm').addEventListener('submit', function(event) {
     alert('Please enter valid formats form.');
   }
 });
+
+
+input.addEventListener('focus', function() {
+  const dropdown = document.getElementById('dropdownOptions');
+  if (dropdown.children.length > 0) {
+    dropdown.style.display = 'block'; 
+  }
+});
+
+input.addEventListener('blur', function() {
+  const dropdown = document.getElementById('dropdownOptions');
+  dropdown.style.display = 'none'; 
+});
+
+// Existing code...
