@@ -1,90 +1,36 @@
-/* Global Styles */
-body {
-    background-color: black;
-    color: white;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-}
-
-a {
-    color: white;
-    text-decoration: none;
-}
-
-/* Header Styles */
-header {
-    background-color: #333333;
+form {
+    width: 50%;
+    margin: 0 auto;
     padding: 20px;
-    display: flex;
-    align-items: center;
+    border: 1px solid #ccc;
+  }
+input[type=text], input[type=password], input[type=email], textarea {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
 }
 
-h1 {
-    font-size: 24px;
-    margin-right: 20px;
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, textarea:focus {
+  border: 2px solid #555;
 }
-
-nav a {
-    margin-right: 10px;
-}
-
-/* Main Styles */
-main {
-    padding: 20px;
-}
-
-.post {
-    background-color: #222222;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.post h3 {
-    font-size: 18px;
-    margin-bottom: 5px;
-}
-
-.post h4 {
+input[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  input[type=submit]:hover {
+    background-color: #45a049;
+  }
+  label {
     font-size: 16px;
-    margin-bottom: 5px;
-}
-
-.post p {
-    margin-bottom: 5px;
-}
-
-/* Footer Styles */
-footer {
-    background-color: #333333;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-footer p {
-    margin: 0;
-}
-
-/* Dark Mode Styles */
-.dark-mode body {
-    background-color: #222222;
-    color: white;
-}
-
-.dark-mode header {
-    background-color: #000000;
-}
-
-.dark-mode a {
-    color: white;
-}
-
-.dark-mode .post {
-    background-color: #111111;
-}
-
-.dark-mode footer {
-    background-color: #000000;
-}
+    color: #333;
+  }
+  
