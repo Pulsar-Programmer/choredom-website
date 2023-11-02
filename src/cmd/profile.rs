@@ -193,9 +193,10 @@ pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> im
 }
 #[derive(serde::Serialize)]
 struct SettingsPresentData<'a>{
-    username: &'a str,
-    displayname: &'a str,
-    location: &'a str,
+    username: &'a String,
+    displayname: &'a String,
+    location: &'a String,
+    bio: &'a String,
 }
 
 #[post("/settings/present_data")]
@@ -203,8 +204,8 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let mut db = app_data.db.lock().await;
     let q1 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", Some(("username", retrieve_user(identity.unwrap()).unwrap()))).await.unwrap();
     let curry_2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
-    let Account { displayname, username, creation_date:_, location, email:_, page:_, state:_, password:_, password_salt:_, balance:_ } = curry_2;
-    let settings_data = SettingsPresentData{username, displayname, location};
+    let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
+    let settings_data = SettingsPresentData{username, displayname, location, bio};
     serde_json::to_string(&settings_data).unwrap()
 }
 
@@ -540,6 +541,8 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let code = rand::thread_rng().gen_range(100000..1000000);
     settings_transmission_transmit(&session, code.to_string()).unwrap();
     settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
+
+    //unfinished email change -> we must actually change this in the DB.
 
     HttpResponse::Ok().body(crate::sites::EMAIL_CHANGE_VERIFY)
 }

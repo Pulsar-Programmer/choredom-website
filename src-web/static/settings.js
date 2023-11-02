@@ -44,19 +44,20 @@ window.addEventListener("load", function() {
     })
     .then(response => response.json())
     .then(data => {
-        prefill(data.username, data.displayname, data.location)
+        prefill(data.username, data.displayname, data.location, data.bio)
     })
     .catch((error) => {
         console.error('Error:', error);
     });
 });
 
-function prefill(username, displayname, location){
+function prefill(username, displayname, location, bio){
     document.getElementById('displayname').value = displayname;
     document.getElementById('username').value = username;
     document.getElementById('location').value = location;
+    document.getElementById('bio').value = bio;
 }
 
-window.onload = function() {
-    prefill();
-}
+// window.onload = function() {
+//     prefill();
+// }
