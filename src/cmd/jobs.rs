@@ -4,7 +4,6 @@ use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, Htt
 use surrealdb::sql::Thing;
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
-use actix_session::Session;
 use super::signup::{Account, login_user, retrieve_user};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
@@ -112,7 +111,7 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
     
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let mut res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
+    let res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     // println!("{result:?}");
     HttpResponse::Ok().content_type("application/json").json(result)
@@ -134,3 +133,8 @@ struct JobRecordLink{
 }
 
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS
+
+pub fn convert_timestamp(timestamp: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let datetime = DateTime::parse_from_rfc3339(timestamp)?.with_timezone(&Utc);
+    Ok(datetime.format("%m/%d/%Y %H:%M").to_string())
+}

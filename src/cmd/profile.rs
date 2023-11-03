@@ -157,7 +157,7 @@ pub struct SettingsData{
     displayname: String,
     location: String,
     bio: String,
-    email: String, //fix this
+    // email: String, //fix this
     // pfp_pic: 
 }
 
@@ -168,13 +168,13 @@ pub struct SettingsData2{
     displayname: String,
     location: String,
     bio: String,
-    email: String,
+    // email: String,
     // pfp_pic: 
 }
 impl SettingsData2{
     fn new(data: SettingsData, username2: String) -> Self{
-        let SettingsData { username, displayname, location, bio, email } = data;
-        Self { username1: username, username2, displayname, location, bio, email }
+        let SettingsData { username, displayname, location, bio } = data;
+        Self { username1: username, username2, displayname, location, bio }
     }
 }
 
@@ -230,8 +230,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
         displayname = $displayname,
         page.bio = $bio,
         username = $username1,
-        location = $location,
-        email = $email
+        location = $location
     WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
