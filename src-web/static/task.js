@@ -13,30 +13,6 @@ function generateJobHTML(job) {
 }
 //<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
 
-// function to start chat
-function initiateChat(user1, user2) {
-    // Send a request to the server to create a chat room
-    fetch('/create-chat-room', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            user1: user1, 
-            user2: user2
-        }),
-    })
-    .then(response => response.json())
-    .then(roomId => {
-        // Redirect the user to the chat room using the generated room ID
-        let url = `/chats/room=${roomId}`;
-        window.location.href = url;
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
-
 
 // Get the post container element
 const jobContainer = document.getElementById("job-container");

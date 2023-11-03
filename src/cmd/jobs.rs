@@ -4,7 +4,7 @@ use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, Htt
 use surrealdb::sql::Thing;
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
-use super::signup::{Account, login_user, retrieve_user};
+use super::signup::{AccountState, login_user, retrieve_user};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct JobData{
@@ -111,8 +111,11 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
     
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let mut res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
+    let result: Vec<_> = res2.get_mut(0).unwrap().as_mut().unwrap().iter_mut().map(|a|{
+        a.timestamp_converted().unwrap();
+        a
+    }).collect();
     // println!("{result:?}");
     HttpResponse::Ok().content_type("application/json").json(result)
 }
@@ -125,6 +128,14 @@ struct JobPost{
 
     user: JobRecordLink,
 }
+impl JobPost{
+    fn timestamp_converted(&mut self) -> Result<(), Box<dyn std::error::Error>>{
+        self.data.time = convert_timestamp(&self.data.time)?;
+        Ok(())
+    }
+}
+
+
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct JobRecordLink{
