@@ -11,14 +11,10 @@
 </head>
 <body>
   <header>
-    <div id="dropdown" class="dropdown">
-        <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
-        <div id="dropdownOptions" class="dropdown-options"></div>
-    </div>
-    <div id="search">
-      <input id="searchInput" type="text" placeholder="Search posts...">
-      <button onclick="searchPosts()">Search</button>
-    </div>    
+    <div id="jobs_add">
+      <button onclick="get_location_data()">Filter Towns</button>
+      <input id="filterInput" type="text" placeholder="Filter towns...">
+    </div> 
     <h1>Choredom</h1>
     <a href="#">
       <img src="assets/logo.png" alt="Choredom Logo">
@@ -32,6 +28,18 @@
     </nav>
   </header>
   <main>
+    <div id="filters">
+      <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
+      <select id="statusFilter">
+        <option value="">Select verification status</option>
+        <option value="Verified">Verified</option>
+        <option value="Non-verified">Non-verified</option>
+      </select>
+      <input type="date" id="timeFilter" placeholder="Filter by time">
+      <input type="number" id="minPriceFilter" placeholder="Minimum price">
+      <input type="number" id="maxPriceFilter" placeholder="Maximum price">
+      <button onclick="filterJobs()">Apply Filters</button>
+    </div>
     <div id="job-container">
       <!-- Jobs will be added here -->
     </div>
