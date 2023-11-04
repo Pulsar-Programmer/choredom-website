@@ -1,11 +1,12 @@
 // Function to generate the HTML for each job
 function generateJobHTML(job) {
+    let verification_status = job.user.state === "Verified" ? "V" : "Unv";
     return `
         <div class="job">
         <h3>${job.data.title}</h3>
-        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
+        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)</h4>
         <p>${job.data.body}</p>
-        <p>Date and Time: ${job.data.time}</p>
+        <p>Date of Task: ${job.data.time}</p>
         <p>Price: $${job.data.price}</p>
         <a href="/${job.id}">Visit Job Post</a>
         </div>

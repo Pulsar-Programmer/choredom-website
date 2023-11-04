@@ -44,7 +44,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
             <h5 id="State">{}</h5>
             <p id="bio">{}</p>
         </div><div class=ratings>
-    "#, page.pfp_url, displayname, username, page.avg_rating, super::jobs::convert_timestamp(&creation_date.to_string()).unwrap(), state.as_str(), page.bio);
+    "#, page.pfp_url, displayname, username, page.avg_rating, creation_date.format("%m/%d/%Y"), state.as_str(), page.bio);
     for review in &page.reviews{
         html.push_str(&format!(
             r#"

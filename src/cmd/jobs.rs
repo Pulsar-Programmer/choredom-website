@@ -141,11 +141,13 @@ impl JobPost{
 struct JobRecordLink{
     displayname: String,
     username: String,
+    state: AccountState,
 }
 
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS
 
 pub fn convert_timestamp(timestamp: &str) -> Result<String, Box<dyn std::error::Error>> {
+    println!("{timestamp}");
     let datetime = DateTime::parse_from_rfc3339(timestamp)?.with_timezone(&Utc);
-    Ok(datetime.format("%m/%d/%Y %H:%M").to_string())
+    Ok(datetime.format("%m/%d/%Y").to_string())
 }
