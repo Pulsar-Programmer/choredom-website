@@ -2,29 +2,14 @@ use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
-use surrealdb::Surreal;
-use surrealdb::opt::auth::{Root, Scope};
-use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb as s;
+use s::Surreal;
+use s::opt::auth::{Root, Scope};
+use s::engine::remote::ws::{Client, Ws};
 
-#[derive(Serialize)]
-struct Credentials<'a> {
-    email: &'a str,
-    pass: &'a str,
-}
-
+pub type Db = Surreal<Client>;
 
 async fn setup_users(db: &mut Db) -> s::Result<()> {
-
-    // let credentials = Scope {
-    //     namespace: "choredom",
-    //     database: "main",
-    //     scope: "user",
-    //     params: Credentials {
-    //         email: "info@surrealdb.com",
-    //         pass: "123456",
-    //     },
-    // };
 
 
     //this function will be called from the setup_db function
@@ -33,17 +18,14 @@ async fn setup_users(db: &mut Db) -> s::Result<()> {
 }
 
 pub async fn setup_db() -> s::Result<Db>{
-    //Create the db connection
+    //Change this into the embedded version when ready for non-data persistence
     let db = Surreal::new::<Ws>("localhost:8000").await?;
 
-    // Signin as a namespace, database, or root user
     db.signin(Root {
         username: "root",
         password: "root",
     }).await?;
-    // FOR NOW SIGNING IN AS ROOT USER IS OK, 
-    //but later make sure you make different accounts 
-    //each for different operations that make secure the db
+    
 
     //config namespace and database
     db.use_ns("choredom").use_db("main").await?;
@@ -53,7 +35,7 @@ pub async fn setup_db() -> s::Result<Db>{
     Ok(db)
 }
 
-pub type Db = Surreal<Client>;
+
 
 // pub fn dissolve<T: std::fmt::Debug>(s: s::Result<T>, num: usize){
 //     match s{
@@ -101,21 +83,22 @@ pub type Db = Surreal<Client>;
 //     }
 //     todo!()
 // }
-async fn create<T: Serialize>(db: &mut Db, base_query: &str, content: T, fields_skip: &[&str]){
+
+// async fn create<T: Serialize>(db: &mut Db, base_query: &str, content: T, fields_skip: &[&str]){
 
     
-    let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
-    for (field, value) in fields{
-        // let plusq = format!("{}")
-    }
+//     let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
+//     for (field, value) in fields{
+//         // let plusq = format!("{}")
+//     }
 
 
     
-    // let parameters = 
-    // query(db, query, parameters)
+//     // let parameters = 
+//     // query(db, query, parameters)
 
 
-}
+// }
 
 
 pub async fn query_value(db: &mut Db, surrealql: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<Value>>>>{
