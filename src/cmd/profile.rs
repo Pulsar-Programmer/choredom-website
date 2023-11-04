@@ -392,7 +392,7 @@ pub async fn funds() -> impl Responder{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FundData{
-    changed_funds: usize,
+    changed_funds: u64,
     password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
     add: bool,
@@ -401,7 +401,7 @@ struct FundData{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct ChangeFundData{
-    changed_funds: usize,
+    changed_funds: u64,
     username: String,
 }
 
@@ -452,7 +452,7 @@ pub async fn transfer_funds() -> impl Responder{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct CreditsData{
-    credits: usize,
+    credits: u64,
     to_username: String,
     self_password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
@@ -462,7 +462,7 @@ struct CreditsData{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct TransferData{
-    credits: usize,
+    credits: u64,
     to_username: String,
     self_username: String,
 }

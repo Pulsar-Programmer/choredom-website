@@ -23,12 +23,12 @@ pub struct Job{
     // location: Location, todo!()
     time: DateTime<Utc>,
     // price: crate::structs::Money,
-    price: f32, 
+    price: u64, 
     // username: String, left in favor for the record link on user
     location: String,
 }
 impl Job{
-    pub fn new(title: String, body: String, time: DateTime<Utc>, price: f32, location: String) -> Job{
+    pub fn new(title: String, body: String, time: DateTime<Utc>, price: u64, location: String) -> Job{
         Job { title, body, time, price, location}
     }
 }
@@ -56,7 +56,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: O
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
     //time is written in the format: yyyy-mm-dd
 
-    let job = Job::new(title, body, time, price, location);
+    let job = Job::new(title, body, time, (price * 100.0) as u64, location);
 
     let surrealql = 
     r#"
