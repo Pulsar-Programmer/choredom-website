@@ -9,6 +9,8 @@ use crate::{db::query, AppData};
 // use actix_sse::SseEvent;
 use super::sites::CHAT;
 
+//First, you can use the SortedVec data structure or SortedArray for simple storage or some sort of fixed HashSet.
+//Second, we can use a variable: was_seen/was_read/read as a boolean and use it to find which were read and which weren't and by who and which sender.
 
 ///This represents a chat room with a bunch of chats.
 struct Room{

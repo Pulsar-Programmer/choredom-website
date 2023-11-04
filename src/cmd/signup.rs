@@ -41,7 +41,7 @@ pub struct Account{
 
     pub password: String,
     pub password_salt: String,
-    pub balance: usize,
+    pub balance: u64,
 }
 impl Account{
     pub fn new(username: String, displayname: String, password: String, password_salt: String, email: String, location: String) -> Self {
@@ -51,9 +51,9 @@ impl Account{
             creation_date: chrono::Utc::now(), 
             email, 
             password, 
-            balance: 0, // divide by 10 to account for usize and not float
+            balance: 0, // divide by 10 to account for u64 and not float
             page: AccountPage::new(),
-            state: AccountState::Consumer,
+            state: AccountState::NonVerified,
             location,
             password_salt,
         }
@@ -61,16 +61,16 @@ impl Account{
 }
 #[derive(serde::Serialize, Debug, serde::Deserialize, Clone)]
 pub enum AccountState{
-    Consumer,
-    Pending,
-    Worker,
+    NonVerified,
+    PendingVerification,
+    Verified,
 }
 impl AccountState{
     pub fn as_str(&self) -> &str{
         match self{
-            AccountState::Consumer => "Consumer",
-            AccountState::Pending => "Pending",
-            AccountState::Worker => "Worker",
+            AccountState::NonVerified => "NonVerified",
+            AccountState::PendingVerification => "PendingVerification",
+            AccountState::Verified => "Verified",
         }
     }
 }

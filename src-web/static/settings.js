@@ -36,7 +36,8 @@ window.addEventListener("load", function() {
             delete_form.submit();
         }
     });
-    fetch('/settings/present-data', {
+
+    fetch('/settings/present_data', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -49,6 +50,7 @@ window.addEventListener("load", function() {
     .catch((error) => {
         console.error('Error:', error);
     });
+
 });
 
 function prefill(username, displayname, location, bio){

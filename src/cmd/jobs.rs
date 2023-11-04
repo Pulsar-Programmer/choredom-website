@@ -4,8 +4,7 @@ use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, Htt
 use surrealdb::sql::Thing;
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
-use actix_session::Session;
-use super::signup::{Account, login_user, retrieve_user};
+use super::signup::{AccountState, login_user, retrieve_user};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct JobData{
@@ -24,12 +23,12 @@ pub struct Job{
     // location: Location, todo!()
     time: DateTime<Utc>,
     // price: crate::structs::Money,
-    price: f32, 
+    price: u64, 
     // username: String, left in favor for the record link on user
     location: String,
 }
 impl Job{
-    pub fn new(title: String, body: String, time: DateTime<Utc>, price: f32, location: String) -> Job{
+    pub fn new(title: String, body: String, time: DateTime<Utc>, price: u64, location: String) -> Job{
         Job { title, body, time, price, location}
     }
 }
@@ -57,7 +56,7 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: O
     let time = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single().ok_or("REGISTER JOB FN: Invalid Date.").unwrap();
     //time is written in the format: yyyy-mm-dd
 
-    let job = Job::new(title, body, time, price, location);
+    let job = Job::new(title, body, time, (price * 100.0) as u64, location);
 
     let surrealql = 
     r#"
@@ -113,7 +112,10 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
     let mut res2 = query::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", Some(("location", address))).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let result: Vec<_> = res2.get_mut(0).unwrap().as_mut().unwrap().iter_mut().map(|a|{
+        a.timestamp_converted().unwrap();
+        a
+    }).collect();
     // println!("{result:?}");
     HttpResponse::Ok().content_type("application/json").json(result)
 }
@@ -126,11 +128,26 @@ struct JobPost{
 
     user: JobRecordLink,
 }
+impl JobPost{
+    fn timestamp_converted(&mut self) -> Result<(), Box<dyn std::error::Error>>{
+        self.data.time = convert_timestamp(&self.data.time)?;
+        Ok(())
+    }
+}
+
+
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct JobRecordLink{
     displayname: String,
     username: String,
+    state: AccountState,
 }
 
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS
+
+pub fn convert_timestamp(timestamp: &str) -> Result<String, Box<dyn std::error::Error>> {
+    println!("{timestamp}");
+    let datetime = DateTime::parse_from_rfc3339(timestamp)?.with_timezone(&Utc);
+    Ok(datetime.format("%m/%d/%Y").to_string())
+}

@@ -44,7 +44,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
             <h5 id="State">{}</h5>
             <p id="bio">{}</p>
         </div><div class=ratings>
-    "#, page.pfp_url, displayname, username, page.avg_rating, creation_date, state.as_str(), page.bio);
+    "#, page.pfp_url, displayname, username, page.avg_rating, creation_date.format("%m/%d/%Y"), state.as_str(), page.bio);
     for review in &page.reviews{
         html.push_str(&format!(
             r#"
@@ -157,7 +157,7 @@ pub struct SettingsData{
     displayname: String,
     location: String,
     bio: String,
-    email: String, //fix this
+    // email: String, //fix this
     // pfp_pic: 
 }
 
@@ -168,13 +168,13 @@ pub struct SettingsData2{
     displayname: String,
     location: String,
     bio: String,
-    email: String,
+    // email: String,
     // pfp_pic: 
 }
 impl SettingsData2{
     fn new(data: SettingsData, username2: String) -> Self{
-        let SettingsData { username, displayname, location, bio, email } = data;
-        Self { username1: username, username2, displayname, location, bio, email }
+        let SettingsData { username, displayname, location, bio } = data;
+        Self { username1: username, username2, displayname, location, bio }
     }
 }
 
@@ -191,7 +191,7 @@ pub async fn settings(app_data: Data<AppData>, identity: Option<Identity>) -> im
     //present data for them to see
     HttpResponse::Ok().body(super::sites::SETTINGS)
 }
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 struct SettingsPresentData<'a>{
     username: &'a String,
     displayname: &'a String,
@@ -207,6 +207,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
     //YESSS SO COOOLLL
+    println!("{settings_data:?}");
     HttpResponse::Ok().content_type("application/json").json(settings_data)
 }
 
@@ -230,8 +231,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
         displayname = $displayname,
         page.bio = $bio,
         username = $username1,
-        location = $location,
-        email = $email
+        location = $location
     WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
@@ -280,7 +280,7 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
         }
     }
 
-    let new_state = super::signup::AccountState::Pending;
+    let new_state = super::signup::AccountState::PendingVerification;
     let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let params = (("state", "username"), (new_state, username));
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
@@ -392,7 +392,7 @@ pub async fn funds() -> impl Responder{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FundData{
-    changed_funds: usize,
+    changed_funds: u64,
     password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
     add: bool,
@@ -401,7 +401,7 @@ struct FundData{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct ChangeFundData{
-    changed_funds: usize,
+    changed_funds: u64,
     username: String,
 }
 
@@ -452,7 +452,7 @@ pub async fn transfer_funds() -> impl Responder{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct CreditsData{
-    credits: usize,
+    credits: u64,
     to_username: String,
     self_password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
@@ -462,7 +462,7 @@ struct CreditsData{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct TransferData{
-    credits: usize,
+    credits: u64,
     to_username: String,
     self_username: String,
 }

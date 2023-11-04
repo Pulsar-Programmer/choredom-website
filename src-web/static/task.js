@@ -1,54 +1,31 @@
-// // Function to generate the HTML for each job
-// function generateJobHTML(job) {
-//     return `
-//         <div class="job">
-//         <h3>${job.data.title}</h3>
-//         <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
-//         <p>${job.data.body}</p>
-//         <p>Date and Time: ${job.data.time}</p>
-//         <p>Price: $${job.data.price}</p>
-//         <a href="/${job.id}">Visit Job Post</a>
-//         </div>
-//     `;
-// }
-// //<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
-
-// // function to start chat
-// function initiateChat(user1, user2) {
-//     // Send a request to the server to create a chat room
-//     fetch('/create-chat-room', {
-//         method: 'POST',
-//         headers: {
-//         'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//             user1: user1, 
-//             user2: user2
-//         }),
-//     })
-//     .then(response => response.json())
-//     .then(roomId => {
-//         // Redirect the user to the chat room using the generated room ID
-//         let url = `/chats/room=${roomId}`;
-//         window.location.href = url;
-//     })
-//     .catch((error) => {
-//         console.error('Error:', error);
-//     });
-// }
+// Function to generate the HTML for each job
+function generateJobHTML(job) {
+    let verification_status = job.user.state === "Verified" ? "V" : "Unv";
+    return `
+        <div class="job">
+        <h3>${job.data.title}</h3>
+        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)</h4>
+        <p>${job.data.body}</p>
+        <p>Date of Task: ${job.data.time}</p>
+        <p>Price: $${job.data.price / 100.0}</p>
+        <a href="/${job.id}">Visit Job Post</a>
+        </div>
+    `;
+}
+//<button onclick="initiateChat('${job.user.usernam}', '${currentUserId}')">Apply</button>`
 
 
-// // Get the post container element
-// const jobContainer = document.getElementById("job-container");
+// Get the post container element
+const jobContainer = document.getElementById("job-container");
 
-// // Function to display jobs on the frontend
-// function displayJobs(jobsData) {
-//     jobContainer.innerHTML = ``;
-//     jobsData.forEach((job) => {
-//         const jobHTML = generateJobHTML(job);
-//         jobContainer.innerHTML += jobHTML;
-//     });
-// }
+// Function to display jobs on the frontend
+function displayJobs(jobsData) {
+    jobContainer.innerHTML = ``;
+    jobsData.forEach((job) => {
+        const jobHTML = generateJobHTML(job);
+        jobContainer.innerHTML += jobHTML;
+    });
+}
 
 function get_location_data(){
     const location = document.getElementById('filterInput').value;
@@ -112,100 +89,57 @@ function selectOption() {
     input.blur(); 
 }
 
-// const input = document.getElementById('filterInput');
-// input.addEventListener('input', filterOptions);
+const input = document.getElementById('filterInput');
+input.addEventListener('input', filterOptions);
 
-// function filterOptions() {
-//     const filterValue = this.value.toLowerCase();
-//     const dropdown = document.getElementById('dropdownOptions');
-//     const options = Array.from(dropdown.children);
-//     options.forEach(option => option.style.display = "none"); 
+function filterOptions() {
+    const filterValue = this.value.toLowerCase();
+    const dropdown = document.getElementById('dropdownOptions');
+    const options = Array.from(dropdown.children);
+    options.forEach(option => option.style.display = "none"); 
 
-//     if (!filterValue) { 
-//     return; // Do nothing when the input field isn't touched or is empty
-//     }
+    if (!filterValue) { 
+    return; // Do nothing when the input field isn't touched or is empty
+    }
 
-//     const relevantOptions = options
-//     .filter(option => option.textContent.toLowerCase().includes(filterValue))
-//     .sort((option1, option2) => {
-//         return option1.textContent.toLowerCase().indexOf(filterValue) -
-//         option2.textContent.toLowerCase().indexOf(filterValue);
-//     })
-//     .slice(0, 10); 
+    const relevantOptions = options
+    .filter(option => option.textContent.toLowerCase().includes(filterValue))
+    .sort((option1, option2) => {
+        return option1.textContent.toLowerCase().indexOf(filterValue) -
+        option2.textContent.toLowerCase().indexOf(filterValue);
+    })
+    .slice(0, 10); 
 
-//     relevantOptions.forEach(option => option.style.display = ""); 
+    relevantOptions.forEach(option => option.style.display = ""); 
 
-//     if (relevantOptions.length > 0) {
-//     dropdown.style.display = 'block'; 
-//     }
-// }
-
-
-// function searchPosts() {
-//     const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-
-//     fetch('/job-handling', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ location: searchQuery }),
-//     })
-//     .then(response => response.json())
-//     .then(jobsData => {
-//         console.log('Jobs Success:', jobsData);
-
-//         const filteredJobs = jobsData.filter(job => 
-//             job.data.title.toLowerCase().includes(searchQuery) || 
-//             job.data.body.toLowerCase().includes(searchQuery)
-//         );
-
-//         displayJobs(filteredJobs);
-//     })
-//     .catch((error) => {
-//         console.error('Error:', error);
-//     });
-// }
-
-
-
-
-let jobsData = []; // assume this is your initial data
-
-// Function to generate the HTML for each job
-function generateJobHTML(job) {
-    return `
-        <div class="job">
-        <h3>${job.data.title}</h3>
-        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username})</h4>
-        <p>${job.data.body}</p>
-        <p>Date and Time: ${job.data.time}</p>
-        <p>Price: $${job.data.price}</p>
-        <a href="/${job.id}">Visit Job Post</a>
-        </div>
-    `;
+    if (relevantOptions.length > 0) {
+    dropdown.style.display = 'block'; 
+    }
 }
 
-// Function to display jobs on the frontend
-function displayJobs(jobs) {
-    const jobContainer = document.getElementById("job-container");
-    jobContainer.innerHTML = ``;
-    jobs.forEach((job) => {
-        const jobHTML = generateJobHTML(job);
-        jobContainer.innerHTML += jobHTML;
-    });
-}
 
-function applyFilters() {
-    const location = document.getElementById('locationInput').value;
-    const minPrice = document.getElementById('minPriceInput').value;
-    const maxPrice = document.getElementById('maxPriceInput').value;
+function searchPosts() {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
-    const filteredJobsData = jobsData.filter(job => {
-        return (!location || job.data.location.includes(location)) &&
-            (!minPrice || job.data.price >= minPrice) &&
-            (!maxPrice || job.data.price <= maxPrice);
+    fetch('/job-handling', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ location: searchQuery }),
+    })
+    .then(response => response.json())
+    .then(jobsData => {
+        console.log('Jobs Success:', jobsData);
+
+        const filteredJobs = jobsData.filter(job => 
+            job.data.title.toLowerCase().includes(searchQuery) || 
+            job.data.body.toLowerCase().includes(searchQuery)
+        );
+
+        displayJobs(filteredJobs);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
     });
-    
-    displayJobs(filteredJobsData);
 }
