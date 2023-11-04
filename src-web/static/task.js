@@ -32,37 +32,49 @@ function filterJobs() {
     const titleBodyFilter = document.getElementById("titleBodyFilter").value.toLowerCase();
     const statusFilter = document.getElementById("statusFilter").value;
     const timeFilter = document.getElementById("timeFilter").value;
-    const minPriceFilter = isNaN(Number(document.getElementById("minPriceFilter").value)) ? -Infinity : Number(document.getElementById("minPriceFilter").value);
-    const maxPriceFilter = isNaN(Number(document.getElementById("maxPriceFilter").value)) ? Infinity : Number(document.getElementById("maxPriceFilter").value);
-
+    const minPriceFilter = Number(document.getElementById("minPriceFilter").value);
+    const maxPriceFilter = Number(document.getElementById("maxPriceFilter").value);
+    console.log(`titleBodyFilter:${titleBodyFilter} statusFilter:${statusFilter} timeFilter:${timeFilter} minPriceFilter:${minPriceFilter} maxPriceFilter:${maxPriceFilter}`);
+    
     // Get all job divs
-    let jobDivs = document.getElementsByClassName('job');
-
-    // Convert HTMLCollection to Array
-    let jobDivsArray = Array.from(jobDivs);
+    let jobDivsHTML = document.getElementsByClassName('job');
+    let jobDivs = [...jobDivsHTML];
 
     // Filter job divs
-    jobDivsArray.forEach((jobDiv) => {
+    jobDivs.forEach((jobDiv) => {
         // Extract job data from the job div
         let jobTitle = jobDiv.getElementsByTagName('h3')[0].innerText.toLowerCase();
         let jobBody = jobDiv.getElementsByTagName('p')[0].innerText.toLowerCase();
         let jobStatus = jobDiv.getElementsByTagName('h4')[0].innerText.includes('V') ? 'Verified' : 'Non-verified';
-        let jobTime = new Date(jobDiv.getElementsByTagName('p')[1].innerText.replace('Date of Task: ', '')).toISOString().split('T')[0];
+        let jobTime = formatDate(new Date(jobDiv.getElementsByTagName('p')[1].innerText.replace('Date of Task: ', '')));
         let jobPrice = parseFloat(jobDiv.getElementsByTagName('p')[2].innerText.replace('Price: $', ''));
+
+        console.log(`jobTitle:${jobTitle} jobBody:${jobBody} jobStatus:${jobStatus} jobTime:${jobTime} jobPrice:${jobPrice}`);
 
         // Check if the job matches the search criteria
         let matchesSearchCriteria = 
-            (!titleBodyFilter || jobTitle.includes(titleBodyFilter) || jobBody.includes(titleBodyFilter)) &&
-            (!statusFilter || jobStatus === statusFilter) &&
-            (!timeFilter || jobTime === timeFilter) &&
-            (jobPrice >= minPriceFilter) &&
-            (jobPrice <= maxPriceFilter);
-
-        // Display or hide the job div based on whether it matches the search criteria
-        jobDiv.style.display = matchesSearchCriteria ? '' : 'none';
+            (titleBodyFilter === "" || jobTitle.includes(titleBodyFilter) || jobBody.includes(titleBodyFilter)) &&
+            (statusFilter === "" || jobStatus === statusFilter) &&
+            (timeFilter === "" || jobTime === timeFilter) &&
+            (minPriceFilter === 0 || jobPrice >= minPriceFilter) &&
+            (maxPriceFilter === 0 || jobPrice <= maxPriceFilter);
+        console.log("Matches:" + matchesSearchCriteria);
+        jobDiv.style.display = matchesSearchCriteria ? 'block' : 'none';
     });
+    console.log("Test my nigga");
+    // I finished Mr. Shatmaster
 }
 
+function formatDate(date) {
+    let month = date.getMonth() + 1; // getMonth() is zero-based
+    let day = date.getDate();
+    let year = date.getFullYear();
+ 
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+ 
+    return year + '-' + month + '-' + day;
+ }
 
 
 
