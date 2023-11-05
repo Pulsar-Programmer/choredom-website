@@ -75,7 +75,8 @@ async fn main() -> std::io::Result<()> {
             dispute_management, contacts_form,
             transfer, transfer_funds,
             email_change, settings_email, home_redirect_settings,
-            settings_present_data
+            settings_present_data,
+            jobs
             // chat, chat_ws
             // accounts
         )

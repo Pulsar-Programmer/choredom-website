@@ -25,7 +25,8 @@ pub mod sites{
         TRANSFER; "transfer",
         EMAIL_LOG; "email_login",
         EMAIL_CHANGE; "emailc",
-        EMAIL_CHANGE_VERIFY; "emailc_ver"
+        EMAIL_CHANGE_VERIFY; "emailc_ver",
+        JOBS; "jobs"
     );
 }
 
