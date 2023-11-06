@@ -157,7 +157,6 @@ pub struct SettingsData{
     displayname: String,
     location: String,
     bio: String,
-    // email: String, //fix this
     // pfp_pic: 
 }
 
@@ -168,7 +167,6 @@ pub struct SettingsData2{
     displayname: String,
     location: String,
     bio: String,
-    // email: String,
     // pfp_pic: 
 }
 impl SettingsData2{
@@ -521,7 +519,7 @@ pub async fn email_change(identity: Option<Identity>) -> impl Responder{
 
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct EmailData{
+pub struct EmailData{
     e_old: String,
     e_new: String,
 }
@@ -543,8 +541,6 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     settings_transmission_transmit(&session, code.to_string()).unwrap();
     settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
 
-    //unfinished email change -> we must actually change this in the DB.
-
     HttpResponse::Ok().body(crate::sites::EMAIL_CHANGE_VERIFY)
 }
 
@@ -552,15 +548,21 @@ fn settings_verification_email(email: &String, displayname: &String, new_email: 
     let body = format!("Dear {},\nYour account has been sent a request to change emails from {} to {}. Your verification code is {}.", displayname, email, new_email, code);
     email_user(email, "Choredom - Request to Change Emails", body)
 }
+
 #[post("/ve_set")]
-pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, identity: Option<Identity>) -> impl Responder{
+pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let transmitter = settings_transmission_receive(&session).unwrap();
+    //Remove it one case yet obtain it in another
+    let new_email: String = transmission_receive("set", &session).unwrap();
+
     if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
         //^feh
         return HttpResponse::Conflict().finish();
-        // todo!()
     }
-    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
+
+    let mut db = data.db.lock().await;
+    query_value(&mut db, "UPDATE accounts SET email = $email;", Some(("email", new_email))).await.unwrap();
+
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
 
