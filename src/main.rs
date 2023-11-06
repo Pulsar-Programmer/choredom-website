@@ -93,3 +93,8 @@ use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,
 }
+// impl AppData{
+//     async fn obtain_db(&mut self) -> tokio::sync::MutexGuard<'_, Db>{
+//         self.db.lock().await
+//     }
+// }
