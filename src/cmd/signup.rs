@@ -103,7 +103,7 @@ pub async fn signup() -> impl Responder{
 }
 
 #[post("/verify-email")]
-pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Form<SignupData>, request: HttpRequest) -> impl Responder{
+pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
@@ -131,7 +131,24 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 
     let account: Account = Account::new(username.clone(), displayname , password, salt.to_string(), to_email.to_string(), location);
 
-    // let mut db = app_data.db.lock().unwrap();
+    transmission_transmit("account", &session, account).unwrap();
+
+    HttpResponse::Ok().body(EMAIL)
+}
+
+#[post("/ve")]
+pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
+    let transmitter = signup_transmission_receive(&session).unwrap();
+    //Remove in one case and obtain in another
+    let account: Account = transmission_receive("account", &session).unwrap();
+
+    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+        //^feh
+        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+    }
+    let mut db = data.db.lock().await;
+
+    //We want to create the account only AFTER we verify codes.
 
     query_value(&mut db, r#"
     CREATE accounts
@@ -146,34 +163,10 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     password_salt = $password_salt,
     balance = $balance,
     location = $location;
-    "#, Some(account)).await.unwrap();
+    "#, Some(&account)).await.unwrap();
 
-    login_user(&request, username).unwrap();
-    HttpResponse::Ok().body(EMAIL)
-}
+    login_user(&request, account.username).unwrap();
 
-#[post("/ve")]
-pub async fn home_redirect_signup(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
-    let transmitter = signup_transmission_receive(&session).unwrap();
-    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
-        logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
-        //^feh
-        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
-        // todo!()
-    }
-    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
-    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
-}
-
-#[post("/ve_log")]
-pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: Option<Identity>) -> impl Responder{
-    let transmitter = login_transmission_receive(&session).unwrap();
-    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
-        logout_user(identity.unwrap()); //with one line i fixed a massive issue lol
-        //^feh
-        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
-        // todo!()
-    }
     // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -242,7 +235,7 @@ pub async fn login() -> impl Responder{
 }
 
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
-pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session, request: HttpRequest) -> impl Responder{
+pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
     //Send email?
     let LoginData { email, password } = form.into_inner();
     let email = email.trim();
@@ -262,18 +255,33 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     // let password = 
     if !verify_password(&password, &account.password, &account.password_salt).unwrap(){
         // ^feh
-        HttpResponse::Ok().body(LOGIN)
+        return HttpResponse::Ok().body(LOGIN)
     }
-    else{
-        let code = rand::thread_rng().gen_range(100000..1000000);
-        // transmission_transmit("signup", &session, code).unwrap();
-        login_transmission_transmit(&session, code.to_string()).unwrap();
-        confirmation_email(&account.email, &account.displayname, code).unwrap();
-        login_user(&request, account.username.clone());
-        HttpResponse::Ok().body(EMAIL_LOG)
-        // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
-    }
+    
+    let code = rand::thread_rng().gen_range(100000..1000000);
+    // transmission_transmit("signup", &session, code).unwrap();
+    login_transmission_transmit(&session, code.to_string()).unwrap();
+    confirmation_email(&account.email, &account.displayname, code).unwrap();
+    transmission_transmit("log", &session, account.username.clone());
+    HttpResponse::Ok().body(EMAIL_LOG)
+    // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
+
+
+#[post("/ve_log")]
+pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: Option<Identity>, request: HttpRequest) -> impl Responder{
+    let transmitter = login_transmission_receive(&session).unwrap();
+    //Remove in one case and obtain in another
+    let username : String = transmission_receive("log", &session).unwrap();
+    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
+        //^feh
+        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+    }
+    login_user(&request, username).unwrap();
+    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
+    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+}
+
 
 #[post("/signout")]
 pub async fn signout(identity: Option<Identity>) -> impl Responder{
