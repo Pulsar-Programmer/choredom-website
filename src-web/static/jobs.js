@@ -3,7 +3,7 @@ window.onload = function() {
     var pathParts = path.split('/');
     var newPath = pathParts[pathParts.indexOf('jobs') + 1];
 
-    fetch('/job-handling', {
+    fetch('/jobs_attain', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

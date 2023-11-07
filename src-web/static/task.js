@@ -9,7 +9,7 @@ function generateJobHTML(job) {
         <p>${job.data.body}</p>
         <p>Date of Task: ${job.data.time}</p>
         <p>Price: $${job.data.price / 100.0}</p>
-        <a href="/jobs/${job.id.id.String}">Visit Job Post</a>
+        <a href="/${job.id.id.String}">Visit Job Post</a>
         </div>
     `;
 }
