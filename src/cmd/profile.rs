@@ -85,13 +85,21 @@ pub struct GroupRatingData{
 
 #[post("/users/{username}/rate")]
 pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
+    let session_username = retrieve_user(identity.unwrap()).unwrap(); //make sure you cannot submit form if you are not signed in
+    let username = username.into_inner();
+    if session_username == username{
+        //^feh
+        return HttpResponse::BadRequest().body("You may not rate yourself!");
+    }
+
+
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
-    let session_username = retrieve_user(identity.unwrap()).unwrap(); //make sure you cannot submit form if you are not signed in
+    
     println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
-    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", username.as_str()))).await.unwrap();
+    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", username))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
