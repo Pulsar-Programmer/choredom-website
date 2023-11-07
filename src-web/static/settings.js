@@ -58,6 +58,8 @@ function prefill(username, displayname, location, bio){
     document.getElementById('username').value = username;
     document.getElementById('location').value = location;
     document.getElementById('bio').value = bio;
+
+    document.getElementById('gritty').href = `/users/${username}`;
 }
 
 // window.onload = function() {

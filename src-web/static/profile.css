@@ -1,73 +1,115 @@
-/* CSS for star rating */
-.rating {
-    unicode-bidi: bidi-override;
-    direction: rtl;
-}
-.rating > span {
-    display: inline-block;
-    position: relative;
-    width: 1.1em;
-}
-.rating > span:before {
-   content: "\2605";
-   position: absolute;
-}
-/* CSS for dark mode */
-.dark-mode {
-    background-color: #222;
-    color: #e6e6e6;
-}
-/* CSS for review form */
-.review-form {
-    margin-top: 20px;
-}
-/* CSS for reviews container */
-.reviews-container {
-    height: 200px;
-    overflow-y: scroll;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-}
-/* CSS for individual reviews */
-.review {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-}
-.review h3 {
-    margin-top: 0;
-}
-.review .rating {
-    margin-bottom: 10px;
-}
-.review .review-text {
-    margin-top: 0;
-}
-
 body {
     font-family: Arial, sans-serif;
-}
-.profile {
-    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  
+  header {
+    background-color: #1dbf73;
     padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-.rating {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header h1 {
+    color: #ffffff;
+  }
+  
+  header nav {
     display: flex;
     gap: 10px;
-}
-.rating input {
+  }
+  
+  header nav a {
+    color: #ffffff;
+    text-decoration: none;
+    border: 1px solid #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  header nav a:hover {
+    background-color: #ffffff;
+    color: #1dbf73;
+  }
+  
+  header img {
+    height: 50px;
+  }
+  
+  .rating {
+    direction: rtl;
+    font-size: 25px;
+  }
+  
+  .rating input {
     display: none;
-}
-.rating label {
+  }
+  
+  .rating label {
     font-size: 30px;
-    color: grey;
+    color: #ccc;
+    transition: color 0.3s;
+  }
+  
+  .rating label:hover,
+  .rating input:checked ~ label {
+    color: #1dbf73;
+  }
+  
+  form {
+    background-color: white;
+    padding: 40px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.1);
+  }
+  
+  form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  form input[type="submit"] {
+    width: 100%;
+    background-color: #1dbf73;
+    color: white;
+    padding: 14px;
+    margin: 15px 0;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-}
-.rating input:checked ~ label {
-    color: gold;
-}
+    font-size: 16px;
+  }
+  
+  form input[type="submit"]:hover {
+    background-color: #16a45f;
+  }
+  
+  footer {
+    background-color: #1dbf73;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    margin-top: auto;
+  }
+  
+  footer img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  @media (max-width: 768px) {
+    form {
+      padding: 20px;
+    }
+  }
+  
