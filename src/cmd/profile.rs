@@ -99,7 +99,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
-    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", username))).await.unwrap();
+    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
     let res1 = res2.get(0).unwrap();
     let result = res1.as_ref().unwrap();
     let len = result.len();
@@ -126,7 +126,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     let review = PageRatingData{stars: sums, body, username: session_username};
     println!("{review:?}");
 
-    query_value(&mut db, q, Some(GroupRatingData{username: username.into_inner(), review, new_avg})).await.unwrap();
+    query_value(&mut db, q, Some(GroupRatingData{username: username, review, new_avg})).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
