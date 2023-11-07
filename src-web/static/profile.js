@@ -1,6 +1,7 @@
 window.addEventListener("load", function() {
     let form = document.getElementById('ratingForm');
     form.addEventListener("submit", function(event) {
+        event.preventDefault();
 
         form.action = `${window.location.href}/rate`;
 
@@ -12,9 +13,24 @@ window.addEventListener("load", function() {
         stars.value = selectedRating;
 
         form.appendChild(stars);
-        
-        form.submit();
+
+        // Create new div for the review
+        let review = document.createElement('div');
+        review.className = 'review';
+
+        // Create paragraph for the review text
+        let reviewText = document.createElement('p');
+        reviewText.textContent = form.elements['body'].value;
+        review.appendChild(reviewText);
+
+        // Create paragraph for the review rating
+        let reviewRating = document.createElement('p');
+        reviewRating.textContent = `Rating: ${selectedRating} stars`;
+        review.appendChild(reviewRating);
+
+        // Append the review to the document body
+        document.body.appendChild(review);
+
+        form.reset();
     });
 });
-
-
