@@ -15,11 +15,11 @@ pub struct SignupTransmitter{
 
 #[derive(serde::Deserialize)]
 pub struct SignupData {
-    pub email: String,
-    pub password: String,
-    pub username: String,
-    pub displayname: String,
-    pub location: String,
+    email: String,
+    password: String,
+    username: String,
+    displayname: String,
+    location: String,
 }
 
 #[derive(serde::Deserialize)]

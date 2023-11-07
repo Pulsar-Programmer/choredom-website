@@ -10,7 +10,7 @@ use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpRespons
 pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
 
     let username = username.into_inner();
-    
+    //^feh
     let mut db = app_data.db.lock().await;
     let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return HttpResponse::BadRequest().finish();
@@ -53,7 +53,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
             <h2>Poster Username: {}</h2>
             <p>{}</p>
             </div>
-            "#, review.stars, review.username, review.body));
+            "#, review.stars, review.rater, review.body));
     }
     html.push_str("</div></body>");
     html.push_str(PROFILE);
@@ -73,7 +73,7 @@ pub struct RatingData{
 pub struct PageRatingData{
     stars: usize,
     body: String,
-    username: String,
+    rater: String,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -83,15 +83,22 @@ pub struct GroupRatingData{
     new_avg: rust_decimal::Decimal,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub struct StarsRaterQuery{
+    stars: usize,
+    rater: String,
+}
+
+
+
 #[post("/users/{username}/rate")]
 pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
-    let session_username = retrieve_user(identity.unwrap()).unwrap(); //make sure you cannot submit form if you are not signed in
+    let rater = retrieve_user(identity.unwrap()).unwrap();
     let username = username.into_inner();
-    if session_username == username{
+    if rater == username{
         //^feh
         return HttpResponse::BadRequest().body("You may not rate yourself!");
     }
-
 
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
@@ -99,21 +106,25 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     println!("{sum}, {body}");
 
     let mut db = data.db.lock().await;
-    let res2 = query_value(&mut db, "SELECT page.reviews.stars FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
-    let res1 = res2.get(0).unwrap();
-    let result = res1.as_ref().unwrap();
+    let res2 = query::<Vec<StarsRaterQuery>>(&mut db, "SELECT page.reviews.stars, page.reviews.rater FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
+    let result = res2.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
     if len != 1{
         return HttpResponse::BadRequest().finish();
     }
     let res = result.get(0).unwrap();
-    let stars = res.get("page").unwrap().get("reviews").unwrap().get("stars").unwrap().as_array().unwrap();
-    // let mut sum = s;
-    let div = stars.len() + 1;
-    for i in stars{
-        let j = i.as_u64().unwrap() as usize;
-        sum += j;
+
+    let div = res.len() + 1;
+    for StarsRaterQuery{stars: star, rater: monkie} in res{
+        if monkie==&rater{
+            //^feh
+            //this is also inefficient: use the Index feature and make a Rating table entirely to fix this entirely.
+            return HttpResponse::BadRequest().body("You may not rate again! Delete your previous rating if you want to rate again!");
+        }
+        sum += star;
     }
+
     let new_avg = sum as f32 / div as f32;
     let new_avg = rust_decimal::Decimal::from_f32_retain(new_avg).unwrap();
 
@@ -123,12 +134,30 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
     page.reviews += $review
     WHERE username = $username;";
 
-    let review = PageRatingData{stars: sums, body, username: session_username};
-    println!("{review:?}");
+    let review = PageRatingData{stars: sums, body, rater};
+    // println!("{review:?}");
 
-    query_value(&mut db, q, Some(GroupRatingData{username: username, review, new_avg})).await.unwrap();
+    query_value(&mut db, q, GroupRatingData{username, review, new_avg}).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+}
+
+
+#[post("/users/{username}/rate/delete")]
+pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
+    let rater = retrieve_user(rater.unwrap()).unwrap();
+    let username = username.into_inner();
+    if rater != username {
+        //^feh
+        return HttpResponse::BadRequest().body("One cannot simply delete another's rating.")
+    }
+    let mut db = data.db.lock().await;
+    query_value(&mut db, "UPDATE accounts SET page.reviews -= $review, page.avg_rating = $new_avg WHERE username = $username", ("username", username)).await.unwrap();
+
+
+    unimplemented!("Deleting not implemented yet.");
+
+    HttpResponse::Ok().finish()
 }
 
 

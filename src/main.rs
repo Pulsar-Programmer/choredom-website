@@ -9,8 +9,6 @@ use cmd::*;
 use cmd::signup::*;
 use cmd::profile::*;
 use cmd::jobs::*;
-// use cmd::chats::chat::{chat, chat_ws};
-// use cmd::
 mod db;
 use db::setup_db;
 
@@ -77,6 +75,7 @@ async fn main() -> std::io::Result<()> {
             email_change, settings_email, home_redirect_settings,
             settings_present_data,
             jobs, jobs_data
+            // delete_rating,
             // chat, chat_ws
             // accounts
         )
