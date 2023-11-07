@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
     });
 
     // key needs to be generated outside the closure or else each worker gonna get a diff key
-    let key = Key::generate();
+    let key = Key::try_generate().unwrap();
     HttpServer::new(move|| {
         wapp!(
             App::new()
