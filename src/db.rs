@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 use serde_json::Value;
 use surrealdb as s;
 use s::Surreal;
@@ -101,16 +99,13 @@ pub async fn setup_db() -> s::Result<Db>{
 // }
 
 
-pub async fn query_value(db: &mut Db, surrealql: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<Value>>>>{
+pub async fn query_value(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<Value>>>>{
     query(db, surrealql, parameters).await
 }
 
 
-pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: Option<impl Serialize>) -> s::Result<Vec<s::Result<Vec<T>>>>{
-    let mut result = match parameters{
-        Some(p) => db.query(surrealql).bind(p).await?,
-        None => db.query(surrealql).await?,
-    };
+pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
+    let mut result = db.query(surrealql).bind(parameters).await?;
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
         let result: Result<Vec<T>, _> = result.take(i);

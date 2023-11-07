@@ -12,7 +12,7 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
     let username = username.into_inner();
     
     let mut db = app_data.db.lock().await;
-    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", username))).await else {
+    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return HttpResponse::BadRequest().finish();
     };
     let Some(res1) = res2.get(0) else {
@@ -200,7 +200,7 @@ struct SettingsPresentData<'a>{
 #[post("/settings/present_data")]
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let mut db = app_data.db.lock().await;
-    let q1 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", Some(("username", retrieve_user(identity.unwrap()).unwrap()))).await.unwrap();
+    let q1 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
     let curry_2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
@@ -319,7 +319,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     let username = retrieve_user(identity.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1{
         //^feh
@@ -354,7 +354,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1{
         //^feh
@@ -367,7 +367,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
         todo!()
     }
 
-    query::<()>(&mut db, "DELETE accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
+    query::<()>(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -412,7 +412,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
     let mut db = data.db.lock().await;
     
     let surrealql = "SELECT * FROM accounts WHERE username=$username;";
-    let res = query::<Account>(&mut db, surrealql, Some(("username", &username))).await.unwrap();
+    let res = query::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
     let res = res.get(0).unwrap().as_ref().unwrap();
     if res.len() != 1{
 
@@ -474,7 +474,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
     let mut db = data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &to_username))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1 {
         //^feh
@@ -529,7 +529,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
     // let current_email_stored =
     let mut db = app.db.lock().await;
-    let q1 = query::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", Some(("username", retrieve_user(identity.unwrap()).unwrap()))).await.unwrap();
+    let q1 = query::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
     let q2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
     if q2.email != current_email_input{
         //^feh

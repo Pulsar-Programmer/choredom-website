@@ -107,10 +107,10 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", Some(("username", &username))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     let len1 = result.len();
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", Some(("email", &to_email))).await.unwrap();
+    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     let len2 = result.len();
     if len1 >= 1 {
@@ -240,7 +240,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     let LoginData { email, password } = form.into_inner();
     let email = email.trim();
     let mut db = data.db.lock().await;
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", Some(("email", email))).await.unwrap();
+    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await.unwrap();
     let result = result.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
     if len > 1{
