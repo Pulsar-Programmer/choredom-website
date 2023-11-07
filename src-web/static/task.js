@@ -1,5 +1,8 @@
 // Function to generate the HTML for each job
 function generateJobHTML(job) {
+    console.log(job.id.id);
+    console.log(job.id.id.to_string());
+    console.log(job.id.id.toString());
     let verification_status = job.user.state === "Verified" ? "V" : "Unv";
     return `
         <div class="job">
@@ -8,7 +11,7 @@ function generateJobHTML(job) {
         <p>${job.data.body}</p>
         <p>Date of Task: ${job.data.time}</p>
         <p>Price: $${job.data.price / 100.0}</p>
-        <a href="/${job.id}">Visit Job Post</a>
+        <a href="/${job.id.id}">Visit Job Post</a>
         </div>
     `;
 }

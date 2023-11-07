@@ -540,6 +540,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let code = rand::thread_rng().gen_range(100000..1000000);
     settings_transmission_transmit(&session, code.to_string()).unwrap();
     settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
+    transmission_transmit("set", &session, new_email).unwrap();
 
     HttpResponse::Ok().body(crate::sites::EMAIL_CHANGE_VERIFY)
 }
