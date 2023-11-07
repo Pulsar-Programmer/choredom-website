@@ -76,7 +76,7 @@ async fn main() -> std::io::Result<()> {
             transfer, transfer_funds,
             email_change, settings_email, home_redirect_settings,
             settings_present_data,
-            jobs
+            jobs, jobs_data
             // chat, chat_ws
             // accounts
         )
