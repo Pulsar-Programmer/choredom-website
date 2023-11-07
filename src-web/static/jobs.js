@@ -25,7 +25,7 @@ window.onload = function() {
 function displayJob(job){
     //jobsData.user.username, jobsData.user.state, jobData.user.rating ..
     //jobsData.data <== anything with to do with the actual job
-    let verification_status = job.user.account_state === "Verified" ? "V" : "Unv";
+    let verification_status = job.user.state === "Verified" ? "V" : "Unv";
 
     document.getElementById("post-title").value = job.data.title;
     document.getElementById("post-location").value = job.data.location;
@@ -35,5 +35,5 @@ function displayJob(job){
     document.getElementById("post-body").value = job.data.body;
 
 
-    //Shatmaster work on this
+    //Shatmaster work on this 
 }
