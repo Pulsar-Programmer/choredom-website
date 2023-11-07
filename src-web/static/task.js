@@ -61,7 +61,6 @@ function filterJobs() {
         console.log("Matches:" + matchesSearchCriteria);
         jobDiv.style.display = matchesSearchCriteria ? 'block' : 'none';
     });
-    console.log("Test my nigga");
     // I finished Mr. Shatmaster
 }
 
