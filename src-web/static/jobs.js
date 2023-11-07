@@ -3,8 +3,8 @@ window.onload = function() {
     var pathParts = path.split('/');
     var newPath = pathParts[pathParts.indexOf('jobs') + 1];
     let url = window.location.href.substring(0, window.location.href.indexOf('jobs')).trim() + "jobs_attain";
-    console.log(url);
-    console.log(window.location.href)
+    // console.log(url);
+    // console.log(window.location.href)
     fetch(url, {
         method: 'POST',
         headers: {
@@ -25,10 +25,10 @@ window.onload = function() {
 function displayJob(job){
     let verification_status = job.user.state === "Verified" ? "V" : "Unv";
 
-    document.getElementById("post-title").value = job.data.title;
-    document.getElementById("post-location").value = job.data.location;
-    document.getElementById("post-date").value = job.data.time;
-    document.getElementById("post-price").value = job.data.price / 100.0;
-    document.getElementById("post-displayname").value = `<a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)`;
-    document.getElementById("post-body").value = job.data.body;
+    document.getElementById("post-title").innerHTML = job.data.title;
+    document.getElementById("post-location").innerHTML = job.data.location;
+    document.getElementById("post-date").innerHTML = job.data.time;
+    document.getElementById("post-price").innerHTML = job.data.price / 100.0;
+    document.getElementById("post-displayname").innerHTML = `<a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)`;
+    document.getElementById("post-body").innerHTML = job.data.body;
 }
