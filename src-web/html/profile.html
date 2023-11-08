@@ -1,45 +1,44 @@
 <body>
-    <header>
-      <a href="#">
-        <img src="src-web/assets/logo.png" alt="Choredom Logo">
-        <link rel="stylesheet" href="/src-web/static/profile.css">
-      </a>
-      <h1>Choredom</h1>
-      <nav>
-        <a href="/">Home</a>
-        <a href="chat" id="chat-button">Chat</a>
-        <a href="tasks">Tasks in your Area</a>
-        <a href="settings">Settings</a>
-        <a href="post-job" id="post-button">Post</a>
-        <a href="#" id="signout-button">Sign Out</a>
-      </nav>
-    </header>
-    <div>
-        <div class="rating">
-            <input id="star5" type="radio" name="rating" value="5">
-            <label for="star5">5★</label>
-            <input id="star4" type="radio" name="rating" value="4">
-            <label for="star4">4★</label>
-            <input id="star3" type="radio" name="rating" value="3">
-            <label for="star3">3★</label>
-            <input id="star2" type="radio" name="rating" value="2">
-            <label for="star2">2★</label>
-            <input id="star1" type="radio" name="rating" value="1">
-            <label for="star1">1★</label>
-        </div>
-        <form id="ratingForm" method="post">
-            
-            <textarea name="body" placeholder="Enter your review here..."></textarea>
-            <input type="submit" value="Submit">
-        </form>
-        <script src="/src-web/static/profile.js"></script>
-    </div>
-    <div class="review">
-      <!-- Review content goes here -->
-  </div>  
-    <footer>
-        <p>&copy; 2023 Choredom</p>
-        <img src="assets/background.jpg" alt="Background Image">
-      </footer>
-</body>    
-
+  <header>
+    <a href="#">
+      <img src="src-web/assets/logo.png" alt="Choredom Logo">
+    </a>
+    <h1>Choredom</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="chat" id="chat-button">Chat</a>
+      <a href="tasks">Tasks in your Area</a>
+      <a href="settings">Settings</a>
+      <a href="post-job" id="post-button">Post</a>
+      <a href="#" id="signout-button">Sign Out</a>
+    </nav>
+  </header>
+</div>
+  <div class="profile">
+      <div class="rating">
+          <input id="star5" type="radio" name="rating" value="5">
+          <label for="star5">5★</label>
+          <input id="star4" type="radio" name="rating" value="4">
+          <label for="star4">4★</label>
+          <input id="star3" type="radio" name="rating" value="3">
+          <label for="star3">3★</label>
+          <input id="star2" type="radio" name="rating" value="2">
+          <label for="star2">2★</label>
+          <input id="star1" type="radio" name="rating" value="1">
+          <label for="star1">1★</label>
+      </div>
+      <form id="ratingForm" method="post">
+          <textarea name="body" placeholder="Enter your review here..."></textarea>
+          <input type="submit" value="Submit">
+      </form>
+      <div class="reviews">
+          <!-- Reviews will be added here -->
+      </div>
+  </div>
+  <footer>
+      <p>&copy; 2023 Choredom</p>
+      <img src="assets/background.jpg" alt="Background Image">
+  </footer>
+  <script src="/src-web/static/profile.js"></script>
+  <link rel="stylesheet" href="/src-web/static/profile.css">
+</body>
