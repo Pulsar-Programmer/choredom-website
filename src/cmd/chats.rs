@@ -53,6 +53,8 @@ struct ChatData{
     ///There was a thought of using a boolean here to save storage, but we decided not to integrate it.
     ///Nevermind we are changing this again to a boolean to save immense storage. I am a monkie. Sorry for that.
     sender: bool, 
+    ///Here, the was_read condition is pertaining to the person opposite of the sender.
+    was_read: bool,
 }
 
 ///The chat data given to the frontend.
@@ -73,7 +75,7 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     let timestamp = Utc::now();
     let (room_title, msg) = json.into_inner();
     let room_id = RoomID::create(&room_title, &sender);
-    let sender = sender == room_id.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
+    let sender = sender == room_id.inner.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
     //get room from db and verify WHO sender is.
     //also edit the room to include this message when logging
@@ -83,7 +85,7 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     // let res2 = query::<Room>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
     // let result = res2.get(0).unwrap().as_ref().unwrap();
 
-    let to_database = ChatData{timestamp, msg, sender};
+    let to_database = ChatData{timestamp, msg, sender, was_read: false};
     //log in db
     //TO DATABASE:
     //sender, msg, time sent
@@ -94,12 +96,12 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
 
 ///This keeps track of identifying the Room ID and who is in it.
 struct RoomID{
-    inner: [String; 2], // we must figure out which one serves as the title by finding the one opposite of urself
+    inner: FixedStrictSetDuo2, // we must figure out which one serves as the title by finding the one opposite of urself
 }
 impl RoomID{
     fn create(str1: &str, str2: &str) -> RoomID{
         let idx = [str1.min(str2).to_owned(), str1.max(str2).to_owned()];
-        RoomID { inner: idx }
+        RoomID { inner: FixedStrictSetDuo2{inner: idx} }
     }
 }
 
@@ -118,13 +120,69 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     
     let chats_vec : Vec<ChatData> = Vec::new(); 
-    // get the newly LIVE query ones and sleep or something until this is given.
+    //read all the ones marked as unread
+    //and mark all the read ones as read so they aren't selected anymore
+    //do you want it gone on refresh?
     
-    let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender }|{
-        ChatFrontData { timestamp, msg, sender: room_id.inner[if sender {1} else {0}].clone() }
+    let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
+        ChatFrontData { timestamp, msg, sender: room_id.inner[sender].to_owned() }
     }).collect();
     serde_json::to_string(&chats_vec)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///Returns an Ok(()) if all behavior is OK. Returns Err(T) if the object to replace cannot be found.
+type ReplaceError<T> = Result<(), T>;
+
+
+struct FixedStrictSetDuo2{
+    inner: [String; 2],
+}
+impl FixedStrictSetDuo2{
+    fn create(mut elements: [String; 2]) -> Self{
+        elements.sort();
+        Self { inner: elements }
+    }
+    fn create_from_current_config(mut elements: [String; 2]) -> Self{
+        Self { inner: elements }
+    }
+}
+impl std::ops::Index<bool> for FixedStrictSetDuo2{
+    type Output = String;
+
+    fn index(&self, index: bool) -> &Self::Output {
+        let index = if index {1} else {0};
+        &self.inner[index]
+    }
+}
+impl std::ops::IndexMut<bool> for FixedStrictSetDuo2{
+    fn index_mut(&mut self, index: bool) -> &mut Self::Output {
+        let index = if index {1} else {0};
+        &mut self.inner[index]
+    }
+}
+impl IntoIterator for FixedStrictSetDuo2{
+    type Item = String;
+
+    type IntoIter = std::array::IntoIter<String, 2>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
+    }
+}
 
