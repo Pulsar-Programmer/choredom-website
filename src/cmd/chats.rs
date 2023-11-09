@@ -27,7 +27,7 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 pub async fn chats(receiver: Path<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
     let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let receiver = receiver.into_inner();
-    let room_id = RoomID::create(&sender, &receiver);
+    let room_id = RoomID::create([sender, receiver]);
 
     //build a room and send to db if one doesn't exist
     let one_exists = false; //how do we check if one exists with the database as a shortcut?
@@ -74,8 +74,8 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
     let (room_title, msg) = json.into_inner();
-    let room_id = RoomID::create(&room_title, &sender);
-    let sender = sender == room_id.inner.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
+    let room_id = RoomID::create([room_title, sender.clone()]);
+    let sender = sender == room_id.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
     //get room from db and verify WHO sender is.
     //also edit the room to include this message when logging
@@ -94,16 +94,6 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     HttpResponse::Ok().body("Successfully logged!")
 }
 
-///This keeps track of identifying the Room ID and who is in it.
-struct RoomID{
-    inner: FixedStrictSetDuo2, // we must figure out which one serves as the title by finding the one opposite of urself
-}
-impl RoomID{
-    fn create(str1: &str, str2: &str) -> RoomID{
-        let idx = [str1.min(str2).to_owned(), str1.max(str2).to_owned()];
-        RoomID { inner: FixedStrictSetDuo2{inner: idx} }
-    }
-}
 
 //GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
@@ -113,7 +103,7 @@ impl RoomID{
 pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
     let same = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let opposite = opposite.into_inner();
-    let room_id = RoomID::create(&same, &opposite);
+    let room_id = RoomID::create([same, opposite]);
     //select with room_id from db and return new messages with the LIVE query.
     let db = data.db.lock().await;
     // let db = surrealdb::kvs::Datastore::new("memory").await.unwrap().with_capabilities(surrealdb::dbs::Capabilities::all());
@@ -123,9 +113,9 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     //read all the ones marked as unread
     //and mark all the read ones as read so they aren't selected anymore
     //do you want it gone on refresh?
-    
+
     let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp, msg, sender: room_id.inner[sender].to_owned() }
+        ChatFrontData { timestamp, msg, sender: room_id[sender].to_owned() }
     }).collect();
     serde_json::to_string(&chats_vec)
 }
@@ -146,10 +136,9 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
 
 
-///Returns an Ok(()) if all behavior is OK. Returns Err(T) if the object to replace cannot be found.
-type ReplaceError<T> = Result<(), T>;
-
-
+// we must figure out which one serves as the title by finding the one opposite of urself
+///This keeps track of identifying the Room ID and who is in it.
+type RoomID = FixedStrictSetDuo2;
 struct FixedStrictSetDuo2{
     inner: [String; 2],
 }
