@@ -539,14 +539,13 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
 
-use super::signup::{EmailTransmitter, transmission_transmit, transmission_receive};
+use super::signup::{EmailTransmitter, email_transmission_transmit, email_transmission_receive, transmission_receive, transmission_transmit};
 fn settings_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
-    let transmitter = EmailTransmitter::new(unhashed_code)?;
-    transmission_transmit("settings", session, transmitter)
+    email_transmission_transmit("settings", session, unhashed_code)
 }
 
 fn settings_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
-    transmission_receive("settings", session)
+    email_transmission_receive("settings", session)
 }
 
 #[get("/settings/email")]

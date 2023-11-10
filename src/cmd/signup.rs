@@ -4,6 +4,7 @@ use crate::db::{query, query_value};
 use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
+use chrono::{Utc, DateTime, Duration};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
 use rand::Rng;
@@ -338,6 +339,7 @@ pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str
 pub struct EmailTransmitter{
     pub hashed_code: String,
     pub salt: String,
+    pub time: chrono::DateTime<Utc>,
 }
 impl EmailTransmitter{
     pub fn new(unhashed_code: String) -> anyhow::Result<Self>{
@@ -345,6 +347,7 @@ impl EmailTransmitter{
         Ok(Self{
             hashed_code,
             salt: salt.to_string(),
+            time: Utc::now(),
         })
     }
 }
@@ -352,22 +355,44 @@ impl EmailTransmitter{
 
 
 fn login_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
-    let transmitter = EmailTransmitter::new(unhashed_code)?;
-    transmission_transmit("login", session, transmitter)
+    email_transmission_transmit("login", session, unhashed_code)
 }
 
 fn login_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
-    transmission_receive("login", session)
+    email_transmission_receive("login", session)
 }
 
 fn signup_transmission_transmit(session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
-    let transmitter = EmailTransmitter::new(unhashed_code)?;
-    transmission_transmit("signup", session, transmitter)
+    email_transmission_transmit("signup", session, unhashed_code)
 }
 
 fn signup_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
-    transmission_receive("signup", session)
+    email_transmission_receive("signup", session)
 }
+#[derive(Debug)]
+struct ErrorString(String);
+impl std::fmt::Display for ErrorString{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+impl std::error::Error for ErrorString{}
+
+pub fn email_transmission_transmit(field:&str, session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
+    let transmitter = EmailTransmitter::new(unhashed_code)?;
+    transmission_transmit(field, session, transmitter)
+}
+
+pub fn email_transmission_receive(field: &str, session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
+    let transmitter: EmailTransmitter = transmission_receive(field, session)?;
+    if Utc::now() - transmitter.time <= Duration::minutes(5){
+        return Err(Box::new(ErrorString(String::from("Message not received in time!"))));
+    }
+    Ok(transmitter)
+}
+
+
+
 
 
 pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &actix_session::Session, args: Args) -> Result<(), Box<dyn std::error::Error>>{
