@@ -13,6 +13,7 @@ use super::sites::CHAT;
 //Second, we can use a variable: was_seen/was_read/read as a boolean and use it to find which were read and which weren't and by who and which sender.
 
 ///This represents a chat room with a bunch of chats.
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct Room{
     room_id: RoomID,
     chats: Vec<ChatData>,
@@ -24,28 +25,45 @@ The frontend part will consist of a field that is a forum that posts to `/chat/s
 Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
-pub async fn chats(receiver: Path<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
-    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
-    let receiver = receiver.into_inner();
-    let room_id = RoomID::create(&sender, &receiver);
-
-    //build a room and send to db if one doesn't exist
-    let one_exists = false; //how do we check if one exists with the database as a shortcut?
-    if !one_exists{
-        let chats = Vec::new();
-        let room = Room{room_id, chats};
-        //send to db now
-    }
-
-    //get the most recent chat messages from surrealdb
-    //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
-    let html = CHAT; 
-
-
-    HttpResponse::Ok().body(html)
+pub async fn chats(_: Path<String>) -> impl Responder{
+    HttpResponse::Ok().body(CHAT)
 }
 
+#[post("/chats_obtain")]
+pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
+    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let receiver = receiver.into_inner();
+    let room_id = RoomID::create([sender, receiver]);
+
+    //build a room and send to db if one doesn't exist >> use indicies for this
+    let mut db = data.db.lock().await;
+    let res2 = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+    let result = res2.get(0).unwrap().as_ref().unwrap();
+    if result.len() != 1{
+        let vec_chats = Vec::new();
+        let room = Room{room_id, chats: vec_chats};
+        query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats", room).await.unwrap();
+    }
+    let result = result.get(0).unwrap();
+    let Room { room_id: _, chats: vec } = result;
+
+    //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
+    HttpResponse::Ok().json(vec)
+}
+
+
+
+
+
+
+
+
+
+
+
+
 ///The chat data stored in the database.
+#[derive(serde::Serialize, Debug, serde::Deserialize)]
 struct ChatData{
     timestamp: DateTime<Utc>,
     msg: String,
@@ -64,6 +82,12 @@ struct ChatFrontData{
     msg: String,
     sender: String, 
 }
+///Just adds stuff to the DB.
+#[derive(serde::Deserialize, serde::Serialize)]
+struct FakeRoom{
+    chat: ChatData,
+    room_id: RoomID,
+}
 
 //text_message
 /// This, given the msg and the sender, sends a message and logs it in the Database.
@@ -74,36 +98,18 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
     let (room_title, msg) = json.into_inner();
-    let room_id = RoomID::create(&room_title, &sender);
-    let sender = sender == room_id.inner.inner[1]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
-
-    //get room from db and verify WHO sender is.
-    //also edit the room to include this message when logging
-    //add the msg data to the room.
-
-    // let mut db = app.db.lock().await;
-    // let res2 = query::<Room>(&mut db, "SELECT * FROM accounts WHERE username = type::string($username);", Some(("username", &username))).await.unwrap();
-    // let result = res2.get(0).unwrap().as_ref().unwrap();
+    let room_id = RoomID::create([room_title, sender.clone()]);
+    let sender = &sender == room_id.get(1).unwrap(); //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
     let to_database = ChatData{timestamp, msg, sender, was_read: false};
-    //log in db
-    //TO DATABASE:
-    //sender, msg, time sent
+    let fake_room = FakeRoom{chat: to_database, room_id};
 
+    let mut db = app.db.lock().await;
+    query::<()>(&mut db, "UPDATE * FROM chats SET chats += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
 
     HttpResponse::Ok().body("Successfully logged!")
 }
 
-///This keeps track of identifying the Room ID and who is in it.
-struct RoomID{
-    inner: FixedStrictSetDuo2, // we must figure out which one serves as the title by finding the one opposite of urself
-}
-impl RoomID{
-    fn create(str1: &str, str2: &str) -> RoomID{
-        let idx = [str1.min(str2).to_owned(), str1.max(str2).to_owned()];
-        RoomID { inner: FixedStrictSetDuo2{inner: idx} }
-    }
-}
 
 //GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
@@ -113,19 +119,18 @@ impl RoomID{
 pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
     let same = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let opposite = opposite.into_inner();
-    let room_id = RoomID::create(&same, &opposite);
-    //select with room_id from db and return new messages with the LIVE query.
-    let db = data.db.lock().await;
-    // let db = surrealdb::kvs::Datastore::new("memory").await.unwrap().with_capabilities(surrealdb::dbs::Capabilities::all());
+    let room_id = RoomID::create([same, opposite]);
 
-    
-    let chats_vec : Vec<ChatData> = Vec::new(); 
-    //read all the ones marked as unread
-    //and mark all the read ones as read so they aren't selected anymore
-    //do you want it gone on refresh?
-    
+    //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
+    let mut db = data.db.lock().await;
+    let res = query::<ChatData>(&mut db, "SELECT *.chats FROM chats WHERE chats.was_read = false;", ()).await.unwrap();
+    let chats_vec = res.get(0).unwrap().as_ref().unwrap();
+
+    //mark as read right before
+    query::<()>(&mut db, "UPDATE *.chats SET chats.was_read = true WHERE chats.was_read = false;", ()).await.unwrap();
+
     let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp, msg, sender: room_id.inner[sender].to_owned() }
+        ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
     serde_json::to_string(&chats_vec)
 }
@@ -146,10 +151,10 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
 
 
-///Returns an Ok(()) if all behavior is OK. Returns Err(T) if the object to replace cannot be found.
-type ReplaceError<T> = Result<(), T>;
-
-
+// we must figure out which one serves as the title by finding the one opposite of urself
+///This keeps track of identifying the Room ID and who is in it.
+type RoomID = FixedStrictSetDuo2;
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct FixedStrictSetDuo2{
     inner: [String; 2],
 }
@@ -183,6 +188,13 @@ impl IntoIterator for FixedStrictSetDuo2{
 
     fn into_iter(self) -> Self::IntoIter {
         self.inner.into_iter()
+    }
+}
+impl std::ops::Deref for FixedStrictSetDuo2{
+    type Target = [String; 2];
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 
