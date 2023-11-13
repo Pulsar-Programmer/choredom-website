@@ -129,7 +129,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     //mark as read right before
     query::<()>(&mut db, "UPDATE *.chats SET chats.was_read = true WHERE chats.was_read = false;", ()).await.unwrap();
 
-    let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
+    let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
     serde_json::to_string(&chats_vec)
@@ -161,9 +161,6 @@ struct FixedStrictSetDuo2{
 impl FixedStrictSetDuo2{
     fn create(mut elements: [String; 2]) -> Self{
         elements.sort();
-        Self { inner: elements }
-    }
-    fn create_from_current_config(mut elements: [String; 2]) -> Self{
         Self { inner: elements }
     }
 }
