@@ -3,14 +3,7 @@ use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData}; 
-
-// use crate::db::Db;
-// use actix_sse::SseEvent;
-// use actix_sse::SseEvent;
 use super::sites::CHAT;
-
-//First, you can use the SortedVec data structure or SortedArray for simple storage or some sort of fixed HashSet.
-//Second, we can use a variable: was_seen/was_read/read as a boolean and use it to find which were read and which weren't and by who and which sender.
 
 ///This represents a chat room with a bunch of chats.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
