@@ -3,14 +3,7 @@ use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData}; 
-
-// use crate::db::Db;
-// use actix_sse::SseEvent;
-// use actix_sse::SseEvent;
 use super::sites::CHAT;
-
-//First, you can use the SortedVec data structure or SortedArray for simple storage or some sort of fixed HashSet.
-//Second, we can use a variable: was_seen/was_read/read as a boolean and use it to find which were read and which weren't and by who and which sender.
 
 ///This represents a chat room with a bunch of chats.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -43,6 +36,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
         let vec_chats = Vec::new();
         let room = Room{room_id, chats: vec_chats};
         query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats", room).await.unwrap();
+        return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     }
     let result = result.get(0).unwrap();
     let Room { room_id: _, chats: vec } = result;
@@ -88,16 +82,22 @@ struct FakeRoom{
     chat: ChatData,
     room_id: RoomID,
 }
+#[derive(serde::Deserialize)]
+pub struct FrontSentData{
+    room_title: String,
+    msg: String,
+}
 
 //text_message
 /// This, given the msg and the sender, sends a message and logs it in the Database.
 /// It then can be retrieved from the receive message function.
 #[post("/chat/send")]
-pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
+pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
+    println!("Chat sent!");
     //Here, `json` represents the reciever and the msg intended to be sent.
     let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
-    let (room_title, msg) = json.into_inner();
+    let FrontSentData{room_title, msg} = json.into_inner();
     let room_id = RoomID::create([room_title, sender.clone()]);
     let sender = &sender == room_id.get(1).unwrap(); //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
@@ -105,9 +105,14 @@ pub async fn send(json: Json<(String, String)>, identity: Option<Identity>, app:
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
-    query::<()>(&mut db, "UPDATE * FROM chats SET chats += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats SET chats += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
 
     HttpResponse::Ok().body("Successfully logged!")
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct ChatDBGiven{
+    chats: Vec<ChatData>,
 }
 
 
@@ -123,13 +128,13 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    let res = query::<ChatData>(&mut db, "SELECT *.chats FROM chats WHERE chats.was_read = false;", ()).await.unwrap();
-    let chats_vec = res.get(0).unwrap().as_ref().unwrap();
+    let res = query::<ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read = false] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+    let chats_vec = &res.get(0).unwrap().as_ref().unwrap().get(0).unwrap().chats;
 
     //mark as read right before
-    query::<()>(&mut db, "UPDATE *.chats SET chats.was_read = true WHERE chats.was_read = false;", ()).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats SET chats.was_read = true WHERE chats.was_read = false AND room_id=$room_id;", ("room_id", &room_id)).await.unwrap();
 
-    let chats_vec : Vec<ChatFrontData> = chats_vec.into_iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
+    let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
     serde_json::to_string(&chats_vec)
@@ -161,9 +166,6 @@ struct FixedStrictSetDuo2{
 impl FixedStrictSetDuo2{
     fn create(mut elements: [String; 2]) -> Self{
         elements.sort();
-        Self { inner: elements }
-    }
-    fn create_from_current_config(mut elements: [String; 2]) -> Self{
         Self { inner: elements }
     }
 }
