@@ -385,7 +385,7 @@ pub fn email_transmission_transmit(field:&str, session: &actix_session::Session,
 
 pub fn email_transmission_receive(field: &str, session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
     let transmitter: EmailTransmitter = transmission_receive(field, session)?;
-    if Utc::now() - transmitter.time <= Duration::minutes(5){
+    if Utc::now() - transmitter.time >= Duration::minutes(5){
         return Err(Box::new(ErrorString(String::from("Message not received in time!"))));
     }
     Ok(transmitter)

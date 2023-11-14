@@ -270,7 +270,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
-    query_value(&mut db, surrealql, Some(settings_data)).await.unwrap();
+    query_value(&mut db, surrealql, settings_data).await.unwrap();
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -321,7 +321,7 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     let db = &mut data.db.lock().await;
-    query_value(db, surrealql, Some(params)).await.unwrap();
+    query_value(db, surrealql, params).await.unwrap();
 
     //review: is it really smooth or ok to have this return a Result?
     Ok(HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS))
@@ -372,7 +372,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     }
 
     let (password, password_salt) = super::signup::password_hash_argon2(p_new).unwrap();
-    query_value(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", Some(PasswordChangeData{password, password_salt: password_salt.to_string(), username}));
+    query_value(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -471,7 +471,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
             "-"
         }
     );
-    query_value(&mut db, &surrealql, Some(ChangeFundData{username, changed_funds})).await.unwrap();
+    query_value(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -532,7 +532,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    query_value(&mut db, surrealql, Some(transferdata)).await.unwrap();
+    query_value(&mut db, surrealql, transferdata).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
@@ -598,7 +598,7 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
     }
 
     let mut db = data.db.lock().await;
-    query_value(&mut db, "UPDATE accounts SET email = $email;", Some(("email", new_email))).await.unwrap();
+    query_value(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -634,7 +634,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> imp
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
-    query_value(&mut * data.db.lock().await, surrealql, Some(form.into_inner())).await.unwrap();
+    query_value(&mut * data.db.lock().await, surrealql, form.into_inner()).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
 }

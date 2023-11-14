@@ -3,14 +3,16 @@
 //As in, how does he want the HTML structured?
 
 
-
+let urlbase = window.location.href.substring(0, window.location.href.indexOf('chats')).trim();
 
 window.onload = function() {
     var path = window.location.pathname;
     var pathParts = path.split('/');
     var newPath = pathParts[pathParts.indexOf('chats') + 1];
-    let url = window.location.href.substring(0, window.location.href.indexOf('chats')).trim() + "chats_obtain";
-
+    let url = urlbase + "chats_obtain";
+    // console.log(url);
+    // console.log(newPath);
+    document.getElementById("room-title").innerHTML = newPath;
     fetch(url, {
         method: 'POST',
         headers: {
@@ -19,9 +21,9 @@ window.onload = function() {
         body: JSON.stringify(newPath),
     })
     .then(response => response.json())
-    .then(jobsData => {
-        console.log('Jobs Success:', jobsData);
-        displayJob(jobsData);
+    .then(chatsData => {
+        console.log('Chats Success:', chatsData);
+        displayChats(chatsData);
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -68,18 +70,18 @@ function displayChats(chatsData) {
 function send_chat(){
     const msg = document.getElementById('message-input').value;
 
-    const roomTitle = document.getElementById('room-title').value;
-
-  fetch('/chat/send', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({roomTitle, msg}),
-  })
-  .catch((error) => {
-      console.error('Error:', error);
-  });
+    const room_title = document.getElementById('room-title').innerHTML;
+    console.log("Chat sending..")
+    fetch('/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({room_title, msg}),
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 ///Done. This function works 
@@ -88,8 +90,8 @@ function receive_chat(){
         return ! (val == "" || val == null);
     });
     const roomTitle = roomSplitter[roomSplitter.length - 1];
-
-    fetch('/chat/receive', {
+    // let url = urlbase + "chat/receive";
+    fetch("/chat/receive", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -106,4 +108,4 @@ function receive_chat(){
     });
 }
 //Erase this when doing long polling or the SSEs.
-setInterval(receive_chat, 1000);
+setInterval(receive_chat, 10_000);
