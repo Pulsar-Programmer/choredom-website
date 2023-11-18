@@ -34,21 +34,29 @@ window.onload = function() {
 
 
 
+function expandImage(msg){
+    //todo!()
+}
 
-
-
+function containsLink(msg) {
+    //todo!()
+}
 
 
 
 
 /// Function to generate the HTML for each chat
 function generateChatHTML(chat) {
+    let html = `<div class="message">
+    <h4>${chat.sender}</h4>
+    <p>${chat.msg}</p>
+    <p>${chat.timestamp}</p>
+    </div>`;
+    if (containsLink(chat.msg)){
+        expandImage(url)
+    }
     return `
-        <div class="message">
-          <h4>${chat.sender}</h4>
-          <p>${chat.msg}</p>
-          <p>${chat.timestamp}</p>
-        </div>
+        
     `;
 }
 
