@@ -117,10 +117,28 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
 
     let div = res.len() + 1;
     for StarsRaterQuery{stars: star, rater: monkie} in res{
-        if monkie==&rater{
+        if monkie==&rater
+        {
             //^feh
             //this is also inefficient: use the Index feature and make a Rating table entirely to fix this entirely.
             return HttpResponse::BadRequest().body("You may not rate again! Delete your previous rating if you want to rate again!");
+        }
+        if {
+            let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
+            let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+            let result = res.get(0).unwrap().as_ref().unwrap();
+            if result.len() > 1 {
+                //^feh
+                todo!("Error!")
+            }
+            if let Some(res) = result.get(0){
+                res.chats.is_empty()
+            }
+            else{
+                true
+            }
+        } {
+            return HttpResponse::BadRequest().body("You must work with the dude in order to rate them!");
         }
         sum += star;
     }

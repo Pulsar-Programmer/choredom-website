@@ -7,7 +7,7 @@ use super::sites::CHAT;
 
 ///This represents a chat room with a bunch of chats.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct Room{
+pub struct Room{
     room_id: RoomID,
     chats: Vec<ChatData>,
 }
@@ -26,16 +26,21 @@ pub async fn chats(_: Path<String>) -> impl Responder{
 pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
     let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let receiver = receiver.into_inner();
-    let room_id = RoomID::create([sender, receiver]);
+    let room_id = RoomID::create([sender, receiver.clone()]);
 
     //build a room and send to db if one doesn't exist >> use indicies for this
     let mut db = data.db.lock().await;
     let res2 = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
-    if result.len() != 1{
+    if result.len() != 1 &&
+    {   
+        let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", receiver)).await.unwrap();
+        let result = res.get(0).unwrap().as_ref().unwrap();
+        result.len() == 1
+    } {
         let vec_chats = Vec::new();
         let room = Room{room_id, chats: vec_chats};
-        query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats", room).await.unwrap();
+        query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     }
     let result = result.get(0).unwrap();
@@ -58,7 +63,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
 ///The chat data stored in the database.
 #[derive(serde::Serialize, Debug, serde::Deserialize)]
-struct ChatData{
+pub struct ChatData{
     timestamp: DateTime<Utc>,
     msg: String,
     ///Be careful here, as we must ensure sender is in the room, as in, it is contained within the `RoomID`.
@@ -111,8 +116,8 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
-struct ChatDBGiven{
-    chats: Vec<ChatData>,
+pub struct ChatDBGiven{
+    pub chats: Vec<ChatData>,
 }
 
 
@@ -132,7 +137,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let chats_vec = &res.get(0).unwrap().as_ref().unwrap().get(0).unwrap().chats;
 
     //mark as read right before
-    query::<()>(&mut db, "UPDATE chats SET chats.was_read = true WHERE chats.was_read = false AND room_id=$room_id;", ("room_id", &room_id)).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats[WHERE was_read = false] SET chats.was_read = true WHERE room_id=$room_id;", ("room_id", &room_id)).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
@@ -158,13 +163,13 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
 // we must figure out which one serves as the title by finding the one opposite of urself
 ///This keeps track of identifying the Room ID and who is in it.
-type RoomID = FixedStrictSetDuo2;
+pub type RoomID = FixedStrictSetDuo2;
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
-struct FixedStrictSetDuo2{
+pub struct FixedStrictSetDuo2{
     inner: [String; 2],
 }
 impl FixedStrictSetDuo2{
-    fn create(mut elements: [String; 2]) -> Self{
+    pub fn create(mut elements: [String; 2]) -> Self{
         elements.sort();
         Self { inner: elements }
     }
