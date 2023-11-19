@@ -9,7 +9,7 @@ use super::sites::CHAT;
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Room{
     room_id: RoomID,
-    chats: Vec<ChatData>,
+    messages: Vec<ChatData>,
 }
 
 /**
@@ -32,19 +32,21 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let mut db = data.db.lock().await;
     let res2 = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
-    if result.len() != 1 &&
-    {   
-        let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", receiver)).await.unwrap();
-        let result = res.get(0).unwrap().as_ref().unwrap();
-        result.len() == 1
-    } {
+    if result.len() != 1{
+        if {   
+            let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", receiver)).await.unwrap();
+            let result = res.get(0).unwrap().as_ref().unwrap();
+            result.len() != 1
+        } {
+            return HttpResponse::BadRequest().finish();
+        }
         let vec_chats = Vec::new();
-        let room = Room{room_id, chats: vec_chats};
+        let room = Room{room_id, messages: vec_chats};
         query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     }
     let result = result.get(0).unwrap();
-    let Room { room_id: _, chats: vec } = result;
+    let Room { room_id: _, messages: vec } = result;
 
     //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
     HttpResponse::Ok().json(vec)
@@ -110,14 +112,14 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
-    query::<()>(&mut db, "UPDATE chats SET chats += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
 
     HttpResponse::Ok().body("Successfully logged!")
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct ChatDBGiven{
-    pub chats: Vec<ChatData>,
+    pub messages: Vec<ChatData>,
 }
 
 
@@ -133,16 +135,16 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    let res = query::<ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read = false] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-    let chats_vec = &res.get(0).unwrap().as_ref().unwrap().get(0).unwrap().chats;
-
+    let res = query::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+    let Some(dbgiven) = &res.get(0).unwrap().as_ref().unwrap().get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
+    let chats_vec = &dbgiven.messages;
     //mark as read right before
-    query::<()>(&mut db, "UPDATE chats[WHERE was_read = false] SET chats.was_read = true WHERE room_id=$room_id;", ("room_id", &room_id)).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
-    serde_json::to_string(&chats_vec)
+    HttpResponse::Ok().json(serde_json::to_string(&chats_vec).unwrap())
 }
 
 

@@ -35,39 +35,33 @@ window.onload = function() {
 
 
 function expandImage(msg){
+    return "";
     //todo!()
+    // returns "" if nothing else "<image> .. "
 }
-
-function containsLink(msg) {
-    //todo!()
-}
-
 
 
 
 /// Function to generate the HTML for each chat
 function generateChatHTML(chat) {
-    let html = `<div class="message">
+    return `<div class="message">
     <h4>${chat.sender}</h4>
     <p>${chat.msg}</p>
     <p>${chat.timestamp}</p>
+    ${expandImage(msg)}
     </div>`;
-    if (containsLink(chat.msg)){
-        expandImage(url)
-    }
-    return `
-        
-    `;
 }
 
-// Get the post container element
-const chatContainer = document.getElementById("chat-box");
+
+const chatContainer = document.getElementById("chat_box");
+console.log(chatContainer);
 
 // Function to display jobs on the frontend
 function displayChats(chatsData) {
-//   jobContainer.innerHTML = ``; // we don't need to do this anymore because the chat/receive only gives one
+    console.log(chatsData);
   chatsData.forEach((chat) => {
       const chatHTML = generateChatHTML(chat);
+      console.log(chatHTML);
       chatContainer.innerHTML += chatHTML;
   });
 }

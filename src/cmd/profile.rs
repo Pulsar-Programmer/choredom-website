@@ -132,7 +132,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
                 todo!("Error!")
             }
             if let Some(res) = result.get(0){
-                res.chats.is_empty()
+                res.messages.is_empty()
             }
             else{
                 true
