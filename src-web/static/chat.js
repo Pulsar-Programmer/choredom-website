@@ -53,8 +53,7 @@ function generateChatHTML(chat) {
 }
 
 
-const chatContainer = document.getElementById("chat_box");
-console.log(chatContainer);
+let chatContainer = document.getElementById('chat_box');
 
 // Function to display jobs on the frontend
 function displayChats(chatsData) {
