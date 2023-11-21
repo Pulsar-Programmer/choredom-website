@@ -99,13 +99,38 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
         //^feh
         return HttpResponse::BadRequest().body("You may not rate yourself!");
     }
+    let mut db = data.db.lock().await;
+    if {
+        let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
+        let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+        let result = res.get(0).unwrap().as_ref().unwrap();
+        if result.len() != 1 {
+            //^feh
+            todo!("Error!")
+        }
+        let res = result.get(0).unwrap(); // ^ feh
+        let mut not_contains_first = true;
+        let mut not_contains_second = true;
+        for i in &res.messages{
+            if (rater > username) != i.sender{
+                not_contains_first = false;
+            }
+            else{
+                not_contains_second = false;
+            }
+            if !not_contains_first && !not_contains_second{
+                break;
+            }
+        }
+        !not_contains_first && !not_contains_second
+    } {
+        return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
+    }
 
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
-    
     println!("{sum}, {body}");
 
-    let mut db = data.db.lock().await;
     let res2 = query::<Vec<StarsRaterQuery>>(&mut db, "SELECT page.reviews.stars, page.reviews.rater FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
     let result = res2.get(0).unwrap().as_ref().unwrap();
@@ -122,26 +147,6 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
             //^feh
             //this is also inefficient: use the Index feature and make a Rating table entirely to fix this entirely.
             return HttpResponse::BadRequest().body("You may not rate again! Delete your previous rating if you want to rate again!");
-        }
-        if {
-            let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
-            let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-            let result = res.get(0).unwrap().as_ref().unwrap();
-            if result.len() > 1 {
-                //^feh
-                todo!("Error!")
-            }
-            let res = result.get(0).unwrap(); // ^ feh
-            let mut should_trigger = true;
-            for i in &res.messages{
-                if (rater > username) != i.sender{
-                    should_trigger = false;
-                    break;
-                }
-            }
-            should_trigger
-        } {
-            return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
         }
         sum += star;
     }
