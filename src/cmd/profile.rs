@@ -134,7 +134,7 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
             let res = result.get(0).unwrap(); // ^ feh
             let mut should_trigger = true;
             for i in &res.messages{
-                if (rater > username) == i.sender{
+                if (rater > username) != i.sender{
                     should_trigger = false;
                     break;
                 }
