@@ -79,14 +79,14 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 ///The chat data stored in the database.
 #[derive(serde::Serialize, Debug, serde::Deserialize)]
 pub struct ChatData{
-    timestamp: DateTime<Utc>,
-    msg: String,
+    pub timestamp: DateTime<Utc>,
+    pub msg: String,
     ///Be careful here, as we must ensure sender is in the room, as in, it is contained within the `RoomID`.
     ///There was a thought of using a boolean here to save storage, but we decided not to integrate it.
     ///Nevermind we are changing this again to a boolean to save immense storage. I am a monkie. Sorry for that.
-    sender: bool, 
+    pub sender: bool, 
     ///Here, the was_read condition is pertaining to the person opposite of the sender.
-    was_read: bool,
+    pub was_read: bool,
 }
 
 ///The chat data given to the frontend.

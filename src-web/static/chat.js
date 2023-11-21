@@ -45,7 +45,7 @@ function expandImage(msg){
 /// Function to generate the HTML for each chat
 function generateChatHTML(chat) {
     return `<div class="message">
-    <h4>${chat.sender}</h4>
+    <h4><a href="/users/${chat.sender}">${chat.sender}</a></h4>
     <p>${chat.msg}</p>
     <p>${chat.timestamp}</p>
     ${expandImage(chat.msg)}

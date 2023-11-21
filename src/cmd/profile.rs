@@ -131,14 +131,17 @@ pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, usern
                 //^feh
                 todo!("Error!")
             }
-            if let Some(res) = result.get(0){
-                res.messages.is_empty()
+            let res = result.get(0).unwrap(); // ^ feh
+            let mut should_trigger = true;
+            for i in &res.messages{
+                if (rater > username) == i.sender{
+                    should_trigger = false;
+                    break;
+                }
             }
-            else{
-                true
-            }
+            should_trigger
         } {
-            return HttpResponse::BadRequest().body("You must work with the dude in order to rate them!");
+            return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
         }
         sum += star;
     }
