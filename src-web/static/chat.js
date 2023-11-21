@@ -48,7 +48,7 @@ function generateChatHTML(chat) {
     <h4>${chat.sender}</h4>
     <p>${chat.msg}</p>
     <p>${chat.timestamp}</p>
-    ${expandImage(msg)}
+    ${expandImage(chat.msg)}
     </div>`;
 }
 
@@ -58,6 +58,8 @@ let chatContainer = document.getElementById('chat_box');
 // Function to display jobs on the frontend
 function displayChats(chatsData) {
     console.log(chatsData);
+    // chatsData = Array.from(chatsData);
+    // console.log(chatsData);
   chatsData.forEach((chat) => {
       const chatHTML = generateChatHTML(chat);
       console.log(chatHTML);
@@ -83,6 +85,9 @@ function send_chat(){
     .catch((error) => {
         console.error('Error:', error);
     });
+    // chat = {msg: msg, username: room_title, timestamp: }
+    // generateChatHTML()
+
 }
 
 ///Done. This function works 

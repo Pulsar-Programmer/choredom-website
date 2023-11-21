@@ -18,7 +18,23 @@ The frontend part will consist of a field that is a forum that posts to `/chat/s
 Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
-pub async fn chats(_: Path<String>) -> impl Responder{
+pub async fn chats(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+    let receiver = receiver.into_inner();
+    let mut db = app_data.db.lock().await;
+    let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await.unwrap();
+    let result = res.get(0).unwrap().as_ref().unwrap();
+    //^^^ replace this with indices in future
+    //vvvv If it is greater we have issues, if it less then this is valid behavior
+    if result.len() != 1 {
+        //^feh
+        return HttpResponse::BadRequest().body("No messaging undefined users!");
+    }
+    let Some(identity) = identity else {return HttpResponse::BadRequest().body("Log in to access chats.")};
+    let sender = super::signup::retrieve_user(identity).unwrap();
+    if sender == receiver{
+        //^feh
+        return HttpResponse::BadRequest().body("No sending chats to yourself!")
+    }
     HttpResponse::Ok().body(CHAT)
 }
 
@@ -33,13 +49,6 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let res2 = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     let result = res2.get(0).unwrap().as_ref().unwrap();
     if result.len() != 1{
-        if {   
-            let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", receiver)).await.unwrap();
-            let result = res.get(0).unwrap().as_ref().unwrap();
-            result.len() != 1
-        } {
-            return HttpResponse::BadRequest().finish();
-        }
         let vec_chats = Vec::new();
         let room = Room{room_id, messages: vec_chats};
         query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
@@ -47,6 +56,10 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     }
     let result = result.get(0).unwrap();
     let Room { room_id: _, messages: vec } = result;
+
+    let vec : Vec<ChatFrontData> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
+        ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+    }).collect();
 
     //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
     HttpResponse::Ok().json(vec)
@@ -144,7 +157,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
-    HttpResponse::Ok().json(serde_json::to_string(&chats_vec).unwrap())
+    HttpResponse::Ok().json(&chats_vec)
 }
 
 
