@@ -168,12 +168,10 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
 pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
     let rater = retrieve_user(rater.unwrap()).unwrap();
     let username = username.into_inner();
-    if rater != username {
-        //^feh
-        return HttpResponse::BadRequest().body("One cannot simply delete another's rating.")
-    }
     let mut db = data.db.lock().await;
-    query_value(&mut db, "UPDATE accounts SET page.reviews -= $review, page.avg_rating = $new_avg WHERE username = $username", ("username", username)).await.unwrap();
+
+    //requires advanced DB query that can be done easily later
+    query_value(&mut db, "UPDATE accounts SET page.reviews -= (SELECT reviews[] FROM ), page.avg_rating = $new_avg WHERE username = $username", ("username", username)).await.unwrap();
 
 
     unimplemented!("Deleting not implemented yet.");

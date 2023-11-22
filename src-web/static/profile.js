@@ -76,3 +76,22 @@ function submitReviewForm(){
     });
 
 }
+
+
+function delete_rating(){
+    const url = `${window.location.href}/rate/delete` // this url might be incorrect
+    fetch(url, {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: value,
+    })
+    .then(response => response.json())
+    .then(data => {
+
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
