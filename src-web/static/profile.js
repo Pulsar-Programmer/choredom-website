@@ -19,18 +19,7 @@ window.addEventListener("load", function() {
     .catch((error) => {
         console.error('Error:', error);
     });
-
-
-
     // yuh cuh fella
-
-    let form = document.getElementById('ratingForm');
-    form.addEventListener("submit", function(event) {
-        event.preventDefault();
-        form.action = `${window.location.href}/rate`;
-
-        form.reset();
-    });
 });
 
 
@@ -58,4 +47,32 @@ function displayRatingHTML(stars, rater, body){
         <p>${body}</p>
     </div>`;
     document.getElementById("reviews").appendChild(html);
+}
+
+function submitReviewForm(){
+
+    let selectedRating = document.querySelector('input[name="rating"]:checked').value;
+    let body = document.getElementById("body");
+
+    let value = {
+        stars: selectedRating,
+        body: body,
+    };
+    
+    const url = `${window.location.href}/rate` // this url might be incorrect
+    fetch(url, {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: value,
+    })
+    .then(response => response.json())
+    .then(data => { //send data back to self for quick display?
+        // prefill_profile(data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
 }

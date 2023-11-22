@@ -87,7 +87,7 @@ pub struct StarsRaterQuery{
 
 
 #[post("/users/{username}/rate")]
-pub async fn rate(rating_data: Form<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
+pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
     let rater = retrieve_user(identity.unwrap()).unwrap();
     let username = username.into_inner();
     if rater == username{
