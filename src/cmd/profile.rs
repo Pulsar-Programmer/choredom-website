@@ -4,11 +4,27 @@ use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONT
 use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
+use rust_decimal::prelude::ToPrimitive;
 
 
 #[get("/users/{username}")]
-pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
+pub async fn profile(_: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
+    HttpResponse::Ok().body(PROFILE)
+}
+#[derive(serde::Serialize)]
+struct UsersFrontData<'a>{
+    displayname: &'a String,
+    pfp_url: &'a String,
+    username: &'a String,
+    avg_rating: f64,
+    creation_date: String,
+    state: &'a str,
+    bio: &'a String,
+    reviews: &'a Vec<PageRatingData>,
+}
 
+#[post("/obtain_profile")]
+pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>) -> impl Responder{
     let username = username.into_inner();
     //^feh
     let mut db = app_data.db.lock().await;
@@ -28,37 +44,16 @@ pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> im
         return HttpResponse::BadRequest().finish();
     };
 
-    let mut html = format!(r#"
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Profile Page</title>
-    </head>
-    <body>
-        <div class="profile">
-            <img href="{}"></img>
-            <h1 id="displayName">Name: {}</h1>
-            <h2 id="username">Username: {}</h2>
-            <h3 id="AvgRating">Rating: {}</h3>
-            <h4 id="CreationDate">Joined: {}</h4>
-            <h5 id="State">{}</h5>
-            <p id="bio">{}</p>
-        </div><div class=ratings>
-    "#, page.pfp_url, displayname, username, page.avg_rating, creation_date.format("%m/%d/%Y"), state.as_str(), page.bio);
-    for review in &page.reviews{
-        html.push_str(&format!(
-            r#"
-            <div id="review">
-            <h1 id="Rating">Rating: {}</h1>
-            <h2>Poster Username: {}</h2>
-            <p>{}</p>
-            </div>
-            "#, review.stars, review.rater, review.body));
-    }
-    html.push_str("</div></body>");
-    html.push_str(PROFILE);
-    HttpResponse::Ok().body(html)
+    let data = UsersFrontData{ 
+        displayname, pfp_url: &page.pfp_url, username, avg_rating: page.avg_rating.to_f64().unwrap(), 
+        creation_date: creation_date.format("%m/%d/%Y").to_string(), 
+        state: state.as_str(), bio: &page.bio ,
+        reviews: &page.reviews,
+    };
+    HttpResponse::Ok().json(data)
 }
+
+
 
 
 
