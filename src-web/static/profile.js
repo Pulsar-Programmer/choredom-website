@@ -1,10 +1,16 @@
 window.addEventListener("load", function() {
-
+    let urlbase = window.location.href.substring(0, window.location.href.indexOf('users')).trim();
+    var path = window.location.pathname;
+    var pathParts = path.split('/');
+    var newPath = pathParts[pathParts.indexOf('users') + 1];
+    let url = urlbase + "obtain_profile";
+    
     fetch('/obtain_profile', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
         },
+        body: JSON.stringify(newPath),
     })
     .then(response => response.json())
     .then(data => {
