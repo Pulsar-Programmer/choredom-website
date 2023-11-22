@@ -1,9 +1,9 @@
 window.addEventListener("load", function() {
-    let urlbase = window.location.href.substring(0, window.location.href.indexOf('users')).trim();
+    // let urlbase = window.location.href.substring(0, window.location.href.indexOf('users')).trim();
     var path = window.location.pathname;
     var pathParts = path.split('/');
     var newPath = pathParts[pathParts.indexOf('users') + 1];
-    let url = urlbase + "obtain_profile";
+    // let url = urlbase + "obtain_profile";
     
     fetch('/obtain_profile', {
         method: 'POST', 
@@ -39,7 +39,7 @@ function prefill_profile(data){
     document.getElementById("profile_pic").href = data.pfp_url;
     document.getElementById("displayName").innerHTML = "Name: " + data.displayname;
     document.getElementById("username").innerHTML = "Username: " + data.username;
-    document.getElementById("AvgRating").innerHMTL = "Rating: " + data.avg_rating;
+    document.getElementById("AvgRating").innerHMTL = "Rating: " + String(data.avg_rating);
     document.getElementById("CreationDate").innerHTML = "Joined: " + data.creation_date;
     document.getElementById("state").innerHTML = data.state;
     document.getElementById("bio").innerHTML = data.bio;
