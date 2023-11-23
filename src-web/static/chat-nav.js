@@ -23,9 +23,3 @@ function add_to_html(yapper){
     let links_div = document.getElementById("chatList");
     links_div.innerHTML += html;
 }
-
-
-
-// window.onload = function() {
-//     prefill();
-// }
