@@ -4,6 +4,7 @@ use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData}; 
 use super::sites::CHAT;
+use super::signup::retrieve_user;
 
 ///This represents a chat room with a bunch of chats.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -219,4 +220,47 @@ impl std::ops::Deref for FixedStrictSetDuo2{
         &self.inner
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+#[get("/chat-nav")]
+pub async fn chat_nav() -> impl Responder{
+    HttpResponse::Ok().body(CHAT)
+}
+
+#[derive(serde::Serialize)]
+struct NavLinks{
+    
+}
+
+#[post("/get-chats")]
+pub async fn nav_links(identity: Option<Identity>) -> impl Responder{
+    let username = retrieve_user(identity.unwrap()).unwrap();
+
+
+
+
+
+
+    let links: Vec<NavLinks> = Vec::new();
+
+
+
+    HttpResponse::Ok().json(links)
+}
+
+
+
+
+
+
 

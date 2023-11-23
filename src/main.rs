@@ -6,7 +6,7 @@ use actix_session_surrealdb::SurrealSessionStore;
 mod cmd;
 use chrono::Duration;
 use cmd::*;
-use cmd::chats::{chats as chats_get, chats_obtain, receive, send};
+use cmd::chats::{chats as chats_get, chats_obtain, receive, send, chat_nav};
 use cmd::signup::*;
 use cmd::profile::*;
 use cmd::jobs::*;
@@ -77,7 +77,8 @@ async fn main() -> std::io::Result<()> {
             email_change, settings_email, home_redirect_settings,
             settings_present_data,
             jobs, jobs_data,
-            chats_get, chats_obtain, send, receive
+            chats_get, chats_obtain, send, receive,
+            chat_nav, nav_links
             // delete_rating,
         )
         .app_data(app_state.clone())
