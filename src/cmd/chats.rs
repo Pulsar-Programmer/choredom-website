@@ -189,6 +189,18 @@ impl FixedStrictSetDuo2{
         elements.sort();
         Self { inner: elements }
     }
+
+
+    pub fn access_opposite(&self, element: &str) -> Option<String>{
+        if self[true] == element {
+            Some(self[false].clone())
+        } else if self[false] == element{
+            Some(self[true].clone())
+        }
+        else{
+            None
+        }
+    }
 }
 impl std::ops::Index<bool> for FixedStrictSetDuo2{
     type Output = String;
@@ -238,23 +250,24 @@ pub async fn chat_nav() -> impl Responder{
 }
 
 #[derive(serde::Serialize)]
-struct NavLinks{
-    
+struct NavLink{
+    // url: String, // doesn't need to be transmitted
+    room_name: String,
 }
 
-#[post("/get-chats")]
-pub async fn nav_links(identity: Option<Identity>) -> impl Responder{
+#[post("/nav-links")]
+pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let username = retrieve_user(identity.unwrap()).unwrap();
 
 
+    let mut db = data.db.lock().await;
+    let rooms = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id CONTAINS $name;", ("name", &username)).await.unwrap();
+    let rooms = rooms.get(0).unwrap().as_ref().unwrap();
+    let links: Vec<NavLink> = rooms.into_iter().map(|elem|{
+        NavLink { room_name: elem.room_id.access_opposite(&username).unwrap() }
+    }).collect();
 
-
-
-
-    let links: Vec<NavLinks> = Vec::new();
-
-
-
+    
     HttpResponse::Ok().json(links)
 }
 
