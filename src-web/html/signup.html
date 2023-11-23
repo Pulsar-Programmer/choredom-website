@@ -25,9 +25,14 @@
   <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
   <input name="username" type="text" class="username-input" placeholder="Username" pattern="[A-Za-z0-9]+" title="Username should only contain letters and numbers." required>
   <input name="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="[A-Za-z0-9 ]+" title="Display Name should only contain letters, numbers, and spaces." required>
+  <!-- <div id="dropdown" class="dropdown"> -->
+    <!-- <input id="filterInput" name="location" type="text" placeholder="Filter towns..."> -->
+    <!-- <div id="dropdownOptions" class="dropdown-options"></div> -->
+  <!-- </div> -->
   <div id="dropdown" class="dropdown">
     <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
-    <div id="dropdownOptions" class="dropdown-options"></div>
+    <select id="dropdownOptions">
+    </select>
   </div>
   <input type="submit" class="continue button is-primary">
 <body>
@@ -35,56 +40,4 @@
     <p>&copy; 2023 Choredom</p>
   </footer>
 </body>
-<script>
-  fetch('/us_cities.json')
-  .then(response => response.json())
-  .then(data => populateDropdown(data));
-
-  function populateDropdown(data) {
-  const dropdown = document.getElementById('dropdownOptions');
-  dropdown.style.display = 'none'; // Hide the dropdown initially
-      data.forEach(town => {
-      const option = document.createElement('div');
-      option.setAttribute('value', town.ID);
-      option.textContent = `${town.CITY}, ${town.STATE_NAME}`; 
-      option.addEventListener('click', selectOption); 
-      dropdown.appendChild(option);
-      });
-  }
-
-  function selectOption() {
-      const input = document.getElementById('filterInput');
-      input.value = this.textContent; 
-      const dropdown = document.getElementById('dropdownOptions');
-      dropdown.style.display = 'none'; 
-      input.blur(); 
-  }
-
-  const input = document.getElementById('filterInput');
-  input.addEventListener('input', filterOptions);
-
-  function filterOptions() {
-      const filterValue = this.value.toLowerCase();
-      const dropdown = document.getElementById('dropdownOptions');
-      const options = Array.from(dropdown.children);
-      options.forEach(option => option.style.display = "none"); 
-
-      if (!filterValue) { 
-          return; // Do nothing when the input field isn't touched or is empty
-      }
-
-      const relevantOptions = options
-      .filter(option => option.textContent.toLowerCase().includes(filterValue))
-      .sort((option1, option2) => {
-          return option1.textContent.toLowerCase().indexOf(filterValue) -
-          option2.textContent.toLowerCase().indexOf(filterValue);
-      })
-      .slice(0, 10); 
-
-      relevantOptions.forEach(option => option.style.display = ""); 
-
-      if (relevantOptions.length > 0) {
-          dropdown.style.display = 'block'; 
-      }
-  }
-</script>
+<script defer src="/src-web/static/us-cities.js"></script>

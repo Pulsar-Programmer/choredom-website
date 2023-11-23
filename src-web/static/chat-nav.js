@@ -1,6 +1,6 @@
 window.addEventListener("load", function() {
-
-    fetch('/nav-links', {
+    let url = window.location.href.substring(0, window.location.href.indexOf('chat')).trim() + "nav-links";
+    fetch(url, {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -8,7 +8,8 @@ window.addEventListener("load", function() {
     })
     .then(response => response.json())
     .then(data => {
-        data.forEach(part => add_to_html(part.room_id));
+        console.log(data);
+        data.forEach(part => add_to_html(part.room_name));
     })
     .catch((error) => {
         console.error('Error:', error);

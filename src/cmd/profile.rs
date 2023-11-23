@@ -8,7 +8,7 @@ use rust_decimal::prelude::ToPrimitive;
 
 
 #[get("/users/{username}")]
-pub async fn profile(_: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
+pub async fn profile(_: web::Path<String>) -> impl Responder{
     HttpResponse::Ok().body(PROFILE)
 }
 #[derive(serde::Serialize)]

@@ -5,7 +5,11 @@
 // the html should looks like :
 /*
 
-
+<div id="dropdown" class="dropdown">
+    <input id="filterInput" type="text" placeholder="Filter towns...">
+    <select id="dropdownOptions">
+    </select>
+  </div>
 
 
 
@@ -19,7 +23,7 @@ input.addEventListener('input', function() {
     fetch("/src-web/assets/us_cities.json")
     .then(response => response.json())
     .then(data => {
-
+        // dropdown.innerHTML = "";
         dropdown.children.clear();
 
         const transformedData = data.map(entry => {

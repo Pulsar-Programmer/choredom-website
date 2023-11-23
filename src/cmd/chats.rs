@@ -3,7 +3,7 @@ use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData}; 
-use super::sites::CHAT;
+use super::sites::{CHAT, CHATNAV};
 use super::signup::retrieve_user;
 
 ///This represents a chat room with a bunch of chats.
@@ -244,12 +244,15 @@ impl std::ops::Deref for FixedStrictSetDuo2{
 
 
 
-#[get("/chat-nav")]
-pub async fn chat_nav() -> impl Responder{
-    HttpResponse::Ok().body(CHAT)
+#[get("/chat")]
+pub async fn chat_nav(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::BadRequest().body("Log in before seeing your chats!");
+    }
+    HttpResponse::Ok().body(CHATNAV)
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 struct NavLink{
     // url: String, // doesn't need to be transmitted
     room_name: String,
@@ -261,12 +264,12 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
     let mut db = data.db.lock().await;
-    let rooms = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id CONTAINS $name;", ("name", &username)).await.unwrap();
+    let rooms = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await.unwrap();
     let rooms = rooms.get(0).unwrap().as_ref().unwrap();
     let links: Vec<NavLink> = rooms.into_iter().map(|elem|{
         NavLink { room_name: elem.room_id.access_opposite(&username).unwrap() }
     }).collect();
-
+    // println!("{links:?}");
     
     HttpResponse::Ok().json(links)
 }
