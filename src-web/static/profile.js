@@ -52,7 +52,12 @@ function displayRatingHTML(stars, rater, body){
 function submitReviewForm(){
 
     let selectedRating = document.querySelector('input[name="rating"]:checked').value;
-    let body = document.getElementById("body");
+    //get the number of stars the user has selected from the HTML.
+
+    if(selectedRating === 0){
+        return;
+    }
+    let body = document.getElementById("body").innerHTML;
 
     let value = {
         stars: selectedRating,
