@@ -8,8 +8,21 @@
     <label for="displayname">Display Name:</label><br>
     <input type="text" id="displayname" name="displayname"pattern="[A-Za-z0-9 ]+"title="Should only contain letters, spaces, and numbers"required><br>
 
-    <label for="location">Location:</label><br>
-    <input type="text" id="location" name="location"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"required><br> 
+    <div id="dropdown">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+      <script>
+        $(function(){
+          $('#city').select2();
+        });
+      </script>
+      <script defer src="/src-web/static/us-cities.js"></script>
+  
+      <label for="city">Filter Towns...</label>
+      <select name="location" id="city" style="width: 300px;">
+      </select>
+    </div>
 
     <label for="bio">Bio:</label><br>
     <textarea id="bio" name="bio"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"required></textarea><br>

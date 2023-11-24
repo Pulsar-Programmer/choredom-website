@@ -80,7 +80,7 @@ function formatDate(date) {
 
 
 function get_location_data(){
-    const location = document.getElementById('filterInput').value;
+    const location = document.getElementById('city').value;
 
     fetch('/job-handling', {
         method: 'POST',

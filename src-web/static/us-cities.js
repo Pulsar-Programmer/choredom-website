@@ -65,7 +65,8 @@ window.onload = function() {
         const selectElement = document.getElementById('city');
         data.forEach(city => {
             const optionElement = document.createElement('option');
-            optionElement.value = city.ID;
+            // optionElement.value = city.ID; //maybe one day make it coded? not very efficiency anyway tho
+            optionElement.value = `${city.CITY}, ${city.STATE_NAME}`;
             optionElement.text = `${city.CITY}, ${city.STATE_NAME}`;
             selectElement.appendChild(optionElement);
         });

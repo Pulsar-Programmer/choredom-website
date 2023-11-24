@@ -25,13 +25,19 @@
   <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
   <input name="username" type="text" class="username-input" placeholder="Username" pattern="[A-Za-z0-9]+" title="Username should only contain letters and numbers." required>
   <input name="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="[A-Za-z0-9 ]+" title="Display Name should only contain letters, numbers, and spaces." required>
-  <!-- <div id="dropdown" class="dropdown"> -->
-    <!-- <input id="filterInput" name="location" type="text" placeholder="Filter towns..."> -->
-    <!-- <div id="dropdownOptions" class="dropdown-options"></div> -->
-  <!-- </div> -->
-  <div id="dropdown" class="dropdown">
-    <input id="filterInput" name="location" type="text" placeholder="Filter towns...">
-    <select id="dropdownOptions">
+  <div id="dropdown">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script>
+      $(function(){
+        $('#city').select2();
+      });
+    </script>
+    <script defer src="/src-web/static/us-cities.js"></script>
+
+    <label for="city">Filter Towns...</label>
+    <select name="location" id="city" style="width: 300px;">
     </select>
   </div>
   <input type="submit" class="continue button is-primary">

@@ -4,12 +4,6 @@
 </head>
 <body>
   Hello World!
-  <!-- <div id="dropdown">
-    <input id="filterInput" type="text">
-    <select id="dropdownOptions">
-    </select>
-  </div>
-  <script src="/src-web/static/us-cities.js"></script> -->
   <div id="dropdown">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
@@ -19,14 +13,11 @@
         $('#city').select2();
       });
     </script>
-
+    <script defer src="/src-web/static/us-cities.js"></script>
 
     <label for="city">Filter Towns...</label>
     <select name="cities" id="city" style="width: 300px;">
-
-
     </select>
-    <script defer src="/src-web/static/us-cities.js"></script>
   </div>
 </body>
 </html>

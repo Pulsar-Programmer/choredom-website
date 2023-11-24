@@ -27,10 +27,20 @@
       <form id="jobForm" action="/post-job-2" method="post">
         <input id="title" name="title" type="text" placeholder="Title of your job" pattern="^[a-zA-Z0-9 ]*$" required>
         <input id="body" name="body" type="text" placeholder="Body of your job description" pattern="^[a-zA-Z0-9 ]*$"required>
-        <div id="dropdown" class="dropdown">
-          <input name="location" id="filterInput" type="text" placeholder="Filter towns..." pattern="^[a-zA-Z0-9 ]*$"required>
-          <div id="dropdownOptions" class="dropdown-options">
-          </div>
+        <div id="dropdown">
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+          <script>
+            $(function(){
+              $('#city').select2();
+            });
+          </script>
+          <script defer src="/src-web/static/us-cities.js"></script>
+      
+          <label for="city">Filter Towns...</label>
+          <select name="location" id="city" style="width: 300px;">
+          </select>
         </div>
         <input id="time" name="time" type="date" placeholder="Date of your job"required>
         <input id="price" name="price" type="number" placeholder="Price you are willing to pay"required>
@@ -43,58 +53,5 @@
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
   <script defer src="./src-web/static/post.js"></script>
-  <script>
-  fetch('us_cities.json')
-  .then(response => response.json())
-  .then(data => populateDropdown(data));
-
-function populateDropdown(data) {
-  const dropdown = document.getElementById('dropdownOptions');
-  dropdown.style.display = 'none'; // Hide the dropdown initially
-  data.forEach(town => {
-    const option = document.createElement('div');
-    option.setAttribute('value', town.ID);
-    option.textContent = `${town.CITY}, ${town.STATE_NAME}`; 
-    option.addEventListener('click', selectOption); 
-    dropdown.appendChild(option);
-  });
-}
-
-function selectOption() {
-  const input = document.getElementById('filterInput');
-  input.value = this.textContent; 
-  const dropdown = document.getElementById('dropdownOptions');
-  dropdown.style.display = 'none'; 
-  input.blur(); 
-}
-
-const input = document.getElementById('filterInput');
-input.addEventListener('input', filterOptions);
-
-function filterOptions() {
-  const filterValue = this.value.toLowerCase();
-  const dropdown = document.getElementById('dropdownOptions');
-  const options = Array.from(dropdown.children);
-  options.forEach(option => option.style.display = "none"); 
-
-  if (!filterValue) { 
-      return; // Do nothing when the input field isn't touched or is empty
-  }
-
-  const relevantOptions = options
-  .filter(option => option.textContent.toLowerCase().includes(filterValue))
-  .sort((option1, option2) => {
-      return option1.textContent.toLowerCase().indexOf(filterValue) -
-      option2.textContent.toLowerCase().indexOf(filterValue);
-  })
-  .slice(0, 10); 
-
-  relevantOptions.forEach(option => option.style.display = ""); 
-
-  if (relevantOptions.length > 0) {
-      dropdown.style.display = 'block'; 
-  }
-}
-</script>
 </body>
 </html>
