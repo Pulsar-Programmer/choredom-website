@@ -1,4 +1,5 @@
 use actix_identity::IdentityMiddleware;
+use actix_web::{Responder, HttpResponse};
 use actix_web::{ web, App, HttpServer, cookie::Key};
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
@@ -38,6 +39,14 @@ macro_rules! wapp {
 //         "Welcome Anonymous!".to_owned()
 //     }
 // }
+pub const TEST: &'static str = include_str!(concat!("../src-web/html/", "test", ".html"));
+#[actix_web::get("/test")]
+pub async fn test() -> impl Responder{
+    HttpResponse::Ok().body(TEST)
+}
+
+
+
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -60,6 +69,7 @@ async fn main() -> std::io::Result<()> {
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()
             ).build())
+            .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
             signup, verify_email, home_redirect_signup, home_redirect_login,
@@ -78,7 +88,8 @@ async fn main() -> std::io::Result<()> {
             settings_present_data,
             jobs, jobs_data,
             chats_get, chats_obtain, send, receive,
-            chat_nav, nav_links
+            chat_nav, nav_links,
+            test
             // delete_rating,
         )
         .app_data(app_state.clone())

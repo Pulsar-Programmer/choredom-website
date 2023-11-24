@@ -1,40 +1,32 @@
 <!DOCTYPE html>
 <html> // Gitstreak
 <head>
-  <style>
-    .dropdown {
-      position: relative;
-      display: inline-block;
-      width: 200px;
-    }
-
-    .dropdown-options {
-      display: none;
-      position: absolute;
-      background-color: #f6f6f6;
-      min-width: 160px;
-      overflow: auto;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
-
-    .dropdown-options div {
-      color: black;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-    }
-
-    .dropdown-options div:hover {
-      background-color: #ddd;
-    }
-  </style>
 </head>
 <body>
-  <div id="dropdown" class="dropdown">
-    <input id="filterInput" type="text" placeholder="Filter towns...">
+  Hello World!
+  <!-- <div id="dropdown">
+    <input id="filterInput" type="text">
     <select id="dropdownOptions">
     </select>
+  </div>
+  <script src="/src-web/static/us-cities.js"></script> -->
+  <div id="dropdown">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script>
+      $(function(){
+        $('#city').select2();
+      });
+    </script>
+
+
+    <label for="city">Filter Towns...</label>
+    <select name="cities" id="city" style="width: 300px;">
+
+
+    </select>
+    <script defer src="/src-web/static/us-cities.js"></script>
   </div>
 </body>
 </html>
