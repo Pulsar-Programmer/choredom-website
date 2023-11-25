@@ -1,6 +1,6 @@
 use crate::{db::{query, query_value}, AppData};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
-use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT};
+use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY};
 use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
@@ -26,19 +26,16 @@ struct UsersFrontData<'a>{
 #[post("/obtain_profile")]
 pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>) -> impl Responder{
     let username = username.into_inner();
-    //^feh
+    //^feh how do we handle what if the username is invalid, we must report this to the JS and not load the page or something
     let mut db = app_data.db.lock().await;
     let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
-        return HttpResponse::BadRequest().finish();
+        return HttpResponse::BadRequest().json("Issue with DB Queries.");
     };
-    let Some(res1) = res2.get(0) else {
-        return HttpResponse::BadRequest().finish();
-    };
-    let Ok(result) = res1.as_ref() else{
-        return HttpResponse::BadRequest().finish();
+    let Some(Ok(result)) = res2.get(0).as_ref() else {
+        return HttpResponse::BadRequest().json("Issue with DB Query");
     };
     if result.len() != 1 {
-        return HttpResponse::BadRequest().finish();
+        return HttpResponse::BadRequest().json("Account does not exist.");
     }
     let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.get(0) else{
         return HttpResponse::BadRequest().finish();
@@ -88,14 +85,15 @@ pub struct StarsRaterQuery{
 
 #[post("/users/{username}/rate")]
 pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
-    let rater = retrieve_user(identity.unwrap()).unwrap();
+    // println!("Queries");
+    let rater: String = retrieve_user(identity.unwrap()).unwrap();
     let username = username.into_inner();
     if rater == username{
         //^feh
-        return HttpResponse::BadRequest().body("You may not rate yourself!");
+        return HttpResponse::BadRequest().json("You may not rate yourself!");
     }
     let mut db = data.db.lock().await;
-    if {
+    let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
         let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
         let result = res.get(0).unwrap().as_ref().unwrap();
@@ -118,7 +116,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
             }
         }
         !not_contains_first && !not_contains_second
-    } {
+    };
+    if chat_block {
         return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
     }
 
@@ -597,7 +596,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
     transmission_transmit("set", &session, new_email).unwrap();
 
-    HttpResponse::Ok().body(crate::sites::EMAIL_CHANGE_VERIFY)
+    HttpResponse::Ok().body(EMAIL_CHANGE_VERIFY)
 }
 
 fn settings_verification_email(email: &String, displayname: &String, new_email: &String, code: i32) -> anyhow::Result<lettre::transport::smtp::response::Response>{

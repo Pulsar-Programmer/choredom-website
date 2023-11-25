@@ -51,26 +51,24 @@ function displayRatingHTML(stars, rater, body){
 
 function submitReviewForm(){
 
-    let selectedRating = document.querySelector('input[name="rating"]:checked').value;
+    let selectedRating = document.querySelector('input[name="rating"]:checked');
     //get the number of stars the user has selected from the HTML.
-
-    if(selectedRating === 0){
+    if(selectedRating.value === 0 || selectedRating.value === null){
         return;
     }
-    let body = document.getElementById("body").innerHTML;
+    let body = document.getElementById("body").value;
 
     let value = {
-        stars: selectedRating,
+        stars: Number(selectedRating.value),
         body: body,
     };
     
-    const url = `${window.location.href}/rate` // this url might be incorrect
-    fetch(url, {
+    fetch(`${window.location.href}/rate`, {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
         },
-        body: value,
+        body: JSON.stringify(value),
     })
     .then(response => response.json())
     .then(data => { //send data back to self for quick display?

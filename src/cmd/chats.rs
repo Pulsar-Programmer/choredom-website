@@ -19,7 +19,7 @@ The frontend part will consist of a field that is a forum that posts to `/chat/s
 Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
-pub async fn chats(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let receiver = receiver.into_inner();
     let mut db = app_data.db.lock().await;
     let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await.unwrap();

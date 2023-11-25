@@ -6,11 +6,11 @@ use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;
 use chrono::Duration;
-use cmd::*;
-use cmd::chats::{chats as chats_get, chats_obtain, receive, send, chat_nav, nav_links};
+use cmd::homepage;
 use cmd::signup::*;
-use cmd::profile::*;
 use cmd::jobs::*;
+use cmd::profile::*;
+use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links};
 mod db;
 use db::setup_db;
 
