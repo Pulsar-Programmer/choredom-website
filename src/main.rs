@@ -1,6 +1,5 @@
 use actix_identity::IdentityMiddleware;
-use actix_web::{Responder, HttpResponse};
-use actix_web::{ web, App, HttpServer, cookie::Key};
+use actix_web::{web, App, HttpServer, cookie::Key};
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
 
@@ -13,6 +12,7 @@ use cmd::profile::*;
 use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links};
 mod db;
 use db::setup_db;
+mod img;
 
 macro_rules! wapp {
     ($e:expr; $($i:ident),+) => {
@@ -70,6 +70,7 @@ async fn main() -> std::io::Result<()> {
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()
             ).build())
+            .service(actix_files::Files::new("/tmp", "./tmp").show_files_listing())
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,

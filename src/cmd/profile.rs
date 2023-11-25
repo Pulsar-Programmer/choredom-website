@@ -300,49 +300,21 @@ pub async fn upload() -> impl Responder{
 }
 
 #[post("/settings/upload/form")]
-pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> Result<HttpResponse, actix_web::Error>{
-    
-    use futures::TryStreamExt;
-    use futures::StreamExt;
-    use std::io::Write;
-    // iterate over multipart stream
-    while let Ok(Some(mut field)) = form.try_next().await {
-        let content_disposition = field.content_disposition();
-        let filename = content_disposition.get_filename().unwrap();
-        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
-        
-
-        use image::ImageFormat;
-        use std::path::Path;
-
-        let format = ImageFormat::from_path(Path::new(&filepath)).unwrap();
-
-        match format {
-            ImageFormat::Png => println!("The file is a PNG"),
-            ImageFormat::Jpeg => println!("The file is a JPEG"),
-            _ => todo!(), //^feh
-        }
-
-        let mut f = web::block(|| std::fs::File::create(filepath)).await.unwrap().unwrap();
+pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+    let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
 
 
-        // Field in turn is stream of *Bytes* object
-        while let Some(chunk) = field.next().await {
-            let data = chunk.unwrap();
-            f = web::block(move || f.write_all(&data).map(|_| f)).await.unwrap().unwrap();
-        }
-    }
+    crate::img::process_multipart(form, "/verification").await;
 
     let new_state = super::signup::AccountState::PendingVerification;
-    let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let params = (("state", "username"), (new_state, username));
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     let db = &mut data.db.lock().await;
     query_value(db, surrealql, params).await.unwrap();
 
-    //review: is it really smooth or ok to have this return a Result?
-    Ok(HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS))
+    //review: is it really smooth or ok to have this return a Result? -> lets decide later
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
 

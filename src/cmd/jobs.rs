@@ -1,10 +1,10 @@
 use crate::{db::{query, query_value}, AppData};
 use actix_identity::Identity;
-use actix_web::{web::{Form, Data, self}, Responder, get, post, HttpResponse, HttpRequest};
+use actix_web::{web::{Data, self}, Responder, get, post, HttpResponse};
 use surrealdb::sql::Thing;
 use super::sites::{POST, TASK};
 use chrono::{DateTime, Utc};
-use super::signup::{AccountState, login_user, retrieve_user};
+use super::signup::{AccountState, retrieve_user};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct JobData{
@@ -82,7 +82,7 @@ struct JobUsername{
 
 #[get("/jobs/{id}")]
 pub async fn jobs(_: actix_web::web::Path<String>) -> impl Responder{
-    HttpResponse::Ok().body(crate::sites::JOBS)
+    HttpResponse::Ok().body(super::sites::JOBS)
 }
 
 #[post("/jobs_attain")]
