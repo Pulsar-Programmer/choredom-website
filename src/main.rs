@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()
             ).build())
-            .service(actix_files::Files::new("/tmp", "./tmp").show_files_listing())
+            .service(actix_files::Files::new("/temp", "./temp").show_files_listing())
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
