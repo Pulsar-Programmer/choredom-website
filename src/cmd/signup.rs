@@ -4,7 +4,7 @@ use crate::db::{query, query_value};
 use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
-use chrono::{Utc, DateTime, Duration};
+use chrono::{Utc, Duration};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
 use rand::Rng;
@@ -369,14 +369,15 @@ fn signup_transmission_transmit(session: &actix_session::Session, unhashed_code:
 fn signup_transmission_receive(session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
     email_transmission_receive("signup", session)
 }
-#[derive(Debug)]
-struct ErrorString(String);
-impl std::fmt::Display for ErrorString{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-impl std::error::Error for ErrorString{}
+
+// #[derive(Debug)]
+// struct ErrorString(String);
+// impl std::fmt::Display for ErrorString{
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         self.0.fmt(f)
+//     }
+// }
+// impl std::error::Error for ErrorString{}
 
 pub fn email_transmission_transmit(field:&str, session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
     let transmitter = EmailTransmitter::new(unhashed_code)?;
@@ -386,7 +387,7 @@ pub fn email_transmission_transmit(field:&str, session: &actix_session::Session,
 pub fn email_transmission_receive(field: &str, session: &actix_session::Session) -> Result<EmailTransmitter, Box<dyn std::error::Error>>{
     let transmitter: EmailTransmitter = transmission_receive(field, session)?;
     if Utc::now() - transmitter.time >= Duration::minutes(5){
-        return Err(Box::new(ErrorString(String::from("Message not received in time!"))));
+        return Err("Message not received in time!".into());
     }
     Ok(transmitter)
 }

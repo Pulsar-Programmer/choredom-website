@@ -1,6 +1,6 @@
 use std::fs::File;
 
-
+///Processes the multipart extractor of Actix for images only.
 ///Container should not have any path slash before or after
 pub async fn process_multipart(mut form: actix_multipart::Multipart, container: &str) -> Result<(), Box<dyn std::error::Error>>{
     use futures::TryStreamExt;
@@ -15,17 +15,16 @@ pub async fn process_multipart(mut form: actix_multipart::Multipart, container: 
         let filename = content_disposition.get_filename().ok_or("Filename processing error.")?;
         let filepath = format!("/temp/{container}/{}", sanitize_filename::sanitize(filename));
 
-        // use image::ImageFormat;
-        // use std::path::Path;
+        use image::ImageFormat;
+        use std::path::Path;
 
-        // let format = ImageFormat::from_path(Path::new(&filepath)).unwrap();
+        //if a format can be created without issue, the file is a successful image only
+        let format = ImageFormat::from_path(Path::new(&filepath))?;
 
-        // match format {
-        //     ImageFormat::Png => println!("The file is a PNG"),
-        //     ImageFormat::Jpeg => println!("The file is a JPEG"),
-        //     _ => todo!(), //^feh
-        // }
-
+        match format{
+            ImageFormat::Png | ImageFormat::Jpeg => {},
+            _ => return Err("Only PNG and JPEG allowed!".into()),
+        }
         
         //remember to either throw an error or change the file name when uploading file names that are different.
         let mut f = web::block(|| std::fs::File::create(filepath)).await??;
@@ -40,7 +39,7 @@ pub async fn process_multipart(mut form: actix_multipart::Multipart, container: 
     Ok(())
 }
 
-pub async fn upload_file(f: File){
+pub async fn upload_file(_f: File){
     //upload the file to some unknown destination (google drive, etc.)
     //next delete it when that finishes
     //return the link to where it is located within the JS (or  just come up with a coherent system of working it)
