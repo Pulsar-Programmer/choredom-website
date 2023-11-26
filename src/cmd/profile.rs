@@ -303,7 +303,7 @@ pub async fn upload() -> impl Responder{
 pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
 
-    crate::img::process_multipart(form, "verification").await;
+    crate::img::process_multipart(form, &format!("verification/{username}")).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
