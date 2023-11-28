@@ -27,6 +27,12 @@
     <label for="bio">Bio:</label><br>
     <textarea id="bio" name="bio"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"required></textarea><br>
 
+    <label for="pfp">Profile Picture:</label><br>
+    <input type="file" id="pfp" name="pfp" accept=".jpg, .jpeg, .png" required><br>
+
+    <label for="bioPics">Bio picture(s):</label><br>
+    <input type="file" id="bioPics" name="bioPics" accept=".jpg, .jpeg, .png" multiple><br>
+
     <input type="submit" value="Submit">
   </form>
   <a href="/settings/email">Change email</a>

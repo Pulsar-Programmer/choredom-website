@@ -1,13 +1,31 @@
 function settings_post(){
     let url = 'http://localhost:8080/settings-post';
+
+    let username = document.getElementById('username').value;
+    let password = document.getElementById('password-confirmation').value;
+    let displayname = document.getElementById('displayname').value;
+    let location = document.getElementById('city').value;
+    let bio = document.getElementById('bio').value;
+    let pfpInput = document.getElementById('pfp');
+    let pfp = pfpInput.files.length > 0 ? URL.createObjectURL(pfpInput.files[0]) : '';
+
+    // For the bio pictures, you need to read the file inputs and convert them to a format that can be sent via JSON
+    let bioPicsInput = document.getElementById('bioPics');
+    let bioPics = [];
+    for (let i = 0; i < bioPicsInput.files.length; i++) {
+        bioPics.push(URL.createObjectURL(bioPicsInput.files[i]));
+    }
+
     let data = {
-        username: 'username', 
-        password: 'password',
-        displayname: 'displayname',
-        location: 'location',
-        bio: 'bio',
-        pfp: 'pfp'
+        username: username, 
+        password: password,
+        displayname: displayname,
+        location: location,
+        bio: bio,
+        pfp: pfp,
+        bioPics: bioPics
     };
+
     fetch(url, {
         method: 'POST', 
         headers: {
@@ -21,6 +39,7 @@ function settings_post(){
         console.error('Error:', error);
     });
 }
+
 
 window.addEventListener("load", function() {
 
