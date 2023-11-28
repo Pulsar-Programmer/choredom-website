@@ -87,6 +87,7 @@ pub struct AccountPage{
     pub avg_rating: rust_decimal::Decimal,
     pub reviews: Vec<super::profile::PageRatingData>,
     pub bio: String,
+    // pub bio_images: [String; 3],
 }
 impl AccountPage{
     fn new() -> Self{

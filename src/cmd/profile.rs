@@ -1,7 +1,8 @@
-use crate::{db::{query, query_value}, AppData};
+use crate::{db::{query, query_value}, AppData, img::process_multipart};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY};
 use actix_identity::Identity;
+use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
 use rust_decimal::prelude::ToPrimitive;
@@ -302,8 +303,8 @@ pub async fn upload() -> impl Responder{
 #[post("/settings/upload/form")]
 pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
-
-    crate::img::process_multipart(form, &format!("verification/{username}")).await.unwrap();
+    let container = format!("verification/{username}");
+    crate::img::process_multipart(form, move|_|{container.clone()}).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
@@ -591,6 +592,43 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
+
+
+
+
+
+#[post("/settings/pics")]
+pub async fn pics(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+    let user = retrieve_user(user.unwrap()).unwrap();
+
+    let mut db = data.db.lock().await;
+
+    // let intermediate_function = move|_|{};
+
+
+
+
+
+    // process_multipart(form, &format!("usr/{user}"), intermediate_function).await.unwrap();
+
+
+    todo!() as HttpResponse
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

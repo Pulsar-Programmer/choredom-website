@@ -2,7 +2,7 @@ use std::fs::File;
 
 ///Processes the multipart extractor of Actix for images only.
 ///Container should not have any path slash before or after
-pub async fn process_multipart(mut form: actix_multipart::Multipart, container: &str) -> Result<(), Box<dyn std::error::Error>>{
+pub async fn process_multipart(mut form: actix_multipart::Multipart, mut per_form_to_container: impl FnMut(&actix_multipart::Field) -> String) -> Result<(), Box<dyn std::error::Error>>{
     use futures::TryStreamExt;
     use futures::StreamExt;
     use std::io::Write;
@@ -13,7 +13,7 @@ pub async fn process_multipart(mut form: actix_multipart::Multipart, container: 
     while let Ok(Some(mut field)) = form.try_next().await {
         let content_disposition = field.content_disposition();
         let filename = content_disposition.get_filename().ok_or("Filename processing error.")?;
-        let filepath = format!("/temp/{container}/{}", sanitize_filename::sanitize(filename));
+        let filepath = format!("/temp/{}/{}", per_form_to_container(&field), sanitize_filename::sanitize(filename));
 
         use image::ImageFormat;
         use std::path::Path;
@@ -25,9 +25,9 @@ pub async fn process_multipart(mut form: actix_multipart::Multipart, container: 
             ImageFormat::Png | ImageFormat::Jpeg => {},
             _ => return Err("Only PNG and JPEG allowed!".into()),
         }
-        
+        let file_ref = filepath.clone();
         //remember to either throw an error or change the file name when uploading file names that are different.
-        let mut f = web::block(|| std::fs::File::create(filepath)).await??;
+        let mut f = web::block(|| std::fs::File::create(file_ref)).await??;
 
         
         while let Some(Ok(chunk)) = field.next().await {
@@ -54,6 +54,13 @@ pub async fn upload_file(_f: File){
 // let $head = window.location.href; << Or simply https:://localhost:8080 or eventually https://choredom.com
 // ALL IN: $head/temp/
 // User verification files: verification/{user}/
+// User pfp files and bio files: usr/{user}/
+// User chat files: chats/{uuid of Surreal chat room}/
+
+
+
+
+//Scrapped:
+
 // User profile pic files: pfp/{user}/
 // User bio pic files: bio/{user}/
-// User chat files: chats/{uuid of Surreal chat room}/
