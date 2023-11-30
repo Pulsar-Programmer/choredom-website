@@ -75,7 +75,13 @@ window.addEventListener("load", function() {
 function prefill(username, displayname, location, bio){
     document.getElementById('displayname').value = displayname;
     document.getElementById('username').value = username;
-    $('#city').val(location).trigger('change');
     document.getElementById('bio').value = bio;
     document.getElementById('gritty').href = `/users/${username}`;
+    //location:
+
+    var $select = $('#city').selectize();
+    var selectize = $select[0].selectize;
+    // console.log(location);
+    // console.log(selectize);
+    // selectize.setValue(location, true);
 }
