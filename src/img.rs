@@ -54,13 +54,12 @@ pub async fn upload_file(_f: File){
 // let $head = window.location.href; << Or simply https:://localhost:8080 or eventually https://choredom.com
 // ALL IN: $head/temp/
 // User verification files: verification/{user}/
-// User pfp files and bio files: usr/{user}/
+// User profile pic files: pfp/{user}/
+// User bio pic files: bio/{user}/
 // User chat files: chats/{uuid of Surreal chat room}/
 
 
 
 
 //Scrapped:
-
-// User profile pic files: pfp/{user}/
-// User bio pic files: bio/{user}/
+// User pfp files and bio files: usr/{user}/

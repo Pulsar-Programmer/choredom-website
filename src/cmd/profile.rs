@@ -603,7 +603,9 @@ pub async fn pics(form: Multipart, user: Option<Identity>, data: Data<AppData>) 
 
     let mut db = data.db.lock().await;
 
-    // let intermediate_function = move|_|{};
+    // let intermediate_function = move|title|{
+
+    // };
 
 
 
