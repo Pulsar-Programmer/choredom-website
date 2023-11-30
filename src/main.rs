@@ -40,11 +40,11 @@ macro_rules! wapp {
 //     }
 // }
 //Serve the test VVVVV
-// pub const TEST: &'static str = include_str!(concat!("../src-web/html/", "test", ".html"));
-// #[actix_web::get("/test")]
-// pub async fn test() -> impl Responder{
-//     HttpResponse::Ok().body(TEST)
-// }
+pub const TEST: &str = include_str!(concat!("../src-web/html/", "test", ".html"));
+#[actix_web::get("/test")]
+pub async fn test() -> impl actix_web::Responder{
+    actix_web::HttpResponse::Ok().body(TEST)
+}
 
 
 
@@ -91,7 +91,7 @@ async fn main() -> std::io::Result<()> {
             jobs, jobs_data,
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links
-            // test
+            // ,test
             // delete_rating,
         )
         .app_data(app_state.clone())

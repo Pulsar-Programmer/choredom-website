@@ -52,24 +52,46 @@
 
 
 
-window.onload = function() {
-    fetch('./src-web/assets/us_cities.json')
-    .then(response => response.json())
-    .then(data => {
-        when_data(data);
+// window.onload = function() {
+//     fetch('./src-web/assets/us_cities.json')
+//     .then(response => response.json())
+//     .then(data => {
+//         when_data(data);
+//     });
+
+
+//     function when_data(data){
+//         console.log(data);
+//         const selectElement = document.getElementById('city');
+//         data.forEach(city => {
+//             const optionElement = document.createElement('option');
+//             // optionElement.value = city.ID; //maybe one day make it coded? not very efficiency anyway tho
+//             optionElement.value = `${city.CITY}, ${city.STATE_NAME}`;
+//             optionElement.text = `${city.CITY}, ${city.STATE_NAME}`;
+//             selectElement.appendChild(optionElement);
+//         });
+//     }
+// };   
+
+$(function() {
+    $('#city').selectize({
+        options: [],
+        items: [],
+        render: {
+            option: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            },
+            item: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            }
+        },
+        load: function(query, callback) {
+            if (!query.length) return callback();
+            fetch('./src-web/assets/us_cities.json')
+            .then(response => response.json())
+            .then(data => {
+                callback(data.map(city => ({text: `${city.CITY}, ${city.STATE_NAME}`, value: `${city.CITY}, ${city.STATE_NAME}`})));
+            });
+        }
     });
-
-
-    function when_data(data){
-        console.log(data);
-        const selectElement = document.getElementById('city');
-        data.forEach(city => {
-            const optionElement = document.createElement('option');
-            // optionElement.value = city.ID; //maybe one day make it coded? not very efficiency anyway tho
-            optionElement.value = `${city.CITY}, ${city.STATE_NAME}`;
-            optionElement.text = `${city.CITY}, ${city.STATE_NAME}`;
-            selectElement.appendChild(optionElement);
-        });
-    }
-};   
-
+});
