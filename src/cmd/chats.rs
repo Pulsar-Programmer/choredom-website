@@ -1,5 +1,4 @@
 use actix_identity::Identity;
-use actix_session::Session;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData}; 

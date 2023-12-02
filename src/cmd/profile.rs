@@ -603,20 +603,20 @@ pub async fn pics(form: Multipart, user: Option<Identity>, data: Data<AppData>) 
 
     let mut db = data.db.lock().await;
 
-    // let intermediate_function = move|title|{
+    let intermediate_function = move|title: &actix_multipart::Field|{
 
-    // };
-
-
-
-
-
-    // process_multipart(form, &format!("usr/{user}"), intermediate_function).await.unwrap();
+        if title.name() == "pfp" {
+            format!("pfp/{user}")
+        }
+        else{
+            format!("bio/{user}")
+        }
+    };
+    process_multipart(form, intermediate_function).await.unwrap();
 
 
     todo!() as HttpResponse
 }
-
 
 
 
