@@ -79,9 +79,18 @@ function prefill(username, displayname, location, bio){
     document.getElementById('gritty').href = `/users/${username}`;
     //location:
 
-    var $select = $('#city').selectize();
-    var selectize = $select[0].selectize;
+    // var $select = $('#city').selectize();
+    // var selectize = $select[0].selectize;
     // console.log(location);
     // console.log(selectize);
     // selectize.setValue(location, true);
+    // This is your second script  
+    var selectElement = document.getElementById('city');
+    var selectize = selectElement.selectize;
+    selectize.addOption({
+        text: location,
+        value: location
+    });
+    selectize.setValue(location);
+    console.log(location, selectize, selectElement)
 }

@@ -92,6 +92,7 @@ $(function() {
             .then(data => {
                 callback(data.map(city => ({text: `${city.CITY}, ${city.STATE_NAME}`, value: `${city.CITY}, ${city.STATE_NAME}`})));
             });
-        }
+        },
+        // preload: true,
     });
 });

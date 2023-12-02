@@ -91,7 +91,7 @@ async fn main() -> std::io::Result<()> {
             jobs, jobs_data,
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links
-            // ,test
+            ,test
             // delete_rating,
         )
         .app_data(app_state.clone())
