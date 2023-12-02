@@ -1,4 +1,5 @@
 use actix_identity::IdentityMiddleware;
+use actix_web::Responder;
 use actix_web::{web, App, HttpServer, cookie::Key};
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
@@ -110,3 +111,16 @@ pub struct AppData {
 //         self.db.lock().await
 //     }
 // }
+
+// pub enum ResponderError{
+
+// }
+
+// struct ResponderResult{
+//     inner: Result<Box<dyn Responder>, ResponderError>
+// }
+
+
+// pub type ResponderResult<T: Responder> = Result<T, ResponderError>;
+
+// pub type ResponderResult = Result<impl Responder, ResponderError>;

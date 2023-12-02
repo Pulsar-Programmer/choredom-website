@@ -7,7 +7,6 @@ use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
 use rust_decimal::prelude::ToPrimitive;
 
-
 #[get("/users/{username}")]
 pub async fn profile(_: web::Path<String>) -> impl Responder{
     HttpResponse::Ok().body(PROFILE)
