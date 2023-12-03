@@ -46,7 +46,7 @@ function displayRatingHTML(stars, rater, body){
         <h2>Poster Username: ${rater}</h2>
         <p>${body}</p>
     </div>`;
-    document.getElementById("reviews").appendChild(html);
+    document.getElementById("reviews").innerHTML += html;
 }
 
 function submitReviewForm(){

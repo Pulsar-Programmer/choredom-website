@@ -75,12 +75,6 @@ pub struct GroupRatingData{
     new_avg: rust_decimal::Decimal,
 }
 
-#[derive(Debug, serde::Deserialize)]
-pub struct StarsRaterQuery{
-    stars: usize,
-    rater: String,
-}
-
 
 
 #[post("/users/{username}/rate")]
@@ -95,7 +89,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let mut db = data.db.lock().await;
     let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
-        let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT chats[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+        let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
         let result = res.get(0).unwrap().as_ref().unwrap();
         if result.len() != 1 {
             //^feh
@@ -115,7 +109,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
                 break;
             }
         }
-        !not_contains_first && !not_contains_second
+        not_contains_first || not_contains_second
     };
     if chat_block {
         return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
@@ -123,9 +117,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
 
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
-    println!("{sum}, {body}");
 
-    let res2 = query::<Vec<StarsRaterQuery>>(&mut db, "SELECT page.reviews.stars, page.reviews.rater FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    let res2 = query::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
     let result = res2.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
@@ -134,8 +127,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     }
     let res = result.get(0).unwrap();
 
-    let div = res.len() + 1;
-    for StarsRaterQuery{stars: star, rater: monkie} in res{
+    let div = res.len() + if res.is_empty() {1} else{0};
+    for PageRatingData{stars: star, rater: monkie, body: _} in res{
         if monkie==&rater
         {
             //^feh
@@ -145,9 +138,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
         sum += star;
     }
 
-    let new_avg = sum as f32 / div as f32;
-    let new_avg = rust_decimal::Decimal::from_f32_retain(new_avg).unwrap();
-
+    let new_avg = sum as f64 / div as f64;
+    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg).unwrap();
     let q = "UPDATE accounts
     SET 
     page.avg_rating = $new_avg,
@@ -157,9 +149,9 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let review = PageRatingData{stars: sums, body, rater};
     // println!("{review:?}");
 
-    query_value(&mut db, q, GroupRatingData{username, review, new_avg}).await.unwrap();
+    query_value(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await.unwrap();
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+    HttpResponse::Ok().json(review)
 }
 
 
