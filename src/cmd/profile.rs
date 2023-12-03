@@ -160,6 +160,11 @@ struct DeleteRatingNote<'a>{
     username: String,
     rater: &'a String,
 }
+#[derive(serde::Serialize)]
+struct DeleteRatingFeedback{
+    rater: String,
+    new_avg: f64,
+}
 
 #[post("/users/{username}/rate/delete")]
 pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
@@ -185,8 +190,8 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
         }
         sum += star;
     }
-    let new_avg = sum as f64 / div as f64;
-    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg).unwrap();
+    let new_avg_a = sum as f64 / div as f64;
+    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg_a).unwrap();
 
     let query = "
     UPDATE accounts SET
@@ -197,7 +202,7 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     //requires advanced DB query that can be done easily later
     query_value(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
 
-    HttpResponse::Ok().json(rater)
+    HttpResponse::Ok().json(DeleteRatingFeedback{ rater, new_avg: new_avg_a })
 }
 
 

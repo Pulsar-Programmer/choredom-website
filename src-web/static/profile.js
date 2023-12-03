@@ -93,11 +93,14 @@ function delete_rating(){
     .then(data => {
         // let str = String(data);
         // console.log(data);
+        document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
+
+        // let str = data.rater;
         let reviewsNode = document.getElementById('reviews');
         let reviews = Array.from(reviewsNode.children);
         reviews.forEach(review => {
             let posterUsername = review.querySelector('.rater').textContent;
-            if(posterUsername === `Poster Username: ${data}`) {
+            if(posterUsername === `Poster Username: ${data.rater}`) {
                 review.parentNode.removeChild(review);
             }
         });
