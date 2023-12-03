@@ -323,7 +323,7 @@ pub async fn upload() -> impl Responder{
 }
 
 #[post("/settings/upload/form")]
-pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let container = format!("verification/{username}");
     crate::img::process_multipart(form, container).await.unwrap();
