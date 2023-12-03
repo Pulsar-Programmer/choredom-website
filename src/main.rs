@@ -13,6 +13,7 @@ use cmd::profile::*;
 use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links};
 mod db;
 use db::setup_db;
+use lettre::message;
 mod img;
 
 macro_rules! wapp {
@@ -112,6 +113,19 @@ pub struct AppData {
 //         self.db.lock().await
 //     }
 // }
+#[derive(serde::Serialize)]
+pub struct RainError{
+    message: String,
+    status: String,
+}
+impl RainError{
+    pub fn from_message_and_status(message: String, status: actix_web::http::StatusCode) -> Self{
+        Self { message, status: status.to_string() }
+    }
+    pub fn from_message_intended(message: String) -> Self {
+        Self { message, status: actix_web::http::StatusCode::OK.to_string()}
+    }
+}
 
 // pub enum ResponderError{
 

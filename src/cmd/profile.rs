@@ -330,7 +330,7 @@ pub async fn upload() -> impl Responder{
 pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let container = format!("verification/{username}");
-    crate::img::process_multipart(form, move|_|{container.clone()}).await.unwrap();
+    crate::img::process_multipart(form, container).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
@@ -339,7 +339,6 @@ pub async fn upload_auth(mut form: actix_multipart::Multipart, data: Data<AppDat
     let db = &mut data.db.lock().await;
     query_value(db, surrealql, params).await.unwrap();
 
-    //review: is it really smooth or ok to have this return a Result? -> lets decide later
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -623,30 +622,44 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 
 
-#[post("/settings/pics")]
-pub async fn pics(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+#[post("/settings/pics-pfp")]
+pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = retrieve_user(user.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
 
-    let intermediate_function = move|title: &actix_multipart::Field|{
+    process_multipart(form, format!("pfp/{user}")).await.unwrap();
+    let filename = todo!() as String;
+    let url = format!("/temp/pfp/{user}/{filename}");
 
-        if title.name() == "pfp" {
-            format!("pfp/{user}")
-        }
-        else{
-            format!("bio/{user}")
-        }
-    };
-    process_multipart(form, intermediate_function).await.unwrap();
-
+    let _  = query_value(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
     todo!() as HttpResponse
 }
 
 
+#[post("/settings/pics-bio")]
+pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
+    let user = retrieve_user(user.unwrap()).unwrap();
+    // let mut db = data.db.lock().await; , data: Data<AppData>
+    let paths = std::fs::read_dir("./").unwrap();
 
+    let mut file_count = 0;
+    for path in paths {
+        let path = path.unwrap().path();
+        if path.is_file() {
+            file_count += 1;
+        }
+    }
 
+    if file_count >= 3{
+        return HttpResponse::BadRequest().body("No uploading over 3!");
+    }
+
+    process_multipart(form, format!("bio/{user}")).await.unwrap();
+
+    HttpResponse::Ok().finish()
+}
 
 
 
