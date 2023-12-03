@@ -77,7 +77,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
 
 ///The chat data stored in the database.
-#[derive(serde::Serialize, Debug, serde::Deserialize)]
+#[derive(serde::Serialize, Debug, serde::Deserialize, Clone)]
 pub struct ChatData{
     pub timestamp: DateTime<Utc>,
     pub msg: String,
@@ -111,30 +111,37 @@ pub struct FrontSentData{
 //text_message
 /// This, given the msg and the sender, sends a message and logs it in the Database.
 /// It then can be retrieved from the receive message function.
+/// We send back the data sent so it can be displayed immediately.
 #[post("/chat/send")]
 pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
     println!("Chat sent!");
     //Here, `json` represents the reciever and the msg intended to be sent.
-    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let named_sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
     let FrontSentData{room_title, msg} = json.into_inner();
-    let room_id = RoomID::create([room_title, sender.clone()]);
-    let sender = &sender == room_id.get(1).unwrap(); //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
+    let room_id = RoomID::create([room_title, named_sender.clone()]);
+    let sender = &named_sender == room_id.get(1).unwrap(); //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
-    let to_database = ChatData{timestamp, msg, sender, was_read: false};
+    let to_database = ChatData{timestamp, msg: msg.clone(), sender, was_read: false};
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
     query::<()>(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
+    
+    let to_frontend = ChatFrontData{ timestamp, msg, sender: named_sender };
 
-    HttpResponse::Ok().body("Successfully logged!")
+    HttpResponse::Ok().json(to_frontend)
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct ChatDBGiven{
     pub messages: Vec<ChatData>,
 }
-
+#[derive(serde::Serialize)]
+pub struct ChatDBQuery{
+    sender: bool,
+    room_id: RoomID,
+}
 
 //GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
@@ -144,15 +151,17 @@ pub struct ChatDBGiven{
 pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
     let same = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let opposite = opposite.into_inner();
-    let room_id = RoomID::create([same, opposite]);
+    let room_id = RoomID::create([same, opposite.clone()]);
+    let opposite_unnamed = room_id[true] == opposite;
+    let useful_data = ChatDBQuery{ sender: opposite_unnamed, room_id: room_id.clone() };
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    let res = query::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+    let res = query::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
     let Some(dbgiven) = &res.get(0).unwrap().as_ref().unwrap().get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
     let chats_vec = &dbgiven.messages;
     //mark as read right before
-    query::<()>(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
+    query::<()>(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
@@ -169,17 +178,10 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
 
 
-
-
-
-
-
-
-
 // we must figure out which one serves as the title by finding the one opposite of urself
 ///This keeps track of identifying the Room ID and who is in it.
 pub type RoomID = FixedStrictSetDuo2;
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct FixedStrictSetDuo2{
     inner: [String; 2],
 }

@@ -127,6 +127,11 @@ pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db
     Ok(vec)
 }
 
+//make this something used more frequently for querying without a wanted response.
+async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<s::Response>{
+    db.query(surrealql).bind(parameters).await
+}
+
 // async fn query__wrapper(s: s::Result<Vec<s::Result<Vec<Value>>>>) -> Value{
 //     todo!()
 // }
