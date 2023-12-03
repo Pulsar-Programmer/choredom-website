@@ -154,6 +154,12 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     HttpResponse::Ok().json(review)
 }
 
+#[derive(serde::Serialize)]
+struct DeleteRatingNote<'a>{
+    new_avg: rust_decimal::Decimal,
+    username: String,
+    rater: &'a String,
+}
 
 #[post("/users/{username}/rate/delete")]
 pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
@@ -161,13 +167,37 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     let username = username.into_inner();
     let mut db = data.db.lock().await;
 
+    let mut sum = 0;
+    let res2 = query::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
+    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
+    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let len = result.len();
+    if len != 1{
+        return HttpResponse::BadRequest().finish();
+    }
+    let res = result.get(0).unwrap();
+    
+    let div = res.len() + if res.is_empty() {1} else{0};
+    for PageRatingData{stars: star, rater: monkie, body: _} in res{
+        if monkie==&rater
+        {
+            continue;
+        }
+        sum += star;
+    }
+    let new_avg = sum as f64 / div as f64;
+    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg).unwrap();
+
+    let query = "
+    UPDATE accounts SET
+    page.reviews -= (SELECT page.reviews FROM accounts WHERE username = $username AND page.reviews.rater CONTAINS $rater).page.reviews[0],
+    page.avg_rating = $new_avg 
+    WHERE username = $username;";
+
     //requires advanced DB query that can be done easily later
-    query_value(&mut db, "UPDATE accounts SET page.reviews -= (SELECT reviews[] FROM ), page.avg_rating = $new_avg WHERE username = $username", ("username", username)).await.unwrap();
+    query_value(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
 
-
-    unimplemented!("Deleting not implemented yet.");
-
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(rater)
 }
 
 

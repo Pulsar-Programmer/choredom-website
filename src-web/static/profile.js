@@ -42,8 +42,8 @@ function prefill_profile(data){
 
 function displayRatingHTML(stars, rater, body){
     let html = `<div id="review">
-        <h1 id="Rating">Rating: ${stars}</h1>
-        <h2>Poster Username: ${rater}</h2>
+        <h1 class="rating">Rating: ${stars}</h1>
+        <h2 class="rater">Poster Username: ${rater}</h2>
         <p>${body}</p>
     </div>`;
     document.getElementById("reviews").innerHTML += html;
@@ -71,8 +71,8 @@ function submitReviewForm(){
         body: JSON.stringify(value),
     })
     .then(response => response.json())
-    .then(data => { //send data back to self for quick display?
-        // prefill_profile(data);
+    .then(data => {
+        displayRatingHTML(data.stars, data.rater, data.body);
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -88,11 +88,19 @@ function delete_rating(){
         headers: {
             'Content-Type': 'application/json',
         },
-        body: value,
     })
     .then(response => response.json())
     .then(data => {
-
+        // let str = String(data);
+        // console.log(data);
+        let reviewsNode = document.getElementById('reviews');
+        let reviews = Array.from(reviewsNode.children);
+        reviews.forEach(review => {
+            let posterUsername = review.querySelector('.rater').textContent;
+            if(posterUsername === `Poster Username: ${data}`) {
+                review.parentNode.removeChild(review);
+            }
+        });
     })
     .catch((error) => {
         console.error('Error:', error);

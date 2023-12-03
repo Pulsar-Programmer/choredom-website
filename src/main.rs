@@ -89,7 +89,8 @@ async fn main() -> std::io::Result<()> {
             settings_present_data,
             jobs, jobs_data,
             chats_get, chats_obtain, send, receive,
-            chat_nav, nav_links
+            chat_nav, nav_links,
+            delete_rating
             // ,test
             // delete_rating,
         )
