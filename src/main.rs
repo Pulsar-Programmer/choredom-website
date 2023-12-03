@@ -74,8 +74,8 @@ async fn main() -> std::io::Result<()> {
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,
-            signup, verify_email, home_redirect_signup, home_redirect_login,
-            login, signin, signout,
+            signup, verify_email, home_redirect_signup, 
+            login, signin, signout, home_redirect_login,
             settings, settings_post,
             upload, upload_auth,
             post, post_job,
@@ -91,9 +91,9 @@ async fn main() -> std::io::Result<()> {
             jobs, jobs_data,
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
-            delete_rating
+            delete_rating,
+            pics_bio, pics_pfp
             // ,test
-            // delete_rating,
         )
         .app_data(app_state.clone())
     })
@@ -115,7 +115,7 @@ pub struct AppData {
 // }
 #[derive(serde::Serialize)]
 pub struct RainError{
-    message: String,
+    message: String, //anyhow::Error
     status: String,
 }
 impl RainError{
