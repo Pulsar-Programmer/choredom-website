@@ -21,7 +21,10 @@
     <script defer src="/src-web/static/chat.js"></script>
 </head>
 <body>
-    
+  <form action="/chats/pics" method="POST">
+    <label for="bioPics">Send images...:</label><br>
+    <input type="file" id="bioPics" name="bio_pics" accept=".jpg, .jpeg, .png" multiple><br>
+  </form>
     <h1 id="room-title">Billy Bob Joe</h1>
     <div id="chat_box"></div> 
     <div id="message-input-div">
