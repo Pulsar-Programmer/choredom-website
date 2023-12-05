@@ -27,7 +27,8 @@ pub mod sites{
         EMAIL_CHANGE; "emailc",
         EMAIL_CHANGE_VERIFY; "emailc_ver",
         JOBS; "jobs",
-        CHATNAV; "chat-nav"
+        CHATNAV; "chat-nav",
+        NOLOG; "nolog"
     );
 }
 
