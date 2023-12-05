@@ -1,7 +1,7 @@
 use actix_identity::Identity;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
-use crate::{db::query, AppData}; 
+use crate::{db::query, AppData, cmd::sites::NOLOG}; 
 use super::sites::{CHAT, CHATNAV};
 use super::signup::retrieve_user;
 
@@ -29,8 +29,8 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
         //^feh
         return HttpResponse::BadRequest().body("No messaging undefined users!");
     }
-    let Some(identity) = identity else {return HttpResponse::BadRequest().body("Log in to access chats.")};
-    let sender = super::signup::retrieve_user(identity).unwrap();
+    let Some(identity) = identity else {return HttpResponse::Ok().body(NOLOG)};
+    let sender = retrieve_user(identity).unwrap();
     if sender == receiver{
         //^feh
         return HttpResponse::BadRequest().body("No sending chats to yourself!")
@@ -40,7 +40,7 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
 
 #[post("/chats_obtain")]
 pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
-    let sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let sender = retrieve_user(identity.unwrap()).unwrap();
     let receiver = receiver.into_inner();
     let room_id = RoomID::create([sender, receiver.clone()]);
 
@@ -248,7 +248,7 @@ impl std::ops::Deref for FixedStrictSetDuo2{
 #[get("/chat")]
 pub async fn chat_nav(identity: Option<Identity>) -> impl Responder{
     if identity.is_none(){
-        return HttpResponse::BadRequest().body("Log in before seeing your chats!");
+        return HttpResponse::Ok().body(NOLOG);
     }
     HttpResponse::Ok().body(CHATNAV)
 }

@@ -1,4 +1,4 @@
-use crate::{db::{query, query_value}, AppData};
+use crate::{db::{query, query_value}, AppData, cmd::sites::NOLOG};
 use actix_identity::Identity;
 use actix_web::{web::{Data, self}, Responder, get, post, HttpResponse};
 use surrealdb::sql::Thing;
@@ -34,7 +34,10 @@ impl Job{
 }
 
 #[get("/post-job")]
-pub async fn post() -> impl Responder{
+pub async fn post(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(POST)
 }
 
@@ -109,7 +112,11 @@ struct Address{
 }
 
 #[actix_web::get("/tasks")]
-pub async fn tasks() -> impl Responder{
+pub async fn tasks(identity: Option<Identity>) -> impl Responder{
+    //Should we really lock access to this?
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(TASK)
 }
 

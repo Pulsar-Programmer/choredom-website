@@ -1,6 +1,6 @@
 use crate::{db::{query, query_value}, AppData, img::process_multipart};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
-use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY};
+use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
 use actix_multipart::Multipart;
 use actix_session::Session;
@@ -263,7 +263,7 @@ impl SettingsData2{
 #[get("/settings")]
 pub async fn settings(identity: Option<Identity>) -> impl Responder{
     if identity.is_none(){
-        return HttpResponse::BadRequest().body("To access profile settings, log in."); //^feh > should have a better body representing the error and bad request..
+        return HttpResponse::Ok().body(NOLOG); 
     }
     HttpResponse::Ok().body(super::sites::SETTINGS)
 }
@@ -318,7 +318,10 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
 }
 
 #[get("/settings/upload")]
-pub async fn upload() -> impl Responder{
+pub async fn upload(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(UPLOAD)
 }
 
@@ -342,7 +345,10 @@ pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, 
 
 
 #[get("/settings/password")]
-pub async fn password_change() -> impl Responder{
+pub async fn password_change(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(PASSWORD)
 }
 
@@ -561,6 +567,9 @@ fn settings_transmission_receive(session: &actix_session::Session) -> Result<Ema
 
 #[get("/settings/email")]
 pub async fn email_change(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(super::sites::EMAIL_CHANGE)
 }
 
@@ -678,7 +687,10 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
 
 
 #[get("/contacts")]
-pub async fn dispute_management() -> impl Responder{
+pub async fn dispute_management(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG);
+    }
     HttpResponse::Ok().body(CONTACT)
 }
 
