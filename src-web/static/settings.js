@@ -73,6 +73,7 @@ window.addEventListener("load", function() {
 });
 
 function prefill(username, displayname, location, bio){
+    //does the profile pic show up during settings-present?
     document.getElementById('displayname').value = displayname;
     document.getElementById('username').value = username;
     document.getElementById('bio').value = bio;

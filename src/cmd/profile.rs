@@ -632,14 +632,11 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
     let user = retrieve_user(user.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
-
-    process_multipart(form, format!("pfp/{user}")).await.unwrap();
-    let filename = todo!() as String;
+    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return HttpResponse::BadRequest().body("No files processed..?"); /* ^feh */};
     let url = format!("/temp/pfp/{user}/{filename}");
-
     let _  = query_value(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
-    todo!() as HttpResponse
+    HttpResponse::Ok().body("Successful PFP upload!")
 }
 
 

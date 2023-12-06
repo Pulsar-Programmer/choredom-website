@@ -1,18 +1,21 @@
 use std::fs::File;
 
 ///Processes the multipart extractor of Actix for images only.
-///Container should not have any path slash before or after
-pub async fn process_multipart(mut form: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
+///Container should not have any path slash before or after.
+///Returns a vector of the processed filepaths.
+///Maybe in the future return a vector of the processed FILES if needed.
+pub async fn process_multipart(mut form: actix_multipart::Multipart, container: String) -> Result<Vec<String>, Box<dyn std::error::Error>>{
     use futures::TryStreamExt;
     use futures::StreamExt;
     use std::io::Write;
     use actix_web::web;
-
+    let mut vec = Vec::new();
     // iterate over multipart stream
     while let Ok(Some(mut field)) = form.try_next().await {
         let content_disposition = field.content_disposition();
         let filename = content_disposition.get_filename().ok_or("Filename processing error.")?;
         let filepath = format!("/temp/{}/{}", container, sanitize_filename::sanitize(filename));
+        vec.push(filepath.clone());
 
         use image::ImageFormat;
         use std::path::Path;
@@ -35,7 +38,7 @@ pub async fn process_multipart(mut form: actix_multipart::Multipart, container: 
         
         upload_file(f).await;
     }
-    Ok(())
+    Ok(vec)
 }
 
 pub async fn upload_file(_f: File){
