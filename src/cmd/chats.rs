@@ -2,7 +2,7 @@ use actix_identity::Identity;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
 use crate::{db::query, AppData, cmd::sites::NOLOG}; 
-use super::sites::{CHAT, CHATNAV};
+use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::retrieve_user;
 
 ///This represents a chat room with a bunch of chats.
@@ -27,13 +27,23 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
     //vvvv If it is greater we have issues, if it less then this is valid behavior
     if result.len() != 1 {
         //^feh
-        return HttpResponse::BadRequest().body("No messaging undefined users!");
+        return HttpResponse::BadRequest().body(NOUSER);
     }
     let Some(identity) = identity else {return HttpResponse::Ok().body(NOLOG)};
     let sender = retrieve_user(identity).unwrap();
     if sender == receiver{
-        //^feh
-        return HttpResponse::BadRequest().body("No sending chats to yourself!")
+        return HttpResponse::BadRequest().body("
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Don't send chats to yourself.</title>
+        </head>
+        <body>
+            <h1>Access Denied</h1>
+            <p>Nice try, you can't send chats to yourself/p>
+        </body>
+        </html>
+        ")
     }
     HttpResponse::Ok().body(CHAT)
 }
