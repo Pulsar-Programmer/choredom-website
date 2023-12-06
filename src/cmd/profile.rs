@@ -636,7 +636,7 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
     let url = format!("/temp/pfp/{user}/{filename}");
     let _  = query_value(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
-    HttpResponse::Ok().body("Successful PFP upload!")
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
 
