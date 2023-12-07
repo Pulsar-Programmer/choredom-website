@@ -128,8 +128,16 @@ pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db
 }
 
 //make this something used more frequently for querying without a wanted response.
-async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<s::Response>{
+///Querying without a processed response.
+pub async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<s::Response>{
     db.query(surrealql).bind(parameters).await
+}
+
+///Only to get the first part of the result of the query.
+pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
+    let mut result = db.query(surrealql).bind(parameters).await?;
+    let result: Result<Vec<T>, _> = result.take(0);
+    result
 }
 
 // async fn query__wrapper(s: s::Result<Vec<s::Result<Vec<Value>>>>) -> Value{

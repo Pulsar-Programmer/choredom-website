@@ -1,4 +1,4 @@
-use crate::{db::{query, query_value}, AppData, img::process_multipart};
+use crate::{db::{query, query_value, sole_query, query_once}, AppData, img::process_multipart};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
@@ -691,7 +691,7 @@ pub async fn dispute_management(identity: Option<Identity>) -> impl Responder{
     HttpResponse::Ok().body(CONTACT)
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize)]
 pub struct ContactsInfo{
     username: String,
     email: String,
@@ -699,15 +699,33 @@ pub struct ContactsInfo{
     message: String,
 }
 
+#[derive(serde::Deserialize)]
+pub struct ContactsForm{
+    title: String,
+    message: String,
+}
+
 #[post("/contacts/form")]
-pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsInfo>) -> impl Responder{
-     let surrealql = r#"
+pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identity: Option<Identity> ) -> impl Responder{
+    let username = retrieve_user(identity.unwrap()).unwrap();
+    let mut db = data.db.lock().await;
+    let mut result = query_once::<String>(&mut db, "SELECT email FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    let len = result.len();
+    if len != 1{
+        return HttpResponse::BadRequest().body("Internal server error.");
+    }
+    let email = result.remove(0);
+
+    let ContactsForm { title, message } = form.into_inner();
+    let info: ContactsInfo = ContactsInfo{ username, email, title, message };
+
+    let surrealql = r#"
     BEGIN TRANSACTION;
         LET $id = (SELECT id FROM accounts WHERE username=$username)[0].id;
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
-    query_value(&mut * data.db.lock().await, surrealql, form.into_inner()).await.unwrap();
+    let _ = sole_query(&mut * data.db.lock().await, surrealql, info).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
 }
