@@ -112,11 +112,11 @@ pub async fn setup_db() -> s::Result<Db>{
 
 
 pub async fn query_value(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<Value>>>>{
-    query(db, surrealql, parameters).await
+    query_all(db, surrealql, parameters).await
 }
 
 
-pub async fn query<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
+pub async fn query_all<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
     let mut result = db.query(surrealql).bind(parameters).await?;
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
@@ -139,6 +139,10 @@ pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &m
     let result: Result<Vec<T>, _> = result.take(0);
     result
 }
+
+
+// pub async fn query_n<T: std::fmt::Debug + serde::de::Deserialize
+// ^ no point in making this
 
 // async fn query__wrapper(s: s::Result<Vec<s::Result<Vec<Value>>>>) -> Value{
 //     todo!()

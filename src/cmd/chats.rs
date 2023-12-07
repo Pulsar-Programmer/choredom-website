@@ -1,7 +1,7 @@
 use actix_identity::Identity;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
 use chrono::{DateTime, Utc};
-use crate::{db::query, AppData, cmd::sites::NOLOG}; 
+use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::retrieve_user;
 
@@ -21,8 +21,7 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let receiver = receiver.into_inner();
     let mut db = app_data.db.lock().await;
-    let res = query::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await.unwrap();
-    let result = res.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await.unwrap();
     //^^^ replace this with indices in future
     //vvvv If it is greater we have issues, if it less then this is valid behavior
     if result.len() != 1 {
@@ -56,12 +55,11 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
     //build a room and send to db if one doesn't exist >> use indicies for this
     let mut db = data.db.lock().await;
-    let res2 = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     if result.len() != 1{
         let vec_chats = Vec::new();
         let room = Room{room_id, messages: vec_chats};
-        query::<()>(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
+        sole_query(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     }
     let result = result.get(0).unwrap();
@@ -136,7 +134,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
-    query::<()>(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
+    sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
     
     let to_frontend = ChatFrontData{ timestamp, msg, sender: named_sender };
 
@@ -167,11 +165,11 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    let res = query::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
-    let Some(dbgiven) = &res.get(0).unwrap().as_ref().unwrap().get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
+    let res = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
+    let Some(dbgiven) = res.get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
     let chats_vec = &dbgiven.messages;
     //mark as read right before
-    query::<()>(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
+    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
@@ -275,8 +273,7 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
     let mut db = data.db.lock().await;
-    let rooms = query::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await.unwrap();
-    let rooms = rooms.get(0).unwrap().as_ref().unwrap();
+    let rooms = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await.unwrap();
     let links: Vec<NavLink> = rooms.into_iter().map(|elem|{
         NavLink { room_name: elem.room_id.access_opposite(&username).unwrap() }
     }).collect();

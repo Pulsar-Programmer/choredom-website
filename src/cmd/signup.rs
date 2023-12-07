@@ -1,6 +1,6 @@
 use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE, EMAIL_LOG};
 use crate::AppData;
-use crate::db::{query, query_value};
+use crate::db::{query_once, sole_query};
 use actix_identity::Identity;
 use actix_web::http::header;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
@@ -109,11 +109,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let len1 = result.len();
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await.unwrap();
     let len2 = result.len();
     if len1 >= 1 {
         //error , bad username OR could be an error with MORE THAN ONE username
@@ -152,7 +150,7 @@ pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web:
 
     //We want to create the account only AFTER we verify codes.
 
-    query_value(&mut db, r#"
+    sole_query(&mut db, r#"
     CREATE accounts
     SET
     username = $username,
@@ -242,8 +240,7 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     let LoginData { email, password } = form.into_inner();
     let email = email.trim();
     let mut db = data.db.lock().await;
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await.unwrap();
-    let result = result.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await.unwrap();
     let len = result.len();
     if len > 1{
         //^feh

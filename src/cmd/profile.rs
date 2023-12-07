@@ -1,4 +1,4 @@
-use crate::{db::{query, query_value, sole_query, query_once}, AppData, img::process_multipart};
+use crate::{db::{sole_query, query_once}, AppData, img::process_multipart};
 use super::signup::{Account, retrieve_user, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
@@ -28,11 +28,8 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     let username = username.into_inner();
     //^feh how do we handle what if the username is invalid, we must report this to the JS and not load the page or something
     let mut db = app_data.db.lock().await;
-    let Ok(res2) = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return HttpResponse::BadRequest().json("Issue with DB Queries.");
-    };
-    let Some(Ok(result)) = res2.get(0).as_ref() else {
-        return HttpResponse::BadRequest().json("Issue with DB Query");
     };
     if result.len() != 1 {
         return HttpResponse::BadRequest().json("Account does not exist.");
@@ -89,8 +86,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let mut db = data.db.lock().await;
     let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
-        let res = query::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-        let result = res.get(0).unwrap().as_ref().unwrap();
+        let result = query_once::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
         if result.len() != 1 {
             //^feh
             todo!("Error!")
@@ -118,9 +114,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
 
-    let res2 = query::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
+    let result = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
-    let result = res2.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
     if len != 1{
         return HttpResponse::BadRequest().finish();
@@ -149,7 +144,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let review = PageRatingData{stars: sums, body, rater};
     // println!("{review:?}");
 
-    query_value(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await.unwrap();
+    sole_query(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await.unwrap();
 
     HttpResponse::Ok().json(review)
 }
@@ -173,9 +168,8 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     let mut db = data.db.lock().await;
 
     let mut sum = 0;
-    let res2 = query::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
+    let result = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
-    let result = res2.get(0).unwrap().as_ref().unwrap();
     let len = result.len();
     if len != 1{
         return HttpResponse::BadRequest().finish();
@@ -200,7 +194,7 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     WHERE username = $username;";
 
     //requires advanced DB query that can be done easily later
-    query_value(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
+    sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
 
     HttpResponse::Ok().json(DeleteRatingFeedback{ rater, new_avg: new_avg_a })
 }
@@ -278,8 +272,8 @@ struct SettingsPresentData<'a>{
 #[post("/settings/present_data")]
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let mut db = app_data.db.lock().await;
-    let q1 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
-    let curry_2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
+    let q1 = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
+    let curry_2 = q1.get(0).unwrap();
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
     //YESSS SO COOOLLL
@@ -311,7 +305,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
-    query_value(&mut db, surrealql, settings_data).await.unwrap();
+    sole_query(&mut db, surrealql, settings_data).await.unwrap();
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -336,7 +330,7 @@ pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, 
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     let db = &mut data.db.lock().await;
-    query_value(db, surrealql, params).await.unwrap();
+    sole_query(db, surrealql, params).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
@@ -373,8 +367,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     let username = retrieve_user(identity.unwrap()).unwrap();
 
     let mut db = data.db.lock().await;
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    let result = result.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     if result.len() != 1{
         //^feh
         todo!() // should never happen if correct things are true
@@ -389,7 +382,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     }
 
     let (password, password_salt) = super::signup::password_hash_argon2(p_new).unwrap();
-    query_value(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await.unwrap();
+    sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -408,8 +401,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
-    let result = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    let result = result.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     if result.len() != 1{
         //^feh
         todo!() // should never happen if correct things are true
@@ -421,7 +413,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
         todo!()
     }
 
-    query::<()>(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -466,10 +458,9 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
     let mut db = data.db.lock().await;
     
     let surrealql = "SELECT * FROM accounts WHERE username=$username;";
-    let res = query::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
-    let res = res.get(0).unwrap().as_ref().unwrap();
+    let res = query_once::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
     if res.len() != 1{
-
+        todo!()
     }
     let res = res.get(0).unwrap();
 
@@ -488,7 +479,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
             "-"
         }
     );
-    query_value(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.unwrap();
+    sole_query(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.unwrap();
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -528,8 +519,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
     let mut db = data.db.lock().await;
-    let res2 = query::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await.unwrap();
-    let result = res2.get(0).unwrap().as_ref().unwrap();
+    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await.unwrap();
     if result.len() != 1 {
         //^feh
         //account does not exist
@@ -549,7 +539,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    query_value(&mut db, surrealql, transferdata).await.unwrap();
+    sole_query(&mut db, surrealql, transferdata).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
@@ -585,8 +575,8 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
     // let current_email_stored =
     let mut db = app.db.lock().await;
-    let q1 = query::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
-    let q2 = q1.get(0).unwrap().as_ref().unwrap().get(0).unwrap();
+    let q1 = query_once::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
+    let q2 = q1.get(0).unwrap();
     if q2.email != current_email_input{
         //^feh
         return HttpResponse::Conflict().finish();
@@ -618,7 +608,7 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
     }
 
     let mut db = data.db.lock().await;
-    query_value(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.unwrap();
+    sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -634,7 +624,7 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
     let mut db = data.db.lock().await;
     let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return HttpResponse::BadRequest().body("No files processed..?"); /* ^feh */};
     let url = format!("/temp/pfp/{user}/{filename}");
-    let _  = query_value(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
+    let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
