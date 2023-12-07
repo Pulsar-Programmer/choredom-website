@@ -291,3 +291,17 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
+
+
+
+
+
+
+#[post("/pics-chats")]
+pub async fn pics_chats(form: actix_multipart::Multipart, identity: Option<Identity>) -> impl Responder{
+    let username = retrieve_user(identity.unwrap()).unwrap();
+    let _ = crate::img::process_multipart(form, format!("chats/{username}")).await.unwrap();
+    //^^ this may become useful IF we want to prefill the client's text box with the URL.
+    //^^ we use username whereas uuid is preferred. How do we extract UUID? We would have to convert it to JS (conveluded but.. possible? process)
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/chat")).body(CHATNAV)
+}

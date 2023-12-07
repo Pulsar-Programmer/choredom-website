@@ -10,7 +10,7 @@ use cmd::homepage;
 use cmd::signup::*;
 use cmd::jobs::*;
 use cmd::profile::*;
-use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links};
+use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats};
 mod db;
 use db::setup_db;
 use lettre::message;
@@ -92,7 +92,7 @@ async fn main() -> std::io::Result<()> {
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
             delete_rating,
-            pics_bio, pics_pfp
+            pics_bio, pics_pfp, pics_chats
             // ,test
         )
         .app_data(app_state.clone())
