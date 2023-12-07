@@ -30,6 +30,10 @@
     <div id="message-input-div">
         <input type="text" id="message-input" placeholder="Type a message">
         <button onclick="send_chat()">Send</button>
+        <form action="/chats/pics" method="POST">
+          <label for="bioPics">Send a picture in chat:</label><br>
+          <input type="file" id="bioPics" name="bio_pics" accept=".jpg, .jpeg, .png" multiple><br>
+        </form>
     </div>
     <footer>
         <p>&copy; 2023 Choredom</p>
