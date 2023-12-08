@@ -34,10 +34,11 @@ window.onload = function() {
 
 
 
-function expandImage(msg){
-    return "";
-    //todo!()
-    // returns "" if nothing else "<image> .. "
+function expandImages(msg){
+    var urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return msg.replace(urlRegex, function(url) {
+        return `<img src="${url}">`;
+    });
 }
 
 
@@ -48,7 +49,7 @@ function generateChatHTML(chat) {
     <h4><a href="/users/${chat.sender}">${chat.sender}</a></h4>
     <p>${chat.msg}</p>
     <p>${chat.timestamp}</p>
-    ${expandImage(chat.msg)}
+    ${expandImages(chat.msg)}
     </div>`;
 }
 
