@@ -98,7 +98,7 @@ pub struct ChatData{
 }
 
 ///The chat data given to the frontend.
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 struct ChatFrontData{
     timestamp: DateTime<Utc>,
     msg: String,
@@ -122,7 +122,7 @@ pub struct FrontSentData{
 /// We send back the data sent so it can be displayed immediately.
 #[post("/chat/send")]
 pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
-    println!("Chat sent!");
+    // println!("Chat sent!");
     //Here, `json` represents the reciever and the msg intended to be sent.
     let named_sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
     let timestamp = Utc::now();
@@ -137,7 +137,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
     
     let to_frontend = ChatFrontData{ timestamp, msg, sender: named_sender };
-
+    println!("Chat bounceback: {to_frontend:?}");
     HttpResponse::Ok().json(to_frontend)
 }
 

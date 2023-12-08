@@ -82,6 +82,11 @@ function send_chat(){
         },
         body: JSON.stringify({room_title, msg}),
     })
+    .then(response => response.json())
+    .then(chatsData => {
+        console.log('Chats Bounceback Success:', chatsData);
+        displayChats(chatsData);
+    })
     .catch((error) => {
         console.error('Error:', error);
     });
