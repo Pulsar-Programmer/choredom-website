@@ -1,6 +1,5 @@
 use actix_identity::IdentityMiddleware;
-use actix_web::Responder;
-use actix_web::{web, App, HttpServer, cookie::Key};
+use actix_web::{web, App, HttpServer, cookie::Key, HttpResponse};
 use actix_session::SessionMiddleware;
 use actix_session_surrealdb::SurrealSessionStore;
 
@@ -13,7 +12,6 @@ use cmd::profile::*;
 use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats};
 mod db;
 use db::setup_db;
-use lettre::message;
 mod img;
 
 macro_rules! wapp {
@@ -115,17 +113,17 @@ pub struct AppData {
 // }
 #[derive(serde::Serialize)]
 pub struct RainError{
-    message: String, //anyhow::Error
-    status: String,
+    message: String,
 }
 impl RainError{
-    pub fn from_message_and_status(message: String, status: actix_web::http::StatusCode) -> Self{
-        Self { message, status: status.to_string() }
+    pub fn from_message(message: impl ToString) -> Self{
+        Self { message: message.to_string() }
     }
-    pub fn from_message_intended(message: String) -> Self {
-        Self { message, status: actix_web::http::StatusCode::OK.to_string()}
+    pub fn from_message_intended(message: impl ToString) -> HttpResponse {
+        HttpResponse::BadRequest().json(Self::from_message(message))
     }
 }
+
 
 // pub enum ResponderError{
 

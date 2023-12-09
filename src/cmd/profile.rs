@@ -1,5 +1,5 @@
-use crate::{db::{sole_query, query_once}, AppData, img::process_multipart};
-use super::signup::{Account, retrieve_user, verify_password, email_user};
+use crate::{db::{sole_query, query_once}, AppData, img::process_multipart, RainError};
+use super::signup::{Account, identity_unwrap, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
 use actix_multipart::Multipart;
@@ -29,13 +29,13 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     //^feh how do we handle what if the username is invalid, we must report this to the JS and not load the page or something
     let mut db = app_data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
-        return HttpResponse::BadRequest().json("Issue with DB Queries.");
+        return RainError::from_message_intended("Issue with DB Queries.");
     };
     if result.len() != 1 {
-        return HttpResponse::BadRequest().json("Account does not exist.");
+        return RainError::from_message_intended("Account does not exist.");
     }
     let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.get(0) else{
-        return HttpResponse::BadRequest().finish();
+        return RainError::from_message_intended("Impossible error.")
     };
 
     let data = UsersFrontData{ 
@@ -76,8 +76,10 @@ pub struct GroupRatingData{
 
 #[post("/users/{username}/rate")]
 pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
-    // println!("Queries");
-    let rater: String = retrieve_user(identity.unwrap()).unwrap();
+    let rater = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };
     let username = username.into_inner();
     if rater == username{
         //^feh
@@ -163,7 +165,10 @@ struct DeleteRatingFeedback{
 
 #[post("/users/{username}/rate/delete")]
 pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
-    let rater = retrieve_user(rater.unwrap()).unwrap();
+    let rater: String = match identity_unwrap(rater){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };
     let username = username.into_inner();
     let mut db = data.db.lock().await;
 
@@ -272,7 +277,11 @@ struct SettingsPresentData<'a>{
 #[post("/settings/present_data")]
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let mut db = app_data.db.lock().await;
-    let q1 = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
+    let identity = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };
+    let q1 = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
     let curry_2 = q1.get(0).unwrap();
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
@@ -292,7 +301,10 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
 #[post("/settings-post")]
 pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
     //edit stuff NOT together, as in, independently?
 
     let settings_data = SettingsData2::new(settings_data, username);
@@ -364,7 +376,10 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
 
     let PasswordData { p_old, p_new } = form.into_inner();
 
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
 
     let mut db = data.db.lock().await;
     let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
@@ -397,7 +412,10 @@ pub struct DeleteConfirmation{password:String}
 
 #[post("/settings/delete")]
 pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
@@ -453,7 +471,10 @@ struct ChangeFundData{
 #[post("/settings/funds/change")]
 async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let FundData { changed_funds, password, add } = form.into_inner();
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
 
     let mut db = data.db.lock().await;
     
@@ -515,7 +536,10 @@ pub struct TransferData{
 async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     
     let CreditsData { credits, self_password, to_username } = form.into_inner();
-    let self_username = retrieve_user(identity.unwrap()).unwrap();
+    let self_username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
 
 
     let mut db = data.db.lock().await;
@@ -575,7 +599,11 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
     // let current_email_stored =
     let mut db = app.db.lock().await;
-    let q1 = query_once::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", retrieve_user(identity.unwrap()).unwrap())).await.unwrap();
+    let identity = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };
+    let q1 = query_once::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
     let q2 = q1.get(0).unwrap();
     if q2.email != current_email_input{
         //^feh
@@ -619,7 +647,10 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 #[post("/settings/pics-pfp")]
 pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
-    let user = retrieve_user(user.unwrap()).unwrap();
+    let user = match identity_unwrap(user){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
 
     let mut db = data.db.lock().await;
     let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return HttpResponse::BadRequest().body("No files processed..?"); /* ^feh */};
@@ -632,7 +663,10 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
 
 #[post("/settings/pics-bio")]
 pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
-    let user = retrieve_user(user.unwrap()).unwrap();
+    let user = match identity_unwrap(user){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
     // let mut db = data.db.lock().await; , data: Data<AppData>
     let paths = std::fs::read_dir("./").unwrap();
 
@@ -697,7 +731,10 @@ pub struct ContactsForm{
 
 #[post("/contacts/form")]
 pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identity: Option<Identity> ) -> impl Responder{
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let username = match identity_unwrap(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::from_message_intended(x),
+    };;
     let mut db = data.db.lock().await;
     let mut result = query_once::<String>(&mut db, "SELECT email FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let len = result.len();
