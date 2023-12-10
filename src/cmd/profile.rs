@@ -286,7 +286,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
     //YESSS SO COOOLLL
-    println!("{settings_data:?}");
+    // println!("{settings_data:?}");
     HttpResponse::Ok().content_type("application/json").json(settings_data)
 }
 
@@ -718,7 +718,6 @@ pub async fn dispute_management(identity: Option<Identity>) -> impl Responder{
 #[derive(serde::Serialize)]
 pub struct ContactsInfo{
     username: String,
-    email: String,
     title: String,
     message: String,
 }
@@ -730,29 +729,25 @@ pub struct ContactsForm{
 }
 
 #[post("/contacts/form")]
-pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identity: Option<Identity> ) -> impl Responder{
+pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identity: Option<Identity>) -> impl Responder{
+
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
     };
-    let mut db = data.db.lock().await;
-    let mut result = query_once::<String>(&mut db, "SELECT email FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    let len = result.len();
-    if len != 1{
-        return HttpResponse::BadRequest().body("Internal server error.");
-    }
-    let email = result.remove(0);
 
     let ContactsForm { title, message } = form.into_inner();
-    let info: ContactsInfo = ContactsInfo{ username, email, title, message };
+    let info: ContactsInfo = ContactsInfo{ username, title, message };
 
     let surrealql = r#"
     BEGIN TRANSACTION;
+    LET $email = (SELECT email FROM accounts WHERE username = "username")[0].email;
         LET $id = (SELECT id FROM accounts WHERE username=$username)[0].id;
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
-    let _ = sole_query(&mut * data.db.lock().await, surrealql, info).await.unwrap();
-
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
+    let mut db = data.db.lock().await;
+    let _ = sole_query(&mut db, surrealql, info).await.unwrap();
+    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
+    HttpResponse::Ok().body("Dispute form successfully sent!")
 }

@@ -137,7 +137,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
     
     let to_frontend = ChatFrontData{ timestamp, msg, sender: named_sender };
-    println!("Chat bounceback: {to_frontend:?}");
+    // println!("Chat bounceback: {to_frontend:?}");
     HttpResponse::Ok().json(to_frontend)
 }
 
@@ -145,7 +145,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
 pub struct ChatDBGiven{
     pub messages: Vec<ChatData>,
 }
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 pub struct ChatDBQuery{
     sender: bool,
     room_id: RoomID,
@@ -165,11 +165,12 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    let res = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false] FROM chats WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
+    println!("{useful_data:?}");
+    let res = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await.unwrap();
     let Some(dbgiven) = res.get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
     let chats_vec = &dbgiven.messages;
     //mark as read right before
-    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false].was_read = true WHERE room_id = $room_id AND sender = $sender;", &useful_data).await.unwrap();
+    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }

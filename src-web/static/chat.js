@@ -47,9 +47,8 @@ function expandImages(msg){
 function generateChatHTML(chat) {
     return `<div class="message">
     <h4><a href="/users/${chat.sender}">${chat.sender}</a></h4>
-    <p>${chat.msg}</p>
     <p>${chat.timestamp}</p>
-    ${expandImages(chat.msg)}
+    <p>${expandImages(chat.msg)}</p>
     </div>`;
 }
 
@@ -84,9 +83,11 @@ function send_chat(){
         body: JSON.stringify({room_title, msg}),
     })
     .then(response => response.json())
-    .then(chatsData => {
-        console.log('Chats Bounceback Success:', chatsData);
-        displayChats(chatsData);
+    .then(chat => {
+        console.log('Chats Bounceback Success:', chat);
+        const chatHTML = generateChatHTML(chat);
+        console.log(chatHTML);
+        chatContainer.innerHTML += chatHTML;
     })
     .catch((error) => {
         console.error('Error:', error);
