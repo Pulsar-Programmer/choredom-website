@@ -55,6 +55,13 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
     //build a room and send to db if one doesn't exist >> use indicies for this
     let mut db = data.db.lock().await;
+
+
+    let opposite = room_id[true] == receiver;
+    let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
+
+    // we must first redeem them as all read, since you are entering
+    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
     let result = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     if result.len() != 1{
         let vec_chats = Vec::new();
