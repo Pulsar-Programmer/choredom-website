@@ -304,7 +304,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
     //edit stuff NOT together, as in, independently?
 
     let settings_data = SettingsData2::new(settings_data, username);
@@ -379,7 +379,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
 
     let mut db = data.db.lock().await;
     let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
@@ -415,7 +415,7 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
@@ -474,7 +474,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
 
     let mut db = data.db.lock().await;
     
@@ -539,7 +539,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     let self_username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
 
 
     let mut db = data.db.lock().await;
@@ -650,10 +650,10 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
     let user = match identity_unwrap(user){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
 
     let mut db = data.db.lock().await;
-    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return HttpResponse::BadRequest().body("No files processed..?"); /* ^feh */};
+    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return RainError::from_message_intended("No files processed..?");};
     let url = format!("/temp/pfp/{user}/{filename}");
     let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
@@ -666,7 +666,7 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
     let user = match identity_unwrap(user){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
     // let mut db = data.db.lock().await; , data: Data<AppData>
     let paths = std::fs::read_dir("./").unwrap();
 
@@ -679,7 +679,7 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
     }
 
     if file_count >= 3{
-        return HttpResponse::BadRequest().body("No uploading over 3!");
+        return RainError::from_message_intended("No uploading over 3!");
     }
 
     process_multipart(form, format!("bio/{user}")).await.unwrap();
@@ -734,7 +734,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
     let username = match identity_unwrap(identity){
         Ok(r) => r,
         Err(x) => return RainError::from_message_intended(x),
-    };;
+    };
     let mut db = data.db.lock().await;
     let mut result = query_once::<String>(&mut db, "SELECT email FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
     let len = result.len();

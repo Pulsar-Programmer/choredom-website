@@ -123,6 +123,17 @@ impl RainError{
         HttpResponse::BadRequest().json(Self::from_message(message))
     }
 }
+impl From<RainError> for HttpResponse{
+    fn from(value: RainError) -> Self {
+        HttpResponse::BadRequest().json(value)
+    }
+}
+impl From<Box<dyn std::error::Error>> for RainError{
+    fn from(value: Box<dyn std::error::Error>) -> Self {
+        Self::from_message(value.to_string())
+    }
+}
+//must we do some FromResidual stuff here? If I want to take any error, convert it into a RainError, and then propogate that as an HttpResponse, what is preventing me from doing so? It is basically an intermediate conversion between Box<dyn std::error::Error> -> HttpResponse.
 
 
 // pub enum ResponderError{

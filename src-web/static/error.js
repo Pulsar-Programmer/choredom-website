@@ -5,3 +5,18 @@ function error(response) {
     }
     return answer;
 }
+
+// function alert_error(error){
+//     alert(error);
+// }
+
+// function console_error(error){
+//     console.log(error);
+// }
+
+function console_alert_error(error){
+    // alert_error(error);
+    // console_error(error);
+    alert(error);
+    console.log(error);
+}

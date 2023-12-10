@@ -66,9 +66,7 @@ window.addEventListener("load", function() {
     .then(data => {
         prefill(data.username, data.displayname, data.location, data.bio)
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert_error);
 
 });
 
