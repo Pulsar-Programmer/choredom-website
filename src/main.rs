@@ -122,6 +122,9 @@ impl RainError{
     pub fn from_message_intended(message: impl ToString) -> HttpResponse {
         HttpResponse::BadRequest().json(Self::from_message(message))
     }
+    pub fn for_html(message: impl ToString) -> HttpResponse{
+        HttpResponse::BadRequest().body(message.to_string())
+    }
 }
 impl From<RainError> for HttpResponse{
     fn from(value: RainError) -> Self {

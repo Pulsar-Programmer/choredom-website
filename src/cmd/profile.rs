@@ -649,11 +649,11 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = match identity_unwrap(user){
         Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
+        Err(x) => return RainError::for_html(x),
     };
 
     let mut db = data.db.lock().await;
-    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return RainError::from_message_intended("No files processed..?");};
+    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return RainError::for_html("No files processed..?");};
     let url = format!("/temp/pfp/{user}/{filename}");
     let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
@@ -665,7 +665,7 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
 pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
     let user = match identity_unwrap(user){
         Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
+        Err(x) => return RainError::for_html(x),
     };
     // let mut db = data.db.lock().await; , data: Data<AppData>
     let paths = std::fs::read_dir("./").unwrap();
