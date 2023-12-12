@@ -153,7 +153,6 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
 
 #[derive(serde::Serialize)]
 struct DeleteRatingNote<'a>{
-    new_avg: rust_decimal::Decimal,
     username: String,
     rater: &'a String,
 }
@@ -191,15 +190,16 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     }
     let new_avg_a = sum as f64 / div as f64;
     let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg_a).unwrap();
-
+    //problem ^^^^^ The Decimal above is unnecessary
     let query = "
     UPDATE accounts SET
     page.reviews -= (SELECT page.reviews FROM accounts WHERE username = $username AND page.reviews.rater CONTAINS $rater).page.reviews[0],
-    page.avg_rating = $new_avg 
-    WHERE username = $username;";
+    WHERE username = $username;
+    UPDATE accounts SET
+    page.avg_rating = math::mean(page.reviews);";
 
     //requires advanced DB query that can be done easily later
-    sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
+    sole_query(&mut db, query, DeleteRatingNote{ username, rater: &rater }).await.unwrap();
 
     HttpResponse::Ok().json(DeleteRatingFeedback{ rater, new_avg: new_avg_a })
 }
