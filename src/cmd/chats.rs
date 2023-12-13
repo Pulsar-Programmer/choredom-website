@@ -64,8 +64,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
     let result = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
     if result.len() != 1{
-        let vec_chats = Vec::new();
-        let room = Room{room_id, messages: vec_chats};
+        let room = Room{room_id, messages: Vec::new()};
         sole_query(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     }
@@ -73,7 +72,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let Room { room_id: _, messages: vec } = result;
 
     let vec : Vec<ChatFrontData> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
 
     //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
@@ -107,7 +106,7 @@ pub struct ChatData{
 ///The chat data given to the frontend.
 #[derive(serde::Serialize, Debug)]
 struct ChatFrontData{
-    timestamp: DateTime<Utc>,
+    timestamp: String,
     msg: String,
     sender: String, 
 }
@@ -143,7 +142,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let mut db = app.db.lock().await;
     sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
     
-    let to_frontend = ChatFrontData{ timestamp, msg, sender: named_sender };
+    let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y").to_string(), msg, sender: named_sender };
     // println!("Chat bounceback: {to_frontend:?}");
     HttpResponse::Ok().json(to_frontend)
 }
@@ -180,7 +179,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp: timestamp.to_owned(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
     HttpResponse::Ok().json(&chats_vec)
 }
@@ -306,7 +305,7 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 pub async fn pics_chats(form: actix_multipart::Multipart, identity: Option<Identity>) -> impl Responder{
     let username = retrieve_user(identity.unwrap()).unwrap();
     println!("Tree");
-    let _ = crate::img::process_multipart(form, format!("chats/{username}")).await.unwrap();
+    crate::img::process_multipart(form, format!("chats/{username}/pics")).await.unwrap();
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     //^^ we use username whereas uuid is preferred. How do we extract UUID? We would have to convert it to JS (conveluded but.. possible? process)
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/chat")).body(CHATNAV)

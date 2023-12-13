@@ -122,3 +122,4 @@ function receive_chat(){
 }
 //Erase this when doing long polling or the SSEs.
 setInterval(receive_chat, 10_000);
+

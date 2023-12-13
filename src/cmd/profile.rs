@@ -653,8 +653,8 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
     };
 
     let mut db = data.db.lock().await;
-    let [filename, ..] = &process_multipart(form, format!("pfp/{user}")).await.unwrap()[..] else { return RainError::for_html("No files processed..?");};
-    let url = format!("/temp/pfp/{user}/{filename}");
+    process_multipart(form, format!("pfp/{user}/pfp")).await.unwrap();
+    let url = format!("/temp/pfp/{user}/pfp");
     let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -682,7 +682,7 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
         return RainError::from_message_intended("No uploading over 3!");
     }
 
-    process_multipart(form, format!("bio/{user}")).await.unwrap();
+    process_multipart(form, format!("bio/{user}/pics")).await.unwrap();
 
     HttpResponse::Ok().finish()
 }
