@@ -6,14 +6,12 @@ window.addEventListener("load", function() {
             'Content-Type': 'application/json',
         },
     })
-    .then(response => response.json())
+    .then(error)
     .then(data => {
         console.log(data);
         data.forEach(part => add_to_html(part.room_name));
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert_error);
 
 });
 

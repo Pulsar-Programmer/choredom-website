@@ -89,16 +89,14 @@ function get_location_data(){
         },
         body: JSON.stringify(location),
     })
-    .then(response => response.json())
+    .then(error)
     .then(jobsData => {
         console.log('Location Success:', jobsData);
         
         console.log('Jobs Success:', jobsData);
         displayJobs(jobsData);
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert);
 }
 
 
@@ -115,63 +113,6 @@ function get_location_data(){
 //     document.body.classList.toggle('dark-mode');
 // });
 
-
-
-
-// Dropdown menu code
-fetch('/src-web/assets/us_cities.json')
-.then(response => response.json())
-.then(data => populateDropdown(data));
-
-function populateDropdown(data) {
-    const dropdown = document.getElementById('dropdownOptions');
-    dropdown.style.display = 'none'; // Hide the dropdown initially
-    data.forEach(town => {
-    const option = document.createElement('div');
-    option.setAttribute('value', town.ID);
-    option.textContent = `${town.CITY}, ${town.STATE_NAME}`; 
-    option.addEventListener('click', selectOption); 
-    dropdown.appendChild(option);
-    });
-}
-
-function selectOption() {
-    const input = document.getElementById('filterInput');
-    input.value = this.textContent; 
-    const dropdown = document.getElementById('dropdownOptions');
-    dropdown.style.display = 'none'; 
-    input.blur(); 
-}
-
-const input = document.getElementById('filterInput');
-input.addEventListener('input', filterOptions);
-
-function filterOptions() {
-    const filterValue = this.value.toLowerCase();
-    const dropdown = document.getElementById('dropdownOptions');
-    const options = Array.from(dropdown.children);
-    options.forEach(option => option.style.display = "none"); 
-
-    if (!filterValue) { 
-    return; // Do nothing when the input field isn't touched or is empty
-    }
-
-    const relevantOptions = options
-    .filter(option => option.textContent.toLowerCase().includes(filterValue))
-    .sort((option1, option2) => {
-        return option1.textContent.toLowerCase().indexOf(filterValue) -
-        option2.textContent.toLowerCase().indexOf(filterValue);
-    })
-    .slice(0, 10); 
-
-    relevantOptions.forEach(option => option.style.display = ""); 
-
-    if (relevantOptions.length > 0) {
-    dropdown.style.display = 'block'; 
-    }
-}
-
-
 function searchPosts() {
     const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
@@ -182,7 +123,7 @@ function searchPosts() {
         },
         body: JSON.stringify({ location: searchQuery }),
     })
-    .then(response => response.json())
+    .then(error)
     .then(jobsData => {
         console.log('Jobs Success:', jobsData);
 
@@ -193,7 +134,5 @@ function searchPosts() {
 
         displayJobs(filteredJobs);
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert);
 }

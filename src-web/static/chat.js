@@ -20,14 +20,12 @@ window.onload = function() {
         },
         body: JSON.stringify(newPath),
     })
-    .then(response => response.json())
+    .then(error)
     .then(chatsData => {
         console.log('Chats Success:', chatsData);
         displayChats(chatsData);
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert);
 }
 
 
@@ -82,16 +80,14 @@ function send_chat(){
         },
         body: JSON.stringify({room_title, msg}),
     })
-    .then(response => response.json())
+    .then(error)
     .then(chat => {
         console.log('Chats Bounceback Success:', chat);
         const chatHTML = generateChatHTML(chat);
         console.log(chatHTML);
         chatContainer.innerHTML += chatHTML;
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert);
     // chat = {msg: msg, username: room_title, timestamp: }
     // generateChatHTML()
 
@@ -111,14 +107,12 @@ function receive_chat(){
         },
         body: JSON.stringify(roomTitle),
     })
-    .then(response => response.json())
+    .then(error)
     .then(chatsData => {
         console.log('Chats Success:', chatsData);
         displayChats(chatsData);
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .catch(console_alert);
 }
 //Erase this when doing long polling or the SSEs.
 setInterval(receive_chat, 10_000);

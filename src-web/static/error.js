@@ -14,7 +14,7 @@ function error(response) {
 //     console.log(error);
 // }
 
-function console_alert_error(error){
+function console_alert(error){
     // alert_error(error);
     // console_error(error);
     alert(error);
