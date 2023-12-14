@@ -29,7 +29,8 @@ pub mod sites{
         JOBS; "jobs",
         CHATNAV; "chat-nav",
         NOLOG; "nolog",
-        NOUSER; "nouser"
+        NOUSER; "nouser",
+        ERRHTML; "error"
     );
 }
 

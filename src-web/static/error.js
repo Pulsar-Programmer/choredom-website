@@ -15,8 +15,9 @@ function error(response) {
 // }
 
 function console_alert(error){
-    // alert_error(error);
-    // console_error(error);
-    alert(error);
-    console.log(error);
+    if(error.for_user){
+        alert(error);
+    } else {
+        console.log(error);
+    }
 }

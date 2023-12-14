@@ -114,28 +114,44 @@ pub struct AppData {
 #[derive(serde::Serialize)]
 pub struct RainError{
     message: String,
+    for_user: bool,
 }
 impl RainError{
+    // const function: fn(Self) = |x|{}; //< so weird
+
     pub fn from_message(message: impl ToString) -> Self{
-        Self { message: message.to_string() }
+        Self { message: message.to_string(), for_user: false }
     }
-    pub fn from_message_intended(message: impl ToString) -> HttpResponse {
-        HttpResponse::BadRequest().json(Self::from_message(message))
+    pub fn for_user(mut self) -> Self{
+        self.for_user = true;
+        self
+    }
+    pub fn to_js(self) -> HttpResponse{
+        HttpResponse::BadRequest().json(self)
+    }
+    pub fn for_js(message: impl ToString) -> HttpResponse {
+        Self::from_message(message).to_js()
+    }
+    pub fn for_js_user(message: impl ToString) -> HttpResponse {
+        Self::from_message(message).for_user().to_js()
     }
     pub fn for_html(message: impl ToString) -> HttpResponse{
         HttpResponse::BadRequest().body(message.to_string())
     }
-}
-impl From<RainError> for HttpResponse{
-    fn from(value: RainError) -> Self {
-        HttpResponse::BadRequest().json(value)
+    pub fn for_html_stderr() -> HttpResponse{
+        HttpResponse::BadRequest().body(cmd::sites::ERRHTML)
     }
 }
-impl From<Box<dyn std::error::Error>> for RainError{
-    fn from(value: Box<dyn std::error::Error>) -> Self {
-        Self::from_message(value.to_string())
-    }
-}
+// impl From<RainError> for HttpResponse{
+//     fn from(value: RainError) -> Self {
+//         HttpResponse::BadRequest().json(value)
+//     }
+// }
+// impl From<Box<dyn std::error::Error>> for RainError{
+//     fn from(value: Box<dyn std::error::Error>) -> Self {
+//         Self::from_message(value.to_string())
+//     }
+// }
 //must we do some FromResidual stuff here? If I want to take any error, convert it into a RainError, and then propogate that as an HttpResponse, what is preventing me from doing so? It is basically an intermediate conversion between Box<dyn std::error::Error> -> HttpResponse.
 
 

@@ -29,13 +29,10 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     //^feh how do we handle what if the username is invalid, we must report this to the JS and not load the page or something
     let mut db = app_data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
-        return RainError::from_message_intended("Issue with DB Queries.");
+        return RainError::for_js("Issue with DB Queries.");
     };
-    if result.len() != 1 {
-        return RainError::from_message_intended("Account does not exist.");
-    }
     let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.get(0) else{
-        return RainError::from_message_intended("Impossible error.")
+        return RainError::for_js("Account does not exist.");
     };
 
     let data = UsersFrontData{ 
@@ -76,14 +73,12 @@ pub struct GroupRatingData{
 
 #[post("/users/{username}/rate")]
 pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, username: web::Path<String>, identity: Option<Identity>) -> impl Responder{
-    let rater = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
+    let Ok(rater) = identity_unwrap(identity) else {
+        return RainError::for_js("User not detected.")
     };
     let username = username.into_inner();
     if rater == username{
-        //^feh
-        return HttpResponse::BadRequest().json("You may not rate yourself!");
+        return RainError::for_js_user("You may not rate yourself!");
     }
     let mut db = data.db.lock().await;
     let chat_block = {
@@ -165,19 +160,18 @@ struct DeleteRatingFeedback{
 
 #[post("/users/{username}/rate/delete")]
 pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>, data: Data<AppData>) -> impl Responder{
-    let rater: String = match identity_unwrap(rater){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
+    let Ok(rater) = identity_unwrap(rater) else {
+        return RainError::for_js("User not detected.")
     };
     let username = username.into_inner();
     let mut db = data.db.lock().await;
 
     let mut sum = 0;
-    let result = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
+    let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
     let len = result.len();
     if len != 1{
-        return HttpResponse::BadRequest().finish();
+        return RainError::for_js("Rater data not found.");
     }
     let res = result.get(0).unwrap();
     
@@ -277,10 +271,7 @@ struct SettingsPresentData<'a>{
 #[post("/settings/present_data")]
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let mut db = app_data.db.lock().await;
-    let identity = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(identity)= identity_unwrap(identity) else {return RainError::for_js("Identity not found.")};
     let q1 = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
     let curry_2 = q1.get(0).unwrap();
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
@@ -301,10 +292,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
 #[post("/settings-post")]
 pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
-    let username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(username)= identity_unwrap(identity) else {return RainError::for_js("Identity not found.")};
     //edit stuff NOT together, as in, independently?
 
     let settings_data = SettingsData2::new(settings_data, username);
@@ -376,10 +364,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
 
     let PasswordData { p_old, p_new } = form.into_inner();
 
-    let username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(username)= identity_unwrap(identity) else {return RainError::for_js("Identity not found.")};
 
     let mut db = data.db.lock().await;
     let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
@@ -412,10 +397,7 @@ pub struct DeleteConfirmation{password:String}
 
 #[post("/settings/delete")]
 pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
-    let username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(username)= identity_unwrap(identity) else {return RainError::for_js("Identity not found.")};
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
@@ -471,10 +453,7 @@ struct ChangeFundData{
 #[post("/settings/funds/change")]
 async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let FundData { changed_funds, password, add } = form.into_inner();
-    let username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(username)= identity_unwrap(identity) else {return RainError::for_js("Identity not found.")};
 
     let mut db = data.db.lock().await;
     
@@ -536,10 +515,7 @@ pub struct TransferData{
 async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     
     let CreditsData { credits, self_password, to_username } = form.into_inner();
-    let self_username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(self_username) = identity_unwrap(identity) else {return RainError::for_js("User not found.")};
 
 
     let mut db = data.db.lock().await;
@@ -599,10 +575,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
     // let current_email_stored =
     let mut db = app.db.lock().await;
-    let identity = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(identity) = identity_unwrap(identity) else {return RainError::for_js("No identity can be unveiled!")};
     let q1 = query_once::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
     let q2 = q1.get(0).unwrap();
     if q2.email != current_email_input{
@@ -663,10 +636,7 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
 
 #[post("/settings/pics-bio")]
 pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
-    let user = match identity_unwrap(user){
-        Ok(r) => r,
-        Err(x) => return RainError::for_html(x),
-    };
+    let Ok(user) = identity_unwrap(user) else { return RainError::for_js("User not found.")};
     // let mut db = data.db.lock().await; , data: Data<AppData>
     let paths = std::fs::read_dir("./").unwrap();
 
@@ -679,7 +649,7 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
     }
 
     if file_count >= 3{
-        return RainError::from_message_intended("No uploading over 3!");
+        return RainError::for_js_user("No uploading over 3 files!");
     }
 
     process_multipart(form, format!("bio/{user}/pics")).await.unwrap();
@@ -731,10 +701,7 @@ pub struct ContactsForm{
 #[post("/contacts/form")]
 pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identity: Option<Identity>) -> impl Responder{
 
-    let username = match identity_unwrap(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::from_message_intended(x),
-    };
+    let Ok(username) = identity_unwrap(identity) else { return RainError::for_js("User not found.")};
 
     let ContactsForm { title, message } = form.into_inner();
     let info: ContactsInfo = ContactsInfo{ username, title, message };
