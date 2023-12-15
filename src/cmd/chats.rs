@@ -1,9 +1,10 @@
 use actix_identity::Identity;
-use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, App, };
+use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}};
 use chrono::{DateTime, Utc};
-use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG}; 
+use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
-use super::signup::retrieve_user;
+use super::signup::unwrap_identity;
+use RainError as r;
 
 ///This represents a chat room with a bunch of chats.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -21,17 +22,13 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let receiver = receiver.into_inner();
     let mut db = app_data.db.lock().await;
-    let result = query_once::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await.unwrap();
-    //^^^ replace this with indices in future
-    //vvvv If it is greater we have issues, if it less then this is valid behavior
+    let Ok(result) = query_once::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await else {return RainError::for_html_stderr()};
     if result.len() != 1 {
-        //^feh
-        return HttpResponse::BadRequest().body(NOUSER);
+        return RainError::for_html(NOUSER);
     }
-    let Some(identity) = identity else {return HttpResponse::Ok().body(NOLOG)};
-    let sender = retrieve_user(identity).unwrap();
+    let Ok(sender) = unwrap_identity(identity) else {return RainError::for_html(NOLOG)};
     if sender == receiver{
-        return HttpResponse::BadRequest().body("
+        return RainError::for_html("
         <!DOCTYPE html>
         <html>
         <head>
@@ -49,7 +46,7 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
 
 #[post("/chats_obtain")]
 pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
-    let sender = retrieve_user(identity.unwrap()).unwrap();
+    let Ok(sender) = unwrap_identity(identity) else { return RainError::for_js("Identity cannot be extracted.")};
     let receiver = receiver.into_inner();
     let room_id = RoomID::create([sender, receiver.clone()]);
 
@@ -61,14 +58,13 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
 
     // we must first redeem them as all read, since you are entering
-    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
-    let result = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-    if result.len() != 1{
+    let Ok(_) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else {return r::for_js("Error updating.")};
+    let Ok(result) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return r::for_js("Error getting chats.")};
+    let Some(result) = result.get(0) else {
         let room = Room{room_id, messages: Vec::new()};
-        sole_query(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await.unwrap();
+        let Ok(_) = sole_query(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await else { return r::for_js("Error creating new chat room.")};
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
-    }
-    let result = result.get(0).unwrap();
+    };
     let Room { room_id: _, messages: vec } = result;
 
     let vec : Vec<ChatFrontData> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
@@ -130,17 +126,17 @@ pub struct FrontSentData{
 pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Data<crate::AppData>) -> impl Responder{
     // println!("Chat sent!");
     //Here, `json` represents the reciever and the msg intended to be sent.
-    let named_sender = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let Ok(named_sender) = unwrap_identity(identity) else { return r::for_js("Sender could not be identified.") };
     let timestamp = Utc::now();
     let FrontSentData{room_title, msg} = json.into_inner();
     let room_id = RoomID::create([room_title, named_sender.clone()]);
-    let sender = &named_sender == room_id.get(1).unwrap(); //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
+    let sender = named_sender == room_id[true]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
     let to_database = ChatData{timestamp, msg: msg.clone(), sender, was_read: false};
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
-    sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await.unwrap();
+    let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await else { return r::for_js("Error adding chat to room.")};
     
     let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y").to_string(), msg, sender: named_sender };
     // println!("Chat bounceback: {to_frontend:?}");
@@ -163,7 +159,7 @@ pub struct ChatDBQuery{
 /// This is opposed to the method used above when refreshing the page which simply obtains all of the Vec<ChatFrontData> rather than the new ones.
 #[post("/chat/receive")]
 pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
-    let same = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let Ok(same) = unwrap_identity(identity) else { return r::for_js_user("Log in to receive chats!")};
     let opposite = opposite.into_inner();
     let room_id = RoomID::create([same, opposite.clone()]);
     let opposite_unnamed = room_id[true] == opposite;
@@ -172,11 +168,11 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
     println!("{useful_data:?}");
-    let res = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await.unwrap();
-    let Some(dbgiven) = res.get(0) else {return HttpResponse::NoContent().finish()}; //how do you return none for god sake
+    let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
+    let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
     let chats_vec = &dbgiven.messages;
     //mark as read right before
-    sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await.unwrap();
+    let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
@@ -276,13 +272,13 @@ struct NavLink{
 
 #[post("/nav-links")]
 pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Identity could not be extracted.")};
 
 
     let mut db = data.db.lock().await;
-    let rooms = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await.unwrap();
+    let Ok(rooms) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await else{ return r::for_js("Error selecting chats.")};
     let links: Vec<NavLink> = rooms.into_iter().map(|elem|{
-        NavLink { room_name: elem.room_id.access_opposite(&username).unwrap() }
+        NavLink { room_name: elem.room_id.access_opposite(&username).unwrap_or_default() }
     }).collect();
     // println!("{links:?}");
     
@@ -303,7 +299,7 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 #[post("/pics-chats")]
 pub async fn pics_chats(form: actix_multipart::Multipart, identity: Option<Identity>) -> impl Responder{
-    let username = retrieve_user(identity.unwrap()).unwrap();
+    let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
     println!("Tree");
     crate::img::process_multipart(form, format!("chats/{username}/pics")).await.unwrap();
     //^^ this may become useful IF we want to prefill the client's text box with the URL.

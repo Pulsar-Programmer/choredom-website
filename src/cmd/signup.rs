@@ -297,7 +297,7 @@ pub fn retrieve_user(identity: Identity) -> Result<String, actix_identity::error
     identity.id()
 }
 
-pub fn identity_unwrap(identity: Option<Identity>) -> Result<String, anyhow::Error>{
+pub fn unwrap_identity(identity: Option<Identity>) -> Result<String, anyhow::Error>{
     Ok(retrieve_user(identity.ok_or(anyhow::anyhow!("The identity could not be extracted."))?)?)
 }
 
