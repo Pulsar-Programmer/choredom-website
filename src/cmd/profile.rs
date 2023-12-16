@@ -114,7 +114,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
 
     let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Internal rating query error.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA < ???
-    let Some(res) = result.get(0) else { return RainError::for_js("Error obtaining query info.")};
+    let Some(res) = result.get(0) else { return RainError::for_js_user("The ratee does not exist!")};
     let div = res.len() + 1;
     for PageRatingData{stars: star, rater: monkie, body: _} in res{
         if monkie==&rater
@@ -520,7 +520,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    let Ok(..) = sole_query(&mut db, surrealql, transferdata).await else { return RainError::for_html_stderr()};
+    let Ok(..) = sole_query(&mut db, surrealql, transferdata).await else { return RainError::for_html_stderr() };
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
