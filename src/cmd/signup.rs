@@ -8,6 +8,7 @@ use chrono::{Utc, Duration};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
 use rand::Rng;
+use crate::RainError as r;
 
 #[derive(serde::Deserialize)]
 pub struct SignupTransmitter{
@@ -109,48 +110,47 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_html_stderr()};
     let len1 = result.len();
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await.unwrap();
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await else { return r::for_html_stderr()};
     let len2 = result.len();
     if len1 >= 1 {
-        //error , bad username OR could be an error with MORE THAN ONE username
-        //^feh
-        todo!()
+        return r::for_html("That username is taken. Choose a different username.")
     }
     if len1 != len2{
-        //^feh
-        todo!()
+        return r::for_html("That email is taken. Choose a different email.")
     }
     let code = rand::thread_rng().gen_range(100000..1000000);
     // transmission_transmit("signup", &session, code).unwrap();
-    signup_transmission_transmit(&session, code.to_string());
-    confirmation_email(&to_email, &displayname, code).unwrap();
+    let Ok(..) = signup_transmission_transmit(&session, code.to_string()) else { return r::for_html_stderr() };
+    let Ok(..) = confirmation_email(to_email, &displayname, code) else { return r::for_html_stderr() };
 
-    let (password, salt) = password_hash_argon2(password).unwrap();
+    let Ok((password, salt)) = password_hash_argon2(password) else { return r::for_html_stderr() };
 
     let account: Account = Account::new(username.clone(), displayname , password, salt.to_string(), to_email.to_string(), location);
 
-    transmission_transmit("account", &session, account).unwrap();
+    let Ok(..) = transmission_transmit("account", &session, account) else { return r::for_html_stderr() };
 
     HttpResponse::Ok().body(EMAIL)
 }
 
 #[post("/ve")]
 pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
-    let transmitter = signup_transmission_receive(&session).unwrap();
+    let Ok(transmitter) = signup_transmission_receive(&session) else { return r::for_html_stderr() };
     //Remove in one case and obtain in another
-    let account: Account = transmission_receive("account", &session).unwrap();
+    let Ok(account) = transmission_receive::<Account>("account", &session) else { return r::for_html_stderr() };
 
-    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
-        //^feh
-        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+    let Ok(passwords_match) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr() };
+
+    if !passwords_match{
+        return r::for_html("Codes don't match!")
+        // return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
     }
     let mut db = data.db.lock().await;
 
     //We want to create the account only AFTER we verify codes.
 
-    sole_query(&mut db, r#"
+    let Ok(..) = sole_query(&mut db, r#"
     CREATE accounts
     SET
     username = $username,
@@ -163,9 +163,9 @@ pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web:
     password_salt = $password_salt,
     balance = $balance,
     location = $location;
-    "#, Some(&account)).await.unwrap();
+    "#, Some(&account)).await else { return r::for_html_stderr() };
 
-    login_user(&request, account.username).unwrap();
+    let Ok(..) = login_user(&request, account.username) else { return r::for_html_stderr() };
 
     // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
@@ -240,43 +240,37 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     let LoginData { email, password } = form.into_inner();
     let email = email.trim();
     let mut db = data.db.lock().await;
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await.unwrap();
-    let len = result.len();
-    if len > 1{
-        //^feh
-        todo!() // should never happen if correct things are true
-    }
-    else if len < 1{
-        // ^feh
-        return HttpResponse::Ok().body(SIGNUP)
-    }
-    let account = result.get(0).unwrap();
-    // let password = 
-    if !verify_password(&password, &account.password, &account.password_salt).unwrap(){
-        // ^feh
-        return HttpResponse::Ok().body(LOGIN)
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_html_stderr()};
+    let Some(account) = result.get(0) else { return r::for_html("Ensure to create the account, first!")};
+
+    let Ok(passwords_match) = verify_password(&password, &account.password, &account.password_salt) else { return r::for_html_stderr()};
+
+    if !passwords_match{
+        return r::for_html("Passwords don't match!");
     }
     
     let code = rand::thread_rng().gen_range(100000..1000000);
     // transmission_transmit("signup", &session, code).unwrap();
-    login_transmission_transmit(&session, code.to_string()).unwrap();
-    confirmation_email(&account.email, &account.displayname, code).unwrap();
-    transmission_transmit("log", &session, account.username.clone());
+    let Ok(..) = login_transmission_transmit(&session, code.to_string()) else { return r::for_html_stderr()};
+    let Ok(..) = confirmation_email(&account.email, &account.displayname, code) else { return r::for_html_stderr()};
+    let Ok(..) = transmission_transmit("log", &session, account.username.clone()) else { return r::for_html_stderr()};
     HttpResponse::Ok().body(EMAIL_LOG)
     // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
 
 
 #[post("/ve_log")]
-pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: Option<Identity>, request: HttpRequest) -> impl Responder{
-    let transmitter = login_transmission_receive(&session).unwrap();
+pub async fn home_redirect_login(session: Session, code: Form<Code>, request: HttpRequest) -> impl Responder{
+    let Ok(transmitter) = login_transmission_receive(&session) else{ return r::for_html_stderr()};
     //Remove in one case and obtain in another
-    let username : String = transmission_receive("log", &session).unwrap();
-    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
-        //^feh
-        return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+    let Ok(username) = transmission_receive::<String>("log", &session) else { return r::for_html_stderr()};
+
+    let Ok(passwords_match) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr()};
+
+    if !passwords_match{
+        return r::for_html("Codes don't match!")
     }
-    login_user(&request, username).unwrap();
+    let Ok(..) = login_user(&request, username) else { return r::for_html_stderr()};
     // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -284,7 +278,10 @@ pub async fn home_redirect_login(session: Session, code: Form<Code>, identity: O
 
 #[post("/signout")]
 pub async fn signout(identity: Option<Identity>) -> impl Responder{
-    println!("Goodbye: {:?}!", logout_user(identity.unwrap()));
+    let Some(identity) = identity else { return r::for_js_user("Sign in to first sign out!")};
+
+    println!("Goodbye: {:?}!", logout_user(identity));
+
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
 

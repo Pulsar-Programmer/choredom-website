@@ -148,3 +148,18 @@ pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &m
 //     todo!()
 // }
 
+
+//Stabilize these features ASAP
+// Extract looks better for error handling these separately and getting an owned copy hoenstly but ig the latter should be sued sicne it alwaus could be used how this oen is.
+fn extract_first<T>(mut vec: Vec<T>) -> Option<T>{
+    if vec.is_empty(){
+        return None;
+    }
+    Some(vec.remove(0))
+}
+
+async fn query_once_option<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
+    let mut result = db.query(surrealql).bind(parameters).await?;
+    let result: Result<Option<T>, _> = result.take(0);
+    result
+}

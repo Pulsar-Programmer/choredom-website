@@ -8,7 +8,12 @@ use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpRespons
 use rust_decimal::prelude::ToPrimitive;
 
 #[get("/users/{username}")]
-pub async fn profile(_: web::Path<String>) -> impl Responder{
+pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
+    let mut db = app_data.db.lock().await;
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username.into_inner())).await else { return RainError::for_html_stderr() };
+    if result.len() != 1{
+        return RainError::for_html(super::sites::NOUSER);
+    }
     HttpResponse::Ok().body(PROFILE)
 }
 #[derive(serde::Serialize)]
@@ -83,12 +88,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let mut db = data.db.lock().await;
     let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
-        let result = query_once::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await.unwrap();
-        if result.len() != 1 {
-            //^feh
-            todo!("Error!")
-        }
-        let res = result.get(0).unwrap(); // ^ feh
+        let Ok(result) = query_once::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return RainError::for_js("Querying check error.")};
+        let Some(res) = result.get(0) else { return RainError::for_js_user("Ensure to work with the one who is to be rated before rating!")};
         let mut not_contains_first = true;
         let mut not_contains_second = true;
         for i in &res.messages{
@@ -105,33 +106,26 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
         not_contains_first || not_contains_second
     };
     if chat_block {
-        return HttpResponse::BadRequest().body("You must work with the one you are rating in order to rate them!");
+        return RainError::for_js_user("You must work with the one you are rating in order to rate them!");
     }
 
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
 
-    let result = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await.unwrap();
-    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
-    let len = result.len();
-    if len != 1{
-        return HttpResponse::BadRequest().finish();
-    }
-    let res = result.get(0).unwrap();
-
-    let div = res.len() + if res.is_empty() {1} else{0};
+    let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Internal rating query error.")};
+    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA < ???
+    let Some(res) = result.get(0) else { return RainError::for_js("Error obtaining query info.")};
+    let div = res.len() + 1;
     for PageRatingData{stars: star, rater: monkie, body: _} in res{
         if monkie==&rater
         {
-            //^feh
-            //this is also inefficient: use the Index feature and make a Rating table entirely to fix this entirely.
-            return HttpResponse::BadRequest().body("You may not rate again! Delete your previous rating if you want to rate again!");
+            return RainError::for_js_user("You may not rate again! Delete your previous rating if you want to rate again!");
         }
         sum += star;
     }
 
     let new_avg = sum as f64 / div as f64;
-    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg).unwrap();
+    let Some(new_avg) = rust_decimal::Decimal::from_f64_retain(new_avg) else { return RainError::for_js("Error converting to Decimal.")};
     let q = "UPDATE accounts
     SET 
     page.avg_rating = $new_avg,
@@ -139,9 +133,8 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     WHERE username = $username;";
 
     let review = PageRatingData{stars: sums, body, rater};
-    // println!("{review:?}");
 
-    sole_query(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await.unwrap();
+    let Ok(..) = sole_query(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await else { return RainError::for_js("Group rating addition error.")};
 
     HttpResponse::Ok().json(review)
 }
@@ -168,23 +161,24 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
 
     let mut sum = 0;
     let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
-    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA
-    let len = result.len();
-    if len != 1{
-        return RainError::for_js("Rater data not found.");
+    //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA <<< ??? what does this mean monkie???
+    let Some(res) = result.get(0) else { return RainError::for_js("Rater data not found."); };
+    if res.is_empty(){
+        return RainError::for_js_user("The requested rating to delete could not be found.");
     }
-    let res = result.get(0).unwrap();
-    
-    let div = res.len() + if res.is_empty() {1} else{0};
+    let div = res.len();
+    let mut found = false;
     for PageRatingData{stars: star, rater: monkie, body: _} in res{
         if monkie==&rater
         {
+            found = true;
             continue;
         }
         sum += star;
     }
+    if !found { return RainError::for_js_user("The requested rating to delete could not be found.")}
     let new_avg_a = sum as f64 / div as f64;
-    let new_avg = rust_decimal::Decimal::from_f64_retain(new_avg_a).unwrap();
+    let Some(new_avg) = rust_decimal::Decimal::from_f64_retain(new_avg_a) else { return RainError::for_js("Error parsing new average.")};
 
     let query = "
     UPDATE accounts SET
@@ -192,8 +186,7 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     page.avg_rating = $new_avg 
     WHERE username = $username;";
 
-    //requires advanced DB query that can be done easily later
-    sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await.unwrap();
+    let Ok(..) = sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await else { return RainError::for_js("Error updating rating.")};
 
     HttpResponse::Ok().json(DeleteRatingFeedback{ rater, new_avg: new_avg_a })
 }
@@ -272,12 +265,11 @@ struct SettingsPresentData<'a>{
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let mut db = app_data.db.lock().await;
     let Ok(identity)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
-    let q1 = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
-    let curry_2 = q1.get(0).unwrap();
+    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
+    let Some(curry_2) = q1.get(0) else { return RainError::for_js("No curry for you!")};
     let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio};
     //YESSS SO COOOLLL
-    // println!("{settings_data:?}");
     HttpResponse::Ok().content_type("application/json").json(settings_data)
 }
 
@@ -305,7 +297,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     WHERE username = $username2;
     ";
     let mut db = data.db.lock().await;
-    sole_query(&mut db, surrealql, settings_data).await.unwrap();
+    let Ok(..) = sole_query(&mut db, surrealql, settings_data).await else { return RainError::for_html_stderr()};
     //might get a runtime error bcs of surrealql since password field is unused?
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -321,7 +313,7 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 
 #[post("/settings/upload/form")]
 pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    let username = super::signup::retrieve_user(identity.unwrap()).unwrap();
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
     crate::img::process_multipart(form, container).await.unwrap();
 
@@ -330,7 +322,7 @@ pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, 
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     let db = &mut data.db.lock().await;
-    sole_query(db, surrealql, params).await.unwrap();
+    let Ok(_) = sole_query(db, surrealql, params).await else { return RainError::for_html_stderr()};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
@@ -347,7 +339,7 @@ pub async fn password_change(identity: Option<Identity>) -> impl Responder{
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
-struct PasswordData{
+pub struct PasswordData{
     p_old: String,
     p_new: String,
 }
@@ -367,22 +359,19 @@ pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>,
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
     let mut db = data.db.lock().await;
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    if result.len() != 1{
-        //^feh
-        todo!() // should never happen if correct things are true
-    }
-    let Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ } = result.get(0).unwrap();
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_html_stderr()};
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_html_stderr() };
 
-    email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)).unwrap();
+    let Ok(..) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)) else { return RainError::for_html_stderr()};
 
-    if !verify_password(&p_old, p_old_2, salt).unwrap() {
-        //^feh incorrect passwords
-        todo!()
+    let Ok(passwords_match) = verify_password(&p_old, p_old_2, salt) else { return RainError::for_html_stderr()};
+
+    if !passwords_match {
+        return RainError::for_html("Passwords do not match!");
     }
 
-    let (password, password_salt) = super::signup::password_hash_argon2(p_new).unwrap();
-    sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await.unwrap();
+    let Ok((password, password_salt)) = super::signup::password_hash_argon2(p_new) else { return RainError::for_html_stderr() };
+    let Ok(..) = sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await else { return RainError::for_html_stderr()};
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -401,19 +390,16 @@ pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmatio
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await.unwrap();
-    if result.len() != 1{
-        //^feh
-        todo!() // should never happen if correct things are true
-    }
-    let Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ } = &result[0];
-    
-    if !verify_password(&password_entered, password_db, salt).unwrap() {
-        //^feh incorrect passwords
-        todo!()
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_html_stderr()};
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_html_stderr()};
+
+    let Ok(passwords_match) = verify_password(&password_entered, password_db, salt) else { return RainError::for_html_stderr()};
+
+    if !passwords_match {
+        return RainError::for_html("Passwords do not match!");
     }
 
-    sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await.unwrap();
+    let Ok(..) = sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_html_stderr()};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
@@ -459,10 +445,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
     
     let surrealql = "SELECT * FROM accounts WHERE username=$username;";
     let res = query_once::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
-    if res.len() != 1{
-        todo!()
-    }
-    let res = res.get(0).unwrap();
+    let Some(res) = res.get(0) else { return RainError::for_html_stderr()};
 
     if !verify_password(&password, &res.password, &res.password_salt).unwrap(){
         return todo!();
@@ -488,7 +471,10 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
 
 
 #[get("/settings/funds/transfer")]
-pub async fn transfer_funds() -> impl Responder{
+pub async fn transfer_funds(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return HttpResponse::Ok().body(NOLOG)
+    }
     HttpResponse::Ok().body(TRANSFER)
 }
 
@@ -519,18 +505,13 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
     let mut db = data.db.lock().await;
-    let result = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await.unwrap();
-    if result.len() != 1 {
-        //^feh
-        //account does not exist
-        todo!()
-    }
-    let password = &result.get(0).unwrap().password;
-    let password_salt = &result.get(0).unwrap().password_salt;
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_html_stderr()};
+    let Some(Account{password, password_salt, ..}) = result.get(0) else { return RainError::for_html_stderr()};
 
-    if !verify_password(&self_password, password, password_salt).unwrap(){
-        //^feh
-        todo!()
+    let Ok(passwords_match) = verify_password(&self_password, password, password_salt) else { return RainError::for_html_stderr()};
+
+    if !passwords_match{
+        return RainError::for_html("Passwords do not match!");
     }
 
     let transferdata = TransferData{credits, self_username, to_username};
@@ -539,7 +520,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    sole_query(&mut db, surrealql, transferdata).await.unwrap();
+    let Ok(..) = sole_query(&mut db, surrealql, transferdata).await else { return RainError::for_html_stderr()};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
@@ -576,18 +557,17 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     // let current_email_stored =
     let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
-    let q1 = query_once::<Account>(&mut *db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await.unwrap();
-    let q2 = q1.get(0).unwrap();
+    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_html_stderr()};
+    let Some(q2) = q1.get(0) else { return RainError::for_html_stderr()};
     if q2.email != current_email_input{
-        //^feh
-        return HttpResponse::Conflict().finish();
+        return RainError::for_html("Emails do not match!");
     }
     //use current_email_input to email
     use rand::Rng;
-    let code = rand::thread_rng().gen_range(100000..1000000);
-    settings_transmission_transmit(&session, code.to_string()).unwrap();
-    settings_verification_email(&q2.email, &q2.displayname, &new_email, code).unwrap();
-    transmission_transmit("set", &session, new_email).unwrap();
+    let code = rand::thread_rng().gen_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
+    let Ok(..) = settings_transmission_transmit(&session, code.to_string()) else { return RainError::for_html_stderr()};
+    let Ok(..) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code) else { return RainError::for_html_stderr()};
+    let Ok(..) = transmission_transmit("set", &session, new_email) else { return RainError::for_html_stderr()};
 
     HttpResponse::Ok().body(EMAIL_CHANGE_VERIFY)
 }
@@ -598,18 +578,19 @@ fn settings_verification_email(email: &String, displayname: &String, new_email: 
 }
 
 #[post("/ve_set")]
-pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
-    let transmitter = settings_transmission_receive(&session).unwrap();
+pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, data: Data<AppData>) -> impl Responder{
+    let Ok(transmitter) = settings_transmission_receive(&session) else { return RainError::for_html_stderr() };
     //Remove it one case yet obtain it in another
-    let new_email: String = transmission_receive("set", &session).unwrap();
+    let new_email: String = if let Ok(i) = transmission_receive("set", &session) {i} else { return RainError::for_html_stderr()};
+    
+    let Ok(password_matches) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_html_stderr()};
 
-    if !verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt).unwrap(){
-        //^feh
-        return HttpResponse::Conflict().finish();
+    if !password_matches{
+        return RainError::for_html("Passwords do not match!");
     }
 
     let mut db = data.db.lock().await;
-    sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.unwrap();
+    let Ok(..) = sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await else { return RainError::for_html_stderr()};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
