@@ -11,6 +11,7 @@ use cmd::jobs::*;
 use cmd::profile::*;
 use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats};
 mod db;
+use cmd::sites::NOUSER;
 use db::setup_db;
 mod img;
 
@@ -49,25 +50,29 @@ macro_rules! wapp {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let db = setup_db().await.unwrap();
+    #[allow(clippy::expect_used)]
+    let db = setup_db().await.expect("Database connection error.");
     let app_state = web::Data::new(AppData {
         db: Arc::new(Mutex::new(db.clone())),
     });
 
     // key needs to be generated outside the closure or else each worker gonna get a diff key
-    let key = Key::try_generate().unwrap();
+    let key = Key::generate();
     HttpServer::new(move|| {
         wapp!(
             App::new()
             .wrap(IdentityMiddleware::builder()
-                .visit_deadline(Some(Duration::days(30).to_std().unwrap()))
-                .login_deadline(Some(Duration::days(365).to_std().unwrap()))
+                .visit_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(30).to_std().unwrap()))
+                .login_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(365).to_std().unwrap()))
                 .build()
             )
             .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()
-            ).build())
+            ).build()).wrap(
+                actix_web::middleware::ErrorHandlers::new()
+                .handler(actix_web::http::StatusCode::NOT_FOUND, not_found)
+            )
             .service(actix_files::Files::new("/temp", "./temp").show_files_listing())
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
@@ -98,6 +103,22 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+
+use actix_web::{middleware::ErrorHandlerResponse, dev::ServiceResponse};
+fn not_found<B>(res: ServiceResponse<B>) -> actix_web::error::Result<ErrorHandlerResponse<B>> {
+    // split service response into request and response components
+    let (req, res) = res.into_parts();
+  
+    // set body of response to modified body
+    let res = res.set_body(NOUSER);
+  
+    // modified bodies need to be boxed and placed in the "right" slot
+    let res = ServiceResponse::new(req, res)
+        .map_into_boxed_body()
+        .map_into_right_body();
+  
+    Ok(ErrorHandlerResponse::Response(res))
 }
 
 use std::sync::Arc;

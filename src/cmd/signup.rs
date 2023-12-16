@@ -250,9 +250,8 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
     }
     
     let code = rand::thread_rng().gen_range(100000..1000000);
-    // transmission_transmit("signup", &session, code).unwrap();
     let Ok(..) = login_transmission_transmit(&session, code.to_string()) else { return r::for_html_stderr()};
-    let Ok(..) = confirmation_email(&account.email, &account.displayname, code) else { return r::for_html_stderr()};
+    let Ok(..) = confirmation_email(&account.email, &account.displayname, code) else { return r::for_html("Error sending email.") };
     let Ok(..) = transmission_transmit("log", &session, account.username.clone()) else { return r::for_html_stderr()};
     HttpResponse::Ok().body(EMAIL_LOG)
     // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)

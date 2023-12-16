@@ -20,11 +20,8 @@ pub struct JobData{
 pub struct Job{
     title: String,
     body: String,
-    // location: Location, todo!()
     time: DateTime<Utc>,
-    // price: crate::structs::Money,
     price: u64, 
-    // username: String, left in favor for the record link on user
     location: String,
 }
 impl Job{
@@ -82,7 +79,11 @@ struct JobUsername{
 
 
 #[get("/jobs/{id}")]
-pub async fn jobs(_: actix_web::web::Path<String>) -> impl Responder{
+pub async fn jobs(jobid: actix_web::web::Path<String>, data: Data<AppData>) -> impl Responder{
+    let Ok(res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::thing("jobs", $id) FETCH user.accounts;"#, ("id", jobid.into_inner())).await else { return RainError::for_html_stderr()};
+    if res1.len() != 1{
+        return HttpResponse::Ok().body(super::sites::NOUSER);
+    }
     HttpResponse::Ok().body(super::sites::JOBS)
 }
 
