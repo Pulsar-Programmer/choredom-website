@@ -1,4 +1,4 @@
-use crate::{db::{sole_query, query_once, extract_first, query_once_option}, AppData, img::process_multipart, RainError};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, img::process_multipart, RainError};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
@@ -321,7 +321,9 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    crate::img::process_multipart(form, container).await.unwrap();
+    if crate::img::process_multipart(form, container).await.is_err() {
+        return todo!()
+    };
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
