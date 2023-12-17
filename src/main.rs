@@ -95,7 +95,7 @@ async fn main() -> std::io::Result<()> {
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
             delete_rating,
-            pics_bio, pics_pfp, pics_chats
+            pics_bio, pics_pfp, pics_chats //last time check of #143
             // ,test
         )
         .app_data(app_state.clone())

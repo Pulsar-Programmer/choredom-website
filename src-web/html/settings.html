@@ -3,10 +3,10 @@
 </head>
   <form action="/settings-post" method="POST">
     <label for="username">Username:</label><br>
-    <input type="text" id="username" name="username"pattern="[A-Za-z0-9]+" title="Should only contain letters and numbers"required><br>
+    <input type="text" id="username" name="username"pattern="^[A-Za-z0-9]+$" title="Should only contain letters and numbers"required><br>
 
     <label for="displayname">Display Name:</label><br>
-    <input type="text" id="displayname" name="displayname"pattern="[A-Za-z0-9 ]+"title="Should only contain letters, spaces, and numbers"required><br>
+    <input type="text" id="displayname" name="displayname"pattern="^[A-Za-z0-9 ]+$"title="Should only contain letters, spaces, and numbers"required><br>
 
     <div id="dropdown">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
@@ -19,7 +19,7 @@
     </div>
 
     <label for="bio">Bio:</label><br>
-    <textarea id="bio" name="bio"pattern="[A-Za-z0-9 ]+" title="Should only contain letters, spaces and numbers"></textarea><br>
+    <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea><br>
     <input type="submit" value="Submit">
   </form>
 

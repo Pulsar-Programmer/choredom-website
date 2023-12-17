@@ -244,8 +244,9 @@ pub async fn login() -> impl Responder{
 pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
     let LoginData { email, password } = form.into_inner();
 
-    let true = satisfies_email(&email) else { return r::for_html("Invalid email!")};
-    let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
+    // let true = satisfies_email(&email) else { return r::for_html("Invalid email!")};
+    // let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
+    //we don't actually need this since we match agnst the databse
 
     let email = email.trim();
     let mut db = data.db.lock().await;
@@ -414,28 +415,27 @@ pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &st
     Ok(serde_json::from_str(&value)?)
 }
 
-
 use regex::Regex;
-fn satisfies_username(username: &str) -> bool{
+pub fn satisfies_username(username: &str) -> bool{
     satisfies(username, "^[A-Za-z0-9]+$")
 }
 
-fn satisifies_password(password: &str) -> bool{
+pub fn satisifies_password(password: &str) -> bool{
     satisfies(password, r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$")
 }
 
-fn satisfies_email(email: &str) -> bool{
+pub fn satisfies_email(email: &str) -> bool{
     satisfies(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$")
 }
 
-fn satisfies_displayname(displayname: &str) -> bool{
+pub fn satisfies_displayname(displayname: &str) -> bool{
     satisfies(displayname, "^[A-Za-z0-9 ]+$")
 }
 
 fn satisfies(string: &str, regex: &str) -> bool{
     // let regex = format!("/{regex}/g");
     #[allow(clippy::unwrap_used)]
-    let re = Regex::new(&regex).unwrap();
+    let re = Regex::new(regex).unwrap();
     re.is_match(string)
 }
 

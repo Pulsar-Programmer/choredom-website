@@ -1,4 +1,4 @@
-use crate::{db::{sole_query, query_once}, AppData, img::process_multipart, RainError};
+use crate::{db::{sole_query, query_once, extract_first, query_once_option}, AppData, img::process_multipart, RainError};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
@@ -6,6 +6,7 @@ use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
 use rust_decimal::prelude::ToPrimitive;
+use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
 #[get("/users/{username}")]
 pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
@@ -31,7 +32,6 @@ struct UsersFrontData<'a>{
 #[post("/obtain_profile")]
 pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>) -> impl Responder{
     let username = username.into_inner();
-    //^feh how do we handle what if the username is invalid, we must report this to the JS and not load the page or something
     let mut db = app_data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return RainError::for_js("Issue with DB Queries.");
@@ -227,6 +227,11 @@ pub struct SettingsData{
     bio: String,
     // pfp_pic: 
 }
+impl SettingsData{
+    fn is_valid(&self) -> bool{
+        satisfies_displayname(&self.displayname) && satisfies_username(&self.username)
+    }
+}
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SettingsData2{
@@ -284,6 +289,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
 #[post("/settings-post")]
 pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
+    let true = settings_data.is_valid() else { return RainError::for_js_user("Invalid given data.") };
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     //edit stuff NOT together, as in, independently?
 
@@ -355,6 +361,7 @@ struct PasswordChangeData{
 pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>, identity: Option<Identity>) -> impl Responder{
 
     let PasswordData { p_old, p_new } = form.into_inner();
+    let true = satisifies_password(&p_new) else { return RainError::for_html("Invalid given new password!")};
 
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
@@ -505,10 +512,14 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
 
 
     let mut db = data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_html_stderr()};
-    let Some(Account{password, password_salt, ..}) = result.get(0) else { return RainError::for_html_stderr()};
 
-    let Ok(passwords_match) = verify_password(&self_password, password, password_salt) else { return RainError::for_html_stderr()};
+    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_html_stderr()};
+
+    if balance < credits {
+        return RainError::for_html("You cannot give more than you have! Add some funds in order to transfer that much!");
+    }
+
+    let Ok(passwords_match) = verify_password(&self_password, &password, &password_salt) else { return RainError::for_html_stderr()};
 
     if !passwords_match{
         return RainError::for_html("Passwords do not match!");
@@ -520,7 +531,7 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    let Ok(..) = sole_query(&mut db, surrealql, transferdata).await else { return RainError::for_html_stderr() };
+    if sole_query(&mut db, surrealql, transferdata).await.is_err() { return RainError::for_html_stderr() };
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
 }
@@ -554,6 +565,10 @@ pub struct EmailData{
 #[post("/settings/email/form")]
 pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
     let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
+    if !satisfies_email(&new_email){
+        return RainError::for_html("The new email does not exist!")
+    }
+
     // let current_email_stored =
     let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
@@ -590,7 +605,7 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
     }
 
     let mut db = data.db.lock().await;
-    let Ok(..) = sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await else { return RainError::for_html_stderr()};
+    if sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.is_ok() { return RainError::for_html_stderr()};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
 }
