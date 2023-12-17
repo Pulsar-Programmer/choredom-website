@@ -560,16 +560,16 @@ pub async fn email_change(identity: Option<Identity>) -> impl Responder{
 pub struct EmailData{
     e_old: String,
     e_new: String,
+    password: String,
 }
 
 #[post("/settings/email/form")]
 pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
-    let EmailData { e_old: current_email_input, e_new: new_email } = form.into_inner();
+    let EmailData {e_old:current_email_input,e_new:new_email, password: entered_pass } = form.into_inner();
     if !satisfies_email(&new_email){
         return RainError::for_html("The new email does not exist!")
     }
 
-    // let current_email_stored =
     let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
     let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_html_stderr()};
@@ -577,6 +577,12 @@ pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, a
     if q2.email != current_email_input{
         return RainError::for_html("Emails do not match!");
     }
+    
+    let Ok(passwords_match) = verify_password(&entered_pass, &q2.password, &q2.password_salt) else { return RainError::for_html_stderr() };
+    if !passwords_match{
+        return RainError::for_html("Password is incorrect!");
+    }
+
     //use current_email_input to email
     use rand::Rng;
     let code = rand::thread_rng().gen_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6

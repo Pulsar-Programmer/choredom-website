@@ -8,10 +8,13 @@
 
     <form id="emailForm" method="post" action="/settings/email/form">
         <label for="currentemail">Current email:</label><br>
-        <input type="Email" id="currentemail" name="e_old" required><br>
+        <input type="email" id="currentemail" name="e_old" required><br>
 
-        <label for="newPassword">New email:</label><br>
+        <label for="newEmail">New email:</label><br>
         <input id="newEmail" name="e_new" type="email"pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Should only contain valid characters only"required><br>
+
+        <label for="currentPassword">Current Password:</label><br>
+        <input name="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"> 
 
         <input type="submit" value="Change Email">
     </form>
