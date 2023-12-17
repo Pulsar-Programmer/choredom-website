@@ -108,6 +108,12 @@ pub async fn signup() -> impl Responder{
 #[post("/verify-email")]
 pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
+    let true = satisfies_displayname(&displayname) else { return r::for_html("Invalid displayname!")};
+    let true = satisfies_username(&username) else { return r::for_html("Invalid username!")};
+    let true = satisfies_email(&to_email) else { return r::for_html("Invalid email!")};
+    let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
+    //how much let is too much let? when does pattern matching become TOO op?
+
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_html_stderr()};
@@ -236,8 +242,11 @@ pub async fn login() -> impl Responder{
 
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
 pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
-    //Send email?
     let LoginData { email, password } = form.into_inner();
+
+    let true = satisfies_email(&email) else { return r::for_html("Invalid email!")};
+    let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
+
     let email = email.trim();
     let mut db = data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_html_stderr()};
@@ -404,3 +413,30 @@ pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &st
     let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
     Ok(serde_json::from_str(&value)?)
 }
+
+
+use regex::Regex;
+fn satisfies_username(username: &str) -> bool{
+    satisfies(username, "^[A-Za-z0-9]+$")
+}
+
+fn satisifies_password(password: &str) -> bool{
+    satisfies(password, r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$")
+}
+
+fn satisfies_email(email: &str) -> bool{
+    satisfies(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$")
+}
+
+fn satisfies_displayname(displayname: &str) -> bool{
+    satisfies(displayname, "^[A-Za-z0-9 ]+$")
+}
+
+fn satisfies(string: &str, regex: &str) -> bool{
+    // let regex = format!("/{regex}/g");
+    #[allow(clippy::unwrap_used)]
+    let re = Regex::new(&regex).unwrap();
+    re.is_match(string)
+}
+
+// fn sanitize()
