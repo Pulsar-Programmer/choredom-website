@@ -415,7 +415,7 @@ pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &st
     Ok(serde_json::from_str(&value)?)
 }
 
-use regex::Regex;
+use fancy_regex::Regex;
 pub fn satisfies_username(username: &str) -> bool{
     satisfies(username, "^[A-Za-z0-9]+$")
 }
@@ -436,7 +436,7 @@ fn satisfies(string: &str, regex: &str) -> bool{
     // let regex = format!("/{regex}/g");
     #[allow(clippy::unwrap_used)]
     let re = Regex::new(regex).unwrap();
-    re.is_match(string)
+    re.is_match(string).unwrap_or(false)
 }
 
 // fn sanitize()
