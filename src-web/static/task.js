@@ -89,14 +89,14 @@ function get_location_data(){
         },
         body: JSON.stringify(location),
     })
-    .then(error)
+    .then(handle)
     .then(jobsData => {
         console.log('Location Success:', jobsData);
         
         console.log('Jobs Success:', jobsData);
         displayJobs(jobsData);
     })
-    .catch(console_alert);
+    .catch(notify);
 }
 
 
@@ -123,7 +123,7 @@ function searchPosts() {
         },
         body: JSON.stringify({ location: searchQuery }),
     })
-    .then(error)
+    .then(handle)
     .then(jobsData => {
         console.log('Jobs Success:', jobsData);
 
@@ -134,5 +134,5 @@ function searchPosts() {
 
         displayJobs(filteredJobs);
     })
-    .catch(console_alert);
+    .catch(notify);
 }

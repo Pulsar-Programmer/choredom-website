@@ -33,9 +33,9 @@ function settings_post(){
         },
         body: JSON.stringify(data), 
     })
-    .then(error)
+    .then(handle)
     .then(data => console.log(data))
-    .catch(console_alert);
+    .catch(notify);
 }
 
 
@@ -60,11 +60,11 @@ window.addEventListener("load", function() {
             'Content-Type': 'application/json',
         },
     })
-    .then(error)
+    .then(handle)
     .then(data => {
         prefill(data.username, data.displayname, data.location, data.bio)
     })
-    .catch(console_alert);
+    .catch(notify);
 
 });
 

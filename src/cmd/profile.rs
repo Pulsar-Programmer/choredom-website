@@ -613,9 +613,9 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
     }
 
     let mut db = data.db.lock().await;
-    if sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.is_ok() { return RainError::for_html_stderr()};
+    if sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.is_err() { return RainError::for_html_stderr()};
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/operation_successful")).body(super::sites::SUCCESS)
 }
 
 

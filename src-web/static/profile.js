@@ -12,11 +12,11 @@ window.addEventListener("load", function() {
         },
         body: JSON.stringify(newPath),
     })
-    .then(error)
+    .then(handle)
     .then(data => {
         prefill_profile(data);
     })
-    .catch(console_alert);
+    .catch(notify);
     // yuh cuh fella
 });
 
@@ -68,11 +68,11 @@ function submitReviewForm(){
         },
         body: JSON.stringify(value),
     })
-    .then(error)
+    .then(handle)
     .then(data => {
         displayRatingHTML(data.stars, data.rater, data.body);
     })
-    .catch(console_alert);
+    .catch(notify);
 
 }
 
@@ -85,7 +85,7 @@ function delete_rating(){
             'Content-Type': 'application/json',
         },
     })
-    .then(error)
+    .then(handle)
     .then(data => {
         // let str = String(data);
         // console.log(data);
@@ -101,5 +101,5 @@ function delete_rating(){
             }
         });
     })
-    .catch(console_alert);
+    .catch(notify);
 }

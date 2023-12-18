@@ -8,8 +8,8 @@ document.getElementById("signout-button").addEventListener("click", function() {
             'Content-Type': 'application/json',
         },
     })
-    .then(error)
+    .then(handle)
     // .then(data => data)
-    .catch(console_alert);
+    .catch(notify);
 
 });

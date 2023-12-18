@@ -12,12 +12,12 @@ window.onload = function() {
         },
         body: JSON.stringify(newPath),
     })
-    .then(error)
+    .then(handle)
     .then(jobsData => {
         console.log('Jobs Success:', jobsData);
         displayJob(jobsData);
     })
-    .catch(console_alert);
+    .catch(notify);
 }
   
 function displayJob(job){

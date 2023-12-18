@@ -162,6 +162,9 @@ impl RainError{
     pub fn for_html_stderr() -> HttpResponse{
         HttpResponse::BadRequest().body(cmd::sites::ERRHTML)
     }
+    pub fn for_see_other(message: impl ToString, header: &str) -> HttpResponse{
+        HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, header)).body(message.to_string())
+    }
 }
 // impl From<RainError> for HttpResponse{
 //     fn from(value: RainError) -> Self {

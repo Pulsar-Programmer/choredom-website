@@ -30,7 +30,8 @@ pub mod sites{
         CHATNAV; "chat-nav",
         NOLOG; "nolog",
         NOUSER; "nouser",
-        ERRHTML; "error"
+        ERRHTML; "error",
+        SUCCESS; "success"
     );
 }
 
