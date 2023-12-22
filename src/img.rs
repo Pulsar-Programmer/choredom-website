@@ -4,39 +4,57 @@ use std::fs::File;
 ///Container should have the path from /temp/ onwards, including what the name of the file should be.
 ///Returns a vector of the processed filepaths.
 ///Maybe in the future return a vector of the processed FILES if needed.
-pub async fn process_multipart(mut form: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
+pub async fn process_multipart(mut payload: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
     use futures::TryStreamExt;
     use futures::StreamExt;
     use std::io::Write;
     use actix_web::web;
-    let mut num = 0;
-    // iterate over multipart stream
-    while let Some(mut field) = form.try_next().await? {
-        let filepath = format!("/temp/{}_{}", container, num);
+    
+    
 
-        use image::ImageFormat;
-        use std::path::Path;
+    use image::ImageFormat;
+    use std::path::Path;
 
-        //if a format can be created without issue, the file is a successful image only
-        let content_disposition = field.content_disposition();
-        let format = ImageFormat::from_path(Path::new(&content_disposition.get_filename().ok_or("Filename processing error.")?))?;
-
-        match format{
-            ImageFormat::Png | ImageFormat::Jpeg => {},
-            _ => return Err("Only PNG and JPEG allowed!".into()),
-        }
-
-        let file_ref = filepath.clone();
-        //remember to either throw an error or change the file name when uploading file names that are different.
-        let mut f = web::block(|| std::fs::File::create(file_ref)).await??;
+    
+    let mut n = 0;
+    // Iterate over the multipart stream
+    while let Some(item) = payload.next().await {
+        let mut field = item?;
         
-        while let Some(Ok(chunk)) = field.next().await {
-            f = web::block(move || f.write_all(&chunk).map(|_| f)).await??;
+        let path = format!("/tmp/{}_{}", container, n);
+
+        // Create a new file with the given filename
+        let mut file = File::create(path.clone())?;
+        // Write the bytes from the field to the file
+        while let Some(chunk) = field.next().await {
+            let data = chunk?;
+            file.write_all(&data)?;
         }
 
-        upload_file(f).await;
-        num += 1;
+        let img = match image::open(path.clone()) {
+            Ok(img) => img,
+            Err(_) => {
+                std::fs::remove_file(path.clone())?;
+                return Err("Only PNG and JPEG allowed!".into())
+            }, // Skip this file if it's not a valid image
+        };
+
+        match img.color() {
+            image::ColorType::Rgba8 | image::ColorType::Rgb8 => {},
+            _ => {
+                // Delete the file if it's not a PNG or JPEG
+                std::fs::remove_file(path.clone())?;
+                return Err("Only PNG and JPEG allowed!".into())
+            },
+        };
+
+ 
+        // Save the converted image
+        // img.save(format!("{}_converted.png", path))?;
+        // upload_file(f).await;
+        n += 1;
     }
+    
     Ok(())
 }
 
@@ -45,8 +63,30 @@ pub async fn upload_file(_f: File){
     //next delete it when that finishes
     //return the link to where it is located within the JS (or  just come up with a coherent system of working it)
     // todo!();
+    //std::fs::delete_file(path) will delete img.
     println!("A file has been deposited and created.");
 }
+
+
+
+
+
+
+// #[derive(actix_multipart::form::MultipartForm)]
+// struct ImageUpload{
+//     inner: actix_multipart::form::tempfile::TempFile,
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

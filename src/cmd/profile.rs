@@ -321,9 +321,7 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    if crate::img::process_multipart(form, container).await.is_err() {
-        return todo!()
-    };
+    crate::img::process_multipart(form, container).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
