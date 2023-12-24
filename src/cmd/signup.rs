@@ -288,7 +288,7 @@ pub async fn home_redirect_login(session: Session, code: Form<Code>, request: Ht
 #[post("/signout")]
 pub async fn signout(identity: Option<Identity>) -> impl Responder{
     let Some(identity) = identity else { return r::for_js_user("Sign in to first sign out!")};
-
+    
     println!("Goodbye: {:?}!", logout_user(identity));
 
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
@@ -412,6 +412,7 @@ pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &acti
 pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
     let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
+    session.purge();
     Ok(serde_json::from_str(&value)?)
 }
 
