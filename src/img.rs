@@ -1,6 +1,8 @@
 use std::fs::File;
 use futures::StreamExt;
+use futures_util::{StreamExt as s, TryStreamExt};
 use std::io::Write;
+use std::sync::Arc;
 
 ///Processes the multipart extractor of Actix for images only.
 ///Container should have the path from /temp/ onwards, including what the name of the file should be.
@@ -8,12 +10,13 @@ use std::io::Write;
 ///Maybe in the future return a vector of the processed FILES if needed.
 pub async fn process_multipart(mut payload: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
 
-    
+    println!("a");
     let mut n = 0;
     // Iterate over the multipart stream
-    while let Some(item) = payload.next().await {
-        let mut field = item?;
-        
+    while let Some(mut field) = payload.try_next().await.unwrap() {
+        println!("b");
+        // let mut field = item?;
+        println!("c");
         let content_length = match field.headers().get("Content-Length") {
             Some(h) => match h.to_str() {
                 Ok(s) => match s.parse::<usize>() {
@@ -24,22 +27,31 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
             },
             None => return Err("Missing Content-Length header".into()),
         };
-
+        println!("1");
         if content_length > 5 * 1024 * 1024 {
             return Err("File size limit exceeded".into());
         }
 
         let path = if n == 0 {format!("/tmp/{}", container)} else {format!("/tmp/{}_{}", container, n)};
-
-        // Create a new file with the given filename
-        let mut file = File::create(path.clone())?;
-
+        println!("2");
         // Write the bytes from the field to the file
         while let Some(chunk) = field.next().await {
             let data = chunk?;
-            file.write_all(&data)?;
+            // Write bytes to file using spawn_blocking
+            let path = path.clone();
+            let mut f = File::create(path).map_err(|e|e.to_string())?;
+            println!("3");
+            //we previously used actix_rt::task::spawn_blocking
+            let _ = actix_rt::task::spawn_blocking(move|| -> Result<(), String> {
+                f.write_all(&data).map_err(|e|e.to_string())?;
+                println!("4");
+                Ok(())
+            }).await?;
         }
 
+        // Create a new file with the given filename
+        let file = File::create(path.clone())?;
+        println!("5");
         let img = match image::open(path.clone()) {
             Ok(img) => img,
             Err(_) => {
@@ -47,7 +59,7 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
                 return Err("Only PNG and JPEG allowed!".into())
             }, // Skip this file if it's not a valid image
         };
-
+        println!("6");
         match img.color() {
             image::ColorType::Rgba8 | image::ColorType::Rgb8 => {},
             _ => {
@@ -56,11 +68,10 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
                 return Err("Only PNG and JPEG allowed!".into())
             },
         };
-
- 
+        println!("7");
+        upload_file(file).await;
         // Save the converted image
         // img.save(format!("{}_converted.png", path))?;
-        // upload_file(f).await;
         n += 1;
     }
     
