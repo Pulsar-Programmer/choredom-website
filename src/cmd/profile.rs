@@ -639,12 +639,12 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 
 #[post("/settings/pics-pfp")]
-pub async fn pics_pfp(mut form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = match unwrap_identity(user){
         Ok(r) => r,
         Err(x) => return RainError::for_html(x),
     };
-    
+
     let mut db = data.db.lock().await;
     process_multipart(form, format!("pfp/{user}/pfp")).await.unwrap();
     let url = format!("/temp/pfp/{user}/pfp");

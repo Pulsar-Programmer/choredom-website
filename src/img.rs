@@ -1,15 +1,13 @@
 use std::fs::File;
-use futures::StreamExt;
-use futures_util::{StreamExt as s, TryStreamExt};
-use std::io::Write;
-use std::sync::Arc;
+use futures::StreamExt as _;
+use futures_util::TryStreamExt as _;
+use std::io::Write as _;
 
 ///Processes the multipart extractor of Actix for images only.
 ///Container should have the path from /temp/ onwards, including what the name of the file should be.
 ///Returns a vector of the processed filepaths.
 ///Maybe in the future return a vector of the processed FILES if needed.
 pub async fn process_multipart(mut payload: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
-
     println!("a");
     let mut n = 0;
     // Iterate over the multipart stream
@@ -28,7 +26,7 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
             None => return Err("Missing Content-Length header".into()),
         };
         println!("1");
-        if content_length > 2 * 1024 * 1024 {
+        if content_length > 20 * 1024 * 1024 {
             return Err("File size limit exceeded".into());
         }
 

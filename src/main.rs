@@ -61,7 +61,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move|| {
         wapp!(
             App::new()
-            .app_data(web::PayloadConfig::new(2 * 1024 * 1024)) // Set limit to 10MB
+            .app_data(web::PayloadConfig::new(20 * 1024 * 1024)) // Set limit to 10MB
             .wrap(IdentityMiddleware::builder()
                 .visit_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(30).to_std().unwrap()))
                 .login_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(365).to_std().unwrap()))
