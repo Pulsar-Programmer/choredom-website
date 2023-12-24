@@ -98,6 +98,7 @@ async fn main() -> std::io::Result<()> {
             delete_rating,
             pics_bio, pics_pfp, pics_chats //last time check of #143
             // ,test
+            , save_files
         )
         .app_data(app_state.clone())
     })

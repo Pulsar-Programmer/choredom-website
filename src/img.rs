@@ -77,6 +77,34 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
     Ok(())
 }
 
+use actix_multipart::form::{tempfile::TempFile, MultipartForm};
+
+#[derive(MultipartForm)]
+struct ImageUpload {
+    image: TempFile,
+}
+
+async fn process_form(form: MultipartForm<ImageUpload>) -> Result<(), Box<dyn std::error::Error>> {
+    if form.image.size > 20 * 1024 * 1024 { // 20 MB
+        return Err("File is too large".into());
+    }
+    
+    let mime_type = form.into_inner().image.content_type.unwrap();
+    println!("{}", mime_type);
+    // if  {
+    //     return Err("Invalid file type".into());
+    // }
+    // let file = File::create(path.clone())?;
+    // upload_file(file).await;
+    
+
+    Ok(())
+}
+
+
+
+
+
 pub async fn upload_file(_f: File){
     //upload the file to some unknown destination (google drive, etc.)
     //next delete it when that finishes
