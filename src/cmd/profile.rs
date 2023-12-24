@@ -682,7 +682,7 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
 use actix_multipart::form::MultipartForm;
 use actix_multipart::form::tempfile::TempFile;
 #[derive(Debug, MultipartForm)]
-struct UploadForm{
+pub struct UploadForm{
     #[multipart(rename="file")]
     files: Vec<TempFile>,
 }
@@ -690,10 +690,15 @@ struct UploadForm{
 #[post("/images")]
 pub async fn save_files(MultipartForm(form): MultipartForm<UploadForm>) -> impl Responder{
     for f in form.files{
-        let path = format!("./tmp/");
-        f.file.persist("./tmp/").unwrap();
+        let path = format!("./tmp/{}", f.file_name.unwrap());
+        if let Err(e) = f.file.persist(path){
+            println!("{e}");
+            return RainError::for_js_user(e);
+        }
+        println!("4");
     }
-    HttpResponse::Ok()
+    println!("5");
+    HttpResponse::Ok().finish()
 }
 
 

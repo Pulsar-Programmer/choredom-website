@@ -84,9 +84,15 @@ struct ImageUpload {
     image: TempFile,
 }
 
+#[derive(Debug, MultipartForm)]
+pub struct UploadForm{
+    #[multipart(rename="file")]
+    images: Vec<TempFile>,
+}
+
 async fn process_form(form: MultipartForm<ImageUpload>) -> Result<(), Box<dyn std::error::Error>> {
     if form.image.size > 20 * 1024 * 1024 { // 20 MB
-        return Err("File is too large".into());
+        return Err("File is too large!".into());
     }
     
     let mime_type = form.into_inner().image.content_type.unwrap();
@@ -100,6 +106,7 @@ async fn process_form(form: MultipartForm<ImageUpload>) -> Result<(), Box<dyn st
 
     Ok(())
 }
+
 
 
 

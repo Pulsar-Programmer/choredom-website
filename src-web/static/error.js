@@ -4,24 +4,15 @@ function handle(response) {
         window.location.href = response.headers.get('Location');
     }
     if (!response.ok) {
-        throw new Error(`${answer.message}`);
+        throw {msg: answer.message, for_user: answer.for_user};
     }
     return answer;
 }
 
-// function alert_error(error){
-//     alert(error);
-// }
-
-// function console_error(error){
-//     console.log(error);
-// }
-
 function notify(error){
+    var error = error.json();
     if(error.for_user){
-        alert(error);
-        console.log(error);
-    } else {
-        console.log(error);
+        alert(answer.msg);
     }
+    console.log(answer.msg);
 }

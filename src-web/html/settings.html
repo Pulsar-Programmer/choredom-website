@@ -23,11 +23,11 @@
     <input type="submit" value="Submit">
   </form>
 
-  <form action="/images" method="POST" enctype="multipart/form-data">
+  <div>
     Profile Picture:
-    <input type="file" accept=".jpg, .jpeg, .png" max-size="20MB"><br>
-    <input type="submit" value="Submit Profile Picture">
-  </form>
+    <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp"><br>
+    <button onclick="upload()">Submit Profile Picture</button>
+  </div>
 
   <form action="/settings/pics-bio" method="POST" enctype="multipart/form-data">
     Bio Picture(s):

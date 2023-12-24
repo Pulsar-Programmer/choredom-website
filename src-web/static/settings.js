@@ -91,3 +91,22 @@ function prefill(username, displayname, location, bio){
     selectize.setValue(location);
     console.log(location, selectize, selectElement)
 }
+
+
+
+
+
+
+
+
+function upload(){
+    const fileInputElement = document.getElementById("file_upload_pfp");
+    let formData = new FormData();
+    formData.append('file', fileInputElement.files[0], 'filename.jpg');
+    fetch('/images', {
+        method: 'POST',
+        body: formData
+    })
+    .then(handle)
+    .catch(notify);
+}

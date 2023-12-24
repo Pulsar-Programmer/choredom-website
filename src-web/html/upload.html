@@ -9,14 +9,7 @@
 <h2>This will be reviewed for validity<h2>
 <form action="/settings/upload/form" method="post" enctype="multipart/form-data">
     <input type="file" accept=".jpg, .jpeg, .png" max-size="20MB">
-    <input type="button" value="Skip" id="skip-button">
     <input type="submit" value="Upload">
 </form>
-
-<script>
-document.getElementById("skip-button").addEventListener("click", function() {
-document.getElementById("file").value = "";
-});
-</script>
 </body>
 </html>
