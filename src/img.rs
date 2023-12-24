@@ -1,19 +1,12 @@
 use std::fs::File;
+use futures::StreamExt;
+use std::io::Write;
 
 ///Processes the multipart extractor of Actix for images only.
 ///Container should have the path from /temp/ onwards, including what the name of the file should be.
 ///Returns a vector of the processed filepaths.
 ///Maybe in the future return a vector of the processed FILES if needed.
 pub async fn process_multipart(mut payload: actix_multipart::Multipart, container: String) -> Result<(), Box<dyn std::error::Error>>{
-    use futures::TryStreamExt;
-    use futures::StreamExt;
-    use std::io::Write;
-    use actix_web::web;
-    
-    
-
-    use image::ImageFormat;
-    use std::path::Path;
 
     
     let mut n = 0;
@@ -21,10 +14,26 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
     while let Some(item) = payload.next().await {
         let mut field = item?;
         
-        let path = format!("/tmp/{}_{}", container, n);
+        let content_length = match field.headers().get("Content-Length") {
+            Some(h) => match h.to_str() {
+                Ok(s) => match s.parse::<usize>() {
+                    Ok(n) => n,
+                    Err(_) => return Err("Invalid Content-Length".into()),
+                },
+                Err(_) => return Err("Invalid header value".into()),
+            },
+            None => return Err("Missing Content-Length header".into()),
+        };
+
+        if content_length > 5 * 1024 * 1024 {
+            return Err("File size limit exceeded".into());
+        }
+
+        let path = if n == 0 {format!("/tmp/{}", container)} else {format!("/tmp/{}_{}", container, n)};
 
         // Create a new file with the given filename
         let mut file = File::create(path.clone())?;
+
         // Write the bytes from the field to the file
         while let Some(chunk) = field.next().await {
             let data = chunk?;
@@ -69,13 +78,6 @@ pub async fn upload_file(_f: File){
 
 
 
-
-
-
-// #[derive(actix_multipart::form::MultipartForm)]
-// struct ImageUpload{
-//     inner: actix_multipart::form::tempfile::TempFile,
-// }
 
 
 

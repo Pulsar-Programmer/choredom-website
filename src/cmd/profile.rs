@@ -640,18 +640,18 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
 pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
     // let mut db = data.db.lock().await; , data: Data<AppData>
-    let paths = std::fs::read_dir("./").unwrap();
-
-    let mut file_count = 0;
-    for path in paths {
-        let path = path.unwrap().path();
-        if path.is_file() {
-            file_count += 1;
+    if let Ok(paths) = std::fs::read_dir(format!("./tmp/bio/{user}")){
+        let mut file_count = 0;
+        for path in paths {
+            let path = path.unwrap().path();
+            if path.is_file() {
+                file_count += 1;
+            }
         }
-    }
-
-    if file_count >= 3{
-        return RainError::for_js_user("No uploading over 3 files!");
+        //get the amount of forms posted to ensure
+        if file_count >= 3{
+            return RainError::for_js_user("No uploading over 3 files!");
+        }
     }
 
     process_multipart(form, format!("bio/{user}/pics")).await.unwrap();
