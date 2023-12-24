@@ -42,6 +42,7 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
             let mut f = File::create(path).map_err(|e|e.to_string())?;
             println!("3");
             //we previously used actix_rt::task::spawn_blocking
+            //what the hell is the verdict on this: we can remove it?
             let _ = actix_rt::task::spawn_blocking(move|| -> Result<(), String> {
                 f.write_all(&data).map_err(|e|e.to_string())?;
                 println!("4");
