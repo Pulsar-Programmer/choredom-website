@@ -28,7 +28,7 @@ pub async fn process_multipart(mut payload: actix_multipart::Multipart, containe
             None => return Err("Missing Content-Length header".into()),
         };
         println!("1");
-        if content_length > 5 * 1024 * 1024 {
+        if content_length > 2 * 1024 * 1024 {
             return Err("File size limit exceeded".into());
         }
 

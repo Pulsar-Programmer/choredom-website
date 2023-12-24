@@ -5,6 +5,7 @@ use actix_identity::Identity;
 use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
+use futures_util::TryStreamExt as _;
 use rust_decimal::prelude::ToPrimitive;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
@@ -293,8 +294,25 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     //edit stuff NOT together, as in, independently?
 
+    let mut db: tokio::sync::MutexGuard<'_, surrealdb::Surreal<surrealdb::engine::remote::ws::Client>> = data.db.lock().await;
+    //I cannot believe I literally forgot to implement this feature
+    if settings_data.username != username{
+        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username", ("username", &settings_data.username)).await else { return RainError::for_html_stderr()};
+        if !v.is_empty(){
+            return RainError::for_html("This username is taken!");
+        }
+    }
+    let Ok(Some(a)) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &username)).await else { return RainError::for_html_stderr()};
+    if settings_data.displayname != a.displayname{
+        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE displayname=$displayname", ("displayname", &settings_data.displayname)).await else { return RainError::for_html_stderr()};
+        if !v.is_empty(){
+            return RainError::for_html("This displayname is taken!");
+        }
+    }
+    
+    //woah i forgot you could compose it like this... 
     let settings_data = SettingsData2::new(settings_data, username);
-
+    
     let surrealql = "UPDATE accounts SET
         displayname = $displayname,
         page.bio = $bio,
@@ -302,7 +320,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
         location = $location
     WHERE username = $username2;
     ";
-    let mut db = data.db.lock().await;
+    
     let Ok(..) = sole_query(&mut db, surrealql, settings_data).await else { return RainError::for_html_stderr()};
     //might get a runtime error bcs of surrealql since password field is unused?
 
@@ -621,12 +639,12 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 
 #[post("/settings/pics-pfp")]
-pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+pub async fn pics_pfp(mut form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = match unwrap_identity(user){
         Ok(r) => r,
         Err(x) => return RainError::for_html(x),
     };
-
+    
     let mut db = data.db.lock().await;
     process_multipart(form, format!("pfp/{user}/pfp")).await.unwrap();
     let url = format!("/temp/pfp/{user}/pfp");

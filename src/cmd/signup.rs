@@ -288,7 +288,7 @@ pub async fn home_redirect_login(session: Session, code: Form<Code>, request: Ht
 #[post("/signout")]
 pub async fn signout(identity: Option<Identity>) -> impl Responder{
     let Some(identity) = identity else { return r::for_js_user("Sign in to first sign out!")};
-    
+
     println!("Goodbye: {:?}!", logout_user(identity));
 
     HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
@@ -378,15 +378,6 @@ fn signup_transmission_receive(session: &actix_session::Session) -> Result<Email
     email_transmission_receive("signup", session)
 }
 
-// #[derive(Debug)]
-// struct ErrorString(String);
-// impl std::fmt::Display for ErrorString{
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         self.0.fmt(f)
-//     }
-// }
-// impl std::error::Error for ErrorString{}
-
 pub fn email_transmission_transmit(field:&str, session: &actix_session::Session, unhashed_code: String) -> Result<(), Box<dyn std::error::Error>>{
     let transmitter = EmailTransmitter::new(unhashed_code)?;
     transmission_transmit(field, session, transmitter)
@@ -412,7 +403,7 @@ pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &acti
 pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
     let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
-    session.purge();
+    // session.purge(); I don't know how to fix this but for now it just breaks it.
     Ok(serde_json::from_str(&value)?)
 }
 
