@@ -1,4 +1,4 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_image, ImageUpload, process_images, ImageUploads}};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads}};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
@@ -335,10 +335,10 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 }
 
 #[post("/settings/upload/form")]
-pub async fn upload_auth(form: MultipartForm<ImageUpload>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    process_image(form, container).await.unwrap();
+    process_images(form, container).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
@@ -643,15 +643,14 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
         Ok(r) => r,
         Err(x) => return RainError::for_js(x),
     };
-    println!("Monkie?");
-    // if let Err(e) = process_image(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
-    process_images(form, format!("pfp/{user}.png")).await.unwrap();
-    println!("Monkie2?");
+
+    if let Err(e) = process_images(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
+
     let mut db = data.db.lock().await;
     let url = format!("/tmp/pfp/{user}.png");
-    let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
-    println!("Monki3e2?");
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
+
+    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
 }
 
 

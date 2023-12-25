@@ -2,6 +2,7 @@ function handle(response) {
     const answer = response.json();
     if(response.status === 303){
         window.location.href = response.headers.get('Location');
+        window.location.reload();
     }
     if (!response.ok) {
         throw {msg: answer.message, for_user: answer.for_user};

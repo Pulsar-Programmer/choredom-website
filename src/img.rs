@@ -1,5 +1,5 @@
 use actix_multipart::form::{tempfile::TempFile, MultipartForm};
-
+use anyhow::anyhow;
 // #[derive(MultipartForm)]
 // pub struct ImageUpload {
 //     image: TempFile,
@@ -24,7 +24,12 @@ pub async fn process_images(form: MultipartForm<ImageUploads>, container: String
             _ => {return Err("File is not JPG or PNG!".into())} //test this and make sure this works - cause I have a feeling it will upload a file that is not
         }
             
-        let path = if n == 0 { format!("/tmp/{}", container) } else { format!("/tmp/{}_{}", container, n)};
+        let path = if n == 0 { format!("./tmp/{}", container) } else {
+            let mut c = container.split('.');
+            let before = c.next().ok_or(anyhow!("Internal server error."))?;
+            let after = c.next().ok_or(anyhow!("Internal server error."))?;
+            format!("./tmp/{}_{}{}", before, n, after)
+        };
         upload_file(file, &path).await?;
     }
 
