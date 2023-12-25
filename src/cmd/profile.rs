@@ -657,11 +657,12 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 #[post("/settings/pics-bio")]
 pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
-    // let mut db = data.db.lock().await; , data: Data<AppData>
+
     if let Ok(paths) = std::fs::read_dir("./tmp/bio/"){
         let mut file_count = 0;
         for path in paths {
-            let path = path.unwrap().path();
+            let Ok(path) = path else { break };
+            let path = path.path();
             if path.is_file() {
                 file_count += 1;
             }
@@ -672,7 +673,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         }
     }
 
-    process_images(form, format!("bio/{user}.png")).await.unwrap();
+    if let Err(e) = process_images(form, format!("bio/{user}.png")).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }

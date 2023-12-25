@@ -65,7 +65,6 @@ window.addEventListener("load", function() {
         prefill(data.username, data.displayname, data.location, data.bio)
     })
     .catch(notify);
-
 });
 
 function prefill(username, displayname, location, bio){

@@ -29,11 +29,11 @@
     <button onclick="upload_pfp()">Submit Profile Picture</button>
   </div>
 
-  <form action="/settings/pics-bio" method="POST" enctype="multipart/form-data">
+  <div>
     Bio Picture(s):
-    <input type="file" accept=".jpg, .jpeg, .png" multiple max-size="20MB"><br>
-    <input type="submit" value="Submit Bio Picture">
-  </form>
+    <input type="file" accept=".jpg, .jpeg, .png" multiple><br>
+    <button onclick="upload_bio()">Submit Profile Picture</button>
+  </div>
 
   <a href="/settings/email">Change email</a>
   <a href="/settings/password">Change Password</a>
