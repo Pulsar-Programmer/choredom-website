@@ -1,12 +1,7 @@
-use std::fs::File;
-use futures::StreamExt as _;
-use futures_util::TryStreamExt as _;
-use std::io::Write as _;
-
 use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 
 #[derive(MultipartForm)]
-struct ImageUpload {
+pub struct ImageUpload {
     image: TempFile,
 }
 
@@ -16,7 +11,7 @@ pub struct ImageUploads{
     images: Vec<TempFile>,
 }
 
-async fn process_images(form: MultipartForm<ImageUploads>, container: String) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn process_images(form: MultipartForm<ImageUploads>, container: String) -> Result<(), Box<dyn std::error::Error>> {
     let mut n = 0;
     let images = form.into_inner().images;
     for file in images {
@@ -36,7 +31,7 @@ async fn process_images(form: MultipartForm<ImageUploads>, container: String) ->
 }
 
 
-async fn process_image(form: MultipartForm<ImageUpload>, container: String) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn process_image(form: MultipartForm<ImageUpload>, container: String) -> Result<(), Box<dyn std::error::Error>> {
     let file = form.into_inner().image;
 
     if file.size > 20 * 1024 * 1024 { // 20 MB
@@ -48,7 +43,7 @@ async fn process_image(form: MultipartForm<ImageUpload>, container: String) -> R
 
     let path = format!("/tmp/{}", container);
     upload_file(file, &path).await?;
-    
+
     Ok(())
 }
 

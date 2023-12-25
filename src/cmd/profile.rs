@@ -1,11 +1,10 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, img::process_multipart, RainError};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_image, ImageUpload, process_images, ImageUploads}};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_identity::Identity;
-use actix_multipart::Multipart;
+use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
-use futures_util::TryStreamExt as _;
 use rust_decimal::prelude::ToPrimitive;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
@@ -336,10 +335,10 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 }
 
 #[post("/settings/upload/form")]
-pub async fn upload_auth(form: actix_multipart::Multipart, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+pub async fn upload_auth(form: MultipartForm<ImageUpload>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    crate::img::process_multipart(form, container).await.unwrap();
+    process_image(form, container).await.unwrap();
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
@@ -639,15 +638,16 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 
 #[post("/settings/pics-pfp")]
-pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+pub async fn pics_pfp(form: MultipartForm<ImageUpload>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = match unwrap_identity(user){
         Ok(r) => r,
-        Err(x) => return RainError::for_html(x),
+        Err(x) => return RainError::for_js(x),
     };
 
+    if let Err(e) = process_image(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
+
     let mut db = data.db.lock().await;
-    process_multipart(form, format!("pfp/{user}/pfp")).await.unwrap();
-    let url = format!("/temp/pfp/{user}/pfp");
+    let url = format!("/tmp/pfp/{user}.png");
     let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -655,10 +655,10 @@ pub async fn pics_pfp(form: Multipart, user: Option<Identity>, data: Data<AppDat
 
 
 #[post("/settings/pics-bio")]
-pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder{
+pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
     // let mut db = data.db.lock().await; , data: Data<AppData>
-    if let Ok(paths) = std::fs::read_dir(format!("./tmp/bio/{user}")){
+    if let Ok(paths) = std::fs::read_dir("./tmp/bio/"){
         let mut file_count = 0;
         for path in paths {
             let path = path.unwrap().path();
@@ -672,32 +672,8 @@ pub async fn pics_bio(form: Multipart, user: Option<Identity>) -> impl Responder
         }
     }
 
-    process_multipart(form, format!("bio/{user}/pics")).await.unwrap();
+    process_images(form, format!("bio/{user}.png")).await.unwrap();
 
-    HttpResponse::Ok().finish()
-}
-
-
-
-use actix_multipart::form::MultipartForm;
-use actix_multipart::form::tempfile::TempFile;
-#[derive(Debug, MultipartForm)]
-pub struct UploadForm{
-    #[multipart(rename="file")]
-    files: Vec<TempFile>,
-}
-
-#[post("/images")]
-pub async fn save_files(MultipartForm(form): MultipartForm<UploadForm>) -> impl Responder{
-    for f in form.files{
-        let path = format!("./tmp/{}", f.file_name.unwrap());
-        if let Err(e) = f.file.persist(path){
-            println!("{e}");
-            return RainError::for_js_user(e);
-        }
-        println!("4");
-    }
-    println!("5");
     HttpResponse::Ok().finish()
 }
 
