@@ -1,5 +1,5 @@
-function handle(response) {
-    const answer = response.json();
+async function handle(response) {
+    const answer = await response.json();
     if(response.status === 303){
         window.location.href = response.headers.get('Location');
         window.location.reload();
