@@ -10,9 +10,12 @@ function handle(response) {
 }
 
 function notify(error){
-    var error = error.json();
-    if(error.for_user){
-        alert(answer.msg);
+    if(error.msg != null){
+        if(error.for_user){
+            alert(error.msg);
+        }
+        console.log(error.msg);
+    } else {
+        console.log(error);
     }
-    console.log(answer.msg);
 }

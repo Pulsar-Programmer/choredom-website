@@ -638,18 +638,19 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 
 #[post("/settings/pics-pfp")]
-pub async fn pics_pfp(form: MultipartForm<ImageUpload>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
+pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let user = match unwrap_identity(user){
         Ok(r) => r,
         Err(x) => return RainError::for_js(x),
     };
-
-    if let Err(e) = process_image(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
-
+    println!("Monkie?");
+    // if let Err(e) = process_image(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
+    process_images(form, format!("pfp/{user}.png")).await.unwrap();
+    println!("Monkie2?");
     let mut db = data.db.lock().await;
     let url = format!("/tmp/pfp/{user}.png");
     let _  = sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.unwrap();
-
+    println!("Monki3e2?");
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 

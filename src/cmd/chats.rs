@@ -300,10 +300,10 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 #[post("/pics-chats")]
-pub async fn pics_chats(form: MultipartForm<crate::img::ImageUpload>, identity: Option<Identity>) -> impl Responder{
+pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
     println!("Tree");
-    if let Err(err) = crate::img::process_image(form, format!("chats/{username}/pics")).await { return RainError::for_html(err) } ;
+    if let Err(err) = crate::img::process_images(form, format!("chats/{username}/pics")).await { return RainError::for_html(err) } ;
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     //^^ we use username whereas uuid is preferred. How do we extract UUID? We would have to convert it to JS (conveluded but.. possible? process)
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/chat")).body(CHATNAV)
