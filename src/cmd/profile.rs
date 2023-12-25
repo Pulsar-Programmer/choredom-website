@@ -647,7 +647,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     if let Err(e) = process_images(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
 
     let mut db = data.db.lock().await;
-    let url = format!("/tmp/pfp/{user}.png");
+    let url = format!("/tmp/pfp/{user}.png"); //<< does this need to be stored at all with this concept?
     if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
@@ -675,6 +675,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
 
     if let Err(e) = process_images(form, format!("bio/{user}.png")).await { return RainError::for_js(e)};
 
+    // HttpResponse::Ok().json()
     HttpResponse::Ok().finish()
 }
 

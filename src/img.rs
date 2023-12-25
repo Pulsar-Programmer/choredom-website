@@ -28,7 +28,7 @@ pub async fn process_images(form: MultipartForm<ImageUploads>, container: String
             let mut c = container.split('.');
             let before = c.next().ok_or(anyhow!("Internal server error."))?;
             let after = c.next().ok_or(anyhow!("Internal server error."))?;
-            format!("./tmp/{}_{}{}", before, n, after)
+            format!("./tmp/{}_{}.{}", before, n, after)
         };
         upload_file(file, &path).await?;
     }

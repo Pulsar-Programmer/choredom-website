@@ -30,17 +30,6 @@ window.onload = function() {
 
 
 
-
-
-function expandImages(msg){
-    var urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-    return msg.replace(urlRegex, function(url) {
-        return `<img src="${url}">`;
-    });
-}
-
-
-
 /// Function to generate the HTML for each chat
 function generateChatHTML(chat) {
     return `<div class="message">
@@ -117,3 +106,22 @@ function receive_chat(){
 //Erase this when doing long polling or the SSEs.
 setInterval(receive_chat, 10_000);
 
+
+
+
+function upload_chats(){
+    const fileInputElement = document.getElementById("file_upload_chats");
+    let formData = new FormData();
+    for(f of fileInputElement.files){
+        formData.append('file', f, 'filename.jpg');
+    }
+    fetch('/pics-chats', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(handle)
+    .then(data => {
+        
+    })
+    .catch(notify);
+}

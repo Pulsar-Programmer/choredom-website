@@ -29,7 +29,7 @@ function prefill_profile(data){
     document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
     document.getElementById("CreationDate").innerHTML = "Joined: " + data.creation_date;
     document.getElementById("state").innerHTML = data.state;
-    document.getElementById("bio").innerHTML = data.bio;
+    document.getElementById("bio").innerHTML = expandImages(data.bio);
 
     //display rater data
     data.reviews.forEach(review => {

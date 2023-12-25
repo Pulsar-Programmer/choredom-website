@@ -21,12 +21,11 @@
     <script defer src="/src-web/static/chat.js"></script>
 </head>
 <body>
-  <form action="/pics-chats" method="POST" enctype="multipart/form-data">
-    <label for="chatsPics">Send images...:</label><br>
-    <input type="file" accept=".jpg, .jpeg, .png" multiple max-size="20MB"><br>
-    
-    <input type="submit">
-  </form>
+    <div>
+      <label for="chatsPics">Send images...:</label><br>
+      <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
+      <button onclick="upload_chats()">Submit Chat Pictures</button>
+    </div>
     <h1 id="room-title">Billy Bob Joe</h1>
     <div id="chat_box"></div> 
     <div id="message-input-div">
@@ -43,7 +42,7 @@
     </div>
     <script src="src-web/static/error.js"></script>
     <script defer src="/src-web/static/chat-nav.js"></script>
-    
+    <script src="/src-web/static/img.js"></script>
 </body>
 </html>
 
