@@ -74,9 +74,9 @@ async fn main() -> std::io::Result<()> {
                 actix_web::middleware::ErrorHandlers::new()
                 .handler(actix_web::http::StatusCode::NOT_FOUND, not_found)
             )
-            .service(actix_files::Files::new("/tmp/bio", "./tmp/bio").show_files_listing())
-            .service(actix_files::Files::new("/tmp/pfp", "./tmp/pfp").show_files_listing())
-            .service(actix_files::Files::new("/tmp/chats", "./tmp/chats").show_files_listing())
+            // .service(actix_files::Files::new("/tmp/bio", "./tmp/bio").show_files_listing())
+            // .service(actix_files::Files::new("/tmp/pfp", "./tmp/pfp").show_files_listing())
+            // .service(actix_files::Files::new("/tmp/chats", "./tmp/chats").show_files_listing())
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
             .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
             homepage,

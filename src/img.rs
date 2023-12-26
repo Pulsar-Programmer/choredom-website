@@ -14,27 +14,42 @@ pub struct ImageUploads{
 pub async fn process_images(form: MultipartForm<ImageUploads>, container: String) -> Result<(), Box<dyn std::error::Error>> {
     let images = form.into_inner().images;
     for (n, file) in images.into_iter().enumerate() {
-        if file.size > 20 * 1024 * 1024 { // 20 MB
-            return Err("File is too large!".into());
-        }
 
-        let mime_type = file.content_type.as_ref().ok_or(anyhow::anyhow!("No content_type found."))?.to_string();
-        match mime_type.as_str() {
-            "image/png" | "image/jpg" | "image.jpeg" => {}
-            _ => {return Err("File is not JPG or PNG!".into())} //test this and make sure this works - cause I have a feeling it will upload a file that is not
-        }
-            
-        let path = if n == 0 { format!("./tmp/{}", container) } else {
-            let mut c = container.split('.');
-            let before = c.next().ok_or(anyhow!("Internal server error."))?;
-            let after = c.next().ok_or(anyhow!("Internal server error."))?;
-            format!("./tmp/{}_{}.{}", before, n, after)
-        };
+        let path = format!("{container}/{n}.png");
         upload_file(file, &path).await?;
+        
     }
+    Ok(())
+}
+
+pub fn verify_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>>{
+    if !verify_size(&file){
+        return Err("File is too large!".into())
+    }
+
+    verify_type_img(&file)?;
 
     Ok(())
 }
+
+
+pub fn verify_size(file: &TempFile) -> bool{
+    if file.size > 20 * 1024 * 1024 { // 20 MB
+        false
+    }
+    else { true }
+}
+
+pub fn verify_type_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>> {
+    let mime_type = file.content_type.as_ref().ok_or(anyhow::anyhow!("No content_type found."))?.to_string();
+    match mime_type.as_str() {
+        "image/png" | "image/jpg" | "image.jpeg" => Ok(()),
+        _ => Err("File is not JPG or PNG!".into()) //test this and make sure this works - cause I have a feeling it will upload a file that is not
+    }
+}
+
+
+
 
 pub async fn upload_file(f: TempFile, path: &str) -> Result<(), Box<dyn std::error::Error>>{
     f.file.persist(path)?;

@@ -1,9 +1,10 @@
+use actix_files::NamedFile;
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}};
 use chrono::{DateTime, Utc};
 use futures_util::TryStreamExt;
-use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError}; 
+use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
 use RainError as r;
@@ -296,7 +297,24 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
-
+#[get("/self/chats/{opposite}")]
+async fn chats_access(identity: Option<Identity>, opposite: Path<String>, data: Data<AppData>) -> impl Responder{
+    let user = match unwrap_identity(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::for_js(x),
+    };
+    let room_id = RoomID::create([user, opposite.into_inner()]);
+    // let uuid = todo!("{opposite}");
+    let mut db = data.db.lock().await;
+    let Ok(o) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id", ("room_id", room_id)).await else { return RainError::for_html_stderr()};
+    let Some(id) = o else { return RainError::for_html(NOUSER)};
+    let path = format!("/tmp/chats/{id}/");
+    // match NamedFile::open(format!("/tmp/chats/{opposite}.png")){
+    //     Ok(f) => Box::new(f),
+    //     Err(_) => Box::new(HttpResponse::NotFound().finish()),
+    // };
+    todo!() as HttpResponse
+}
 
 
 #[post("/pics-chats")] //opposite_chatter: Json<String>

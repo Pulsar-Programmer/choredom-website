@@ -1,10 +1,11 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads}};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads}, cmd::sites::NOUSER};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
+use actix_files::NamedFile;
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
-use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
+use actix_web::{get, post, Responder, web::{Data, Form, self, Json, Path}, HttpResponse};
 use rust_decimal::prelude::ToPrimitive;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
@@ -634,7 +635,10 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 }
 
 
-
+#[get("/users/{username}/pfps")]
+async fn pfp_access(username: Path<String>) -> impl Responder{
+    todo!() as HttpResponse
+}
 
 
 #[post("/settings/pics-pfp")]
@@ -647,10 +651,25 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     if let Err(e) = process_images(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
 
     let mut db = data.db.lock().await;
-    let url = format!("/tmp/pfp/{user}.png"); //<< does this need to be stored at all with this concept?
+    let url = format!("/tmp/pfp/{user}/"); //<< does this need to be stored at all with this concept?
     if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
+}
+
+
+#[get("/users/{username}/bio")]
+async fn bio_access(username: Path<String>) -> impl Responder{
+    let username = username.into_inner();
+    let dir = format!("/tmp/bio/{}", username);
+    // let files = Files::new(dir, &dir).show_files_listing();
+    //we need to switch up the method we store files - we need to make multiple files be ok as their own thing not free-floating devilish files
+
+    todo!() as HttpResponse
+    // match NamedFile::open(format!("/tmp/bio/{user}.png")){
+    //     Ok(f) => f,
+    //     Err(_) => HttpResponse::NotFound().finish(),
+    // }
 }
 
 
@@ -658,7 +677,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
 
-    if let Ok(paths) = std::fs::read_dir("./tmp/bio/"){
+    if let Ok(paths) = std::fs::read_dir(format!("./tmp/bio/{user}/")){
         let mut file_count = 0;
         for path in paths {
             let Ok(path) = path else { break };
@@ -673,7 +692,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         }
     }
 
-    if let Err(e) = process_images(form, format!("bio/{user}.png")).await { return RainError::for_js(e)};
+    if let Err(e) = process_images(form, format!("bio/{user}")).await { return RainError::for_js(e)};
 
     // HttpResponse::Ok().json()
     HttpResponse::Ok().finish()
