@@ -675,7 +675,7 @@ async fn bio_access(username: Path<String>) -> impl Responder{
     let dir = format!("/tmp/bio/{username}");
     // let files = Files::new(dir, &dir).show_files_listing();
     //we need to switch up the method we store files - we need to make multiple files be ok as their own thing not free-floating devilish files
-
+    
     todo!() as HttpResponse
     // match NamedFile::open(format!("/tmp/bio/{user}.png")){
     //     Ok(f) => f,

@@ -421,7 +421,7 @@ pub fn satisfies_email(email: &str) -> bool{
 }
 
 pub fn satisfies_displayname(displayname: &str) -> bool{
-    satisfies(displayname, "^[A-Za-z0-9 ]+$")
+    satisfies(displayname, "^(?! *$)[A-Za-z0-9 ]{3,20}$")
 }
 
 fn satisfies(string: &str, regex: &str) -> bool{
