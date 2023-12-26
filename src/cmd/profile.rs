@@ -1,4 +1,4 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads}, cmd::sites::NOUSER};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::NOUSER};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_files::NamedFile;
@@ -637,6 +637,7 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 
 #[get("/users/{username}/pfps")]
 async fn pfp_access(username: Path<String>) -> impl Responder{
+    let path = format!("/tmp/pfp/{username}");
     todo!() as HttpResponse
 }
 
@@ -647,11 +648,21 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
         Ok(r) => r,
         Err(x) => return RainError::for_js(x),
     };
+    let container = format!("pfp/{user}");
+    if let Err(e) = process_images(form, container).await { return RainError::for_js_user(e)};
+    // let images = form.into_inner().images;
+    // for (n, file) in images.into_iter().enumerate() {
 
-    if let Err(e) = process_images(form, format!("pfp/{user}.png")).await { return RainError::for_js(e)};
+    //     if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
+
+    //     let path = format!("/tmp/pfp/{user}/{n}.png");
+    //     if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
+        
+    // }
+    //this will aactually overwrite data so we don't need it
 
     let mut db = data.db.lock().await;
-    let url = format!("/tmp/pfp/{user}/"); //<< does this need to be stored at all with this concept?
+    let url = format!("/tmp/pfp/{user}/0.png"); //<< does this need to be stored at all with this concept?
     if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
@@ -661,7 +672,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 #[get("/users/{username}/bio")]
 async fn bio_access(username: Path<String>) -> impl Responder{
     let username = username.into_inner();
-    let dir = format!("/tmp/bio/{}", username);
+    let dir = format!("/tmp/bio/{username}");
     // let files = Files::new(dir, &dir).show_files_listing();
     //we need to switch up the method we store files - we need to make multiple files be ok as their own thing not free-floating devilish files
 
@@ -677,8 +688,10 @@ async fn bio_access(username: Path<String>) -> impl Responder{
 pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
 
+    let mut file_count = 0;
+
     if let Ok(paths) = std::fs::read_dir(format!("./tmp/bio/{user}/")){
-        let mut file_count = 0;
+        
         for path in paths {
             let Ok(path) = path else { break };
             let path = path.path();
@@ -691,8 +704,20 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
             return RainError::for_js_user("No uploading over 3 files!");
         }
     }
+    let container = format!("bio/{user}");
 
-    if let Err(e) = process_images(form, format!("bio/{user}")).await { return RainError::for_js(e)};
+    let images = form.into_inner().images;
+    for (n, file) in images.into_iter().enumerate() {
+        if n == 3 - file_count { break } //maybe latrer add a msg
+
+        if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
+
+        let path = format!("/tmp/{container}/{}.png", n + file_count);
+        if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
+        
+    }
+
+    // if let Err(e) = process_images(form, format!("bio/{user}")).await { return RainError::for_js(e)};
 
     // HttpResponse::Ok().json()
     HttpResponse::Ok().finish()

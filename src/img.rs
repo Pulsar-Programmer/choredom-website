@@ -8,14 +8,16 @@ use anyhow::anyhow;
 #[derive(Debug, MultipartForm)]
 pub struct ImageUploads{
     #[multipart(rename="file")]
-    images: Vec<TempFile>,
+    pub images: Vec<TempFile>,
 }
 
 pub async fn process_images(form: MultipartForm<ImageUploads>, container: String) -> Result<(), Box<dyn std::error::Error>> {
     let images = form.into_inner().images;
     for (n, file) in images.into_iter().enumerate() {
 
-        let path = format!("{container}/{n}.png");
+        verify_img(&file)?;
+
+        let path = format!("/tmp/{container}/{n}.png");
         upload_file(file, &path).await?;
         
     }
@@ -23,11 +25,11 @@ pub async fn process_images(form: MultipartForm<ImageUploads>, container: String
 }
 
 pub fn verify_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>>{
-    if !verify_size(&file){
-        return Err("File is too large!".into())
+    if !verify_size(file){
+        return Err("File is too large (over 20MB)!".into())
     }
 
-    verify_type_img(&file)?;
+    verify_type_img(file)?;
 
     Ok(())
 }
@@ -41,7 +43,8 @@ pub fn verify_size(file: &TempFile) -> bool{
 }
 
 pub fn verify_type_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>> {
-    let mime_type = file.content_type.as_ref().ok_or(anyhow::anyhow!("No content_type found."))?.to_string();
+    //No content_type found.
+    let mime_type = file.content_type.as_ref().ok_or(anyhow::anyhow!("An error occured with the file type."))?.to_string();
     match mime_type.as_str() {
         "image/png" | "image/jpg" | "image.jpeg" => Ok(()),
         _ => Err("File is not JPG or PNG!".into()) //test this and make sure this works - cause I have a feeling it will upload a file that is not
