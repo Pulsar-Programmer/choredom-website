@@ -115,6 +115,10 @@ function upload_chats(){
     for(f of fileInputElement.files){
         formData.append('file', f, 'filename.jpg');
     }
+    var path = window.location.pathname;
+    var pathParts = path.split('/');
+    var opposite_chatter = pathParts[pathParts.indexOf('chats') + 1];
+    formData.append('opposite_chatter', JSON.stringify(opposite_chatter));
     fetch('/pics-chats', {
         method: 'POST',
         body: formData,

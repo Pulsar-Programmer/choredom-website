@@ -77,8 +77,8 @@ async fn main() -> std::io::Result<()> {
             // .service(actix_files::Files::new("/tmp/bio", "./tmp/bio").show_files_listing())
             // .service(actix_files::Files::new("/tmp/pfp", "./tmp/pfp").show_files_listing())
             // .service(actix_files::Files::new("/tmp/chats", "./tmp/chats").show_files_listing())
-            .service(actix_files::Files::new("/src-web/assets", "./src-web/assets").show_files_listing())
-            .service(actix_files::Files::new("/src-web/static", "./src-web/static").show_files_listing());
+            .service(actix_files::Files::new("/src-web/assets", "./src-web/assets"))
+            .service(actix_files::Files::new("/src-web/static", "./src-web/static"));
             homepage,
             signup, verify_email, home_redirect_signup, 
             login, signin, signout, home_redirect_login,

@@ -297,33 +297,37 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
-#[get("/self/chats/{opposite}")]
-async fn chats_access(identity: Option<Identity>, opposite: Path<String>, data: Data<AppData>) -> impl Responder{
-    let user = match unwrap_identity(identity){
-        Ok(r) => r,
-        Err(x) => return RainError::for_js(x),
-    };
-    let room_id = RoomID::create([user, opposite.into_inner()]);
-    // let uuid = todo!("{opposite}");
-    let mut db = data.db.lock().await;
-    let Ok(o) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id", ("room_id", room_id)).await else { return RainError::for_html_stderr()};
-    let Some(id) = o else { return RainError::for_html(NOUSER)};
-    let path = format!("/tmp/chats/{id}/");
-    // match NamedFile::open(format!("/tmp/chats/{opposite}.png")){
-    //     Ok(f) => Box::new(f),
-    //     Err(_) => Box::new(HttpResponse::NotFound().finish()),
-    // };
-    todo!() as HttpResponse
-}
+// #[get("/self/chats/{opposite}")]
+// async fn chats_access(identity: Option<Identity>, opposite: Path<String>, data: Data<AppData>) -> Result<NamedFile, anyhow::Error>{
+//     let user = match unwrap_identity(identity){
+//         Ok(r) => r,
+//         Err(x) => return Err(RainError::for_js(x)),
+//     };
+//     let room_id = RoomID::create([user, opposite.into_inner()]);
+//     // let uuid = todo!("{opposite}");
+//     let mut db = data.db.lock().await;
+//     let Ok(o) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id", ("room_id", room_id)).await else { return Err(RainError::for_html_stderr())};
+//     let Some(id) = o else { return Err(RainError::for_html(NOUSER))};
+//     let path = format!("/tmp/chats/{id}");
+//     // match NamedFile::open(format!("/tmp/chats/{opposite}.png")){
+//     //     Ok(f) => Box::new(f),
+//     //     Err(_) => Box::new(HttpResponse::NotFound().finish()),
+//     // };
+//     // todo!() as HttpResponse
+//     NamedFile::open(path).map_err(|_|RainError::for_js("Error getting picture info."))
+// }
 
 
-#[post("/pics-chats")] //opposite_chatter: Json<String>
-pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>) -> impl Responder{
+#[post("/pics-chats")]
+pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>, opposite_chatter: Json<String>, data: Data<AppData>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
     println!("Tree");
-    if let Err(err) = crate::img::process_images(form, format!("chats/{username}")).await { return RainError::for_js_user(err) } ;
+    let room_id = RoomID::create([username, opposite_chatter.into_inner()]);
+    let mut db = data.db.lock().await;
+    let Ok(v) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
+    let Some(uuid) = v else { return RainError::for_js_user("Chat room does not exist!")};
+    if let Err(err) = crate::img::process_images(form, format!("chats/{uuid}")).await { return RainError::for_js_user(err) } ;
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
-    //^^ we use username whereas uuid is preferred. How do we extract UUID?
     HttpResponse::Ok().finish()
     //HttpResponse::Ok().json(Vec<String>)
 }

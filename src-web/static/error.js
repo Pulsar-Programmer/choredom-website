@@ -7,7 +7,7 @@ async function handle(response) {
     if (!response.ok) {
         throw {msg: answer.message, for_user: answer.for_user};
     }
-    return answer;
+    return response.json();
 }
 
 function notify(error){

@@ -1,7 +1,7 @@
 use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::NOUSER};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
-use actix_files::NamedFile;
+use actix_files::{NamedFile, Files, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -635,12 +635,11 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 }
 
 
-#[get("/users/{username}/pfps")]
+#[get("/users/{username}/pfp")]
 async fn pfp_access(username: Path<String>) -> impl Responder{
-    let path = format!("/tmp/pfp/{username}");
-    todo!() as HttpResponse
+    let path = format!("/tmp/pfp/{username}/0.png");
+    NamedFile::open(path).unwrap()
 }
-
 
 #[post("/settings/pics-pfp")]
 pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
@@ -649,6 +648,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
         Err(x) => return RainError::for_js(x),
     };
     let container = format!("pfp/{user}");
+    crate::img::clear_directory(&container);
     if let Err(e) = process_images(form, container).await { return RainError::for_js_user(e)};
     // let images = form.into_inner().images;
     // for (n, file) in images.into_iter().enumerate() {
@@ -669,18 +669,12 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 }
 
 
-#[get("/users/{username}/bio")]
-async fn bio_access(username: Path<String>) -> impl Responder{
+#[get("/users/{username}/bio/{name}")]
+async fn bio_access(username: Path<String>, name: Path<String>) -> impl Responder{
     let username = username.into_inner();
-    let dir = format!("/tmp/bio/{username}");
-    // let files = Files::new(dir, &dir).show_files_listing();
-    //we need to switch up the method we store files - we need to make multiple files be ok as their own thing not free-floating devilish files
-    
-    todo!() as HttpResponse
-    // match NamedFile::open(format!("/tmp/bio/{user}.png")){
-    //     Ok(f) => f,
-    //     Err(_) => HttpResponse::NotFound().finish(),
-    // }
+    let name = name.into_inner();
+    let path = format!("/tmp/bio/{username}/{name}"); //.png
+    NamedFile::open(path).unwrap()
 }
 
 

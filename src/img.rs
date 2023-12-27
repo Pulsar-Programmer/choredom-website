@@ -53,7 +53,6 @@ pub fn verify_type_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>
 
 
 
-
 pub async fn upload_file(f: TempFile, path: &str) -> Result<(), Box<dyn std::error::Error>>{
     f.file.persist(path)?;
     //upload the file to some unknown destination (google drive, etc.)
@@ -63,6 +62,19 @@ pub async fn upload_file(f: TempFile, path: &str) -> Result<(), Box<dyn std::err
     //std::fs::delete_file(path) will delete img.
     println!("A file has been deposited and created.");
     Ok(())
+}
+
+
+use std::{fs, path::Path, io};
+
+pub fn clear_directory<P: AsRef<Path>>(path: P) -> io::Result<()> {
+   // Remove the directory and all its contents
+   fs::remove_dir_all(&path)?;
+   
+   // Recreate the directory
+   fs::create_dir(&path)?;
+
+   Ok(())
 }
 
 
