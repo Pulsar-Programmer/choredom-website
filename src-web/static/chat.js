@@ -104,7 +104,25 @@ function receive_chat(){
     .catch(notify);
 }
 //Erase this when doing long polling or the SSEs.
-setInterval(receive_chat, 10_000);
+// setInterval(receive_chat, 10_000);
+
+var eventSource = new EventSource("/chat-updates");
+
+eventSource.onmessage = function(event) {
+    if(event.data === "UPDATE"){
+        receive_chat();
+    } 
+};
+
+
+window.addEventListener('beforeunload', function (e) {
+    eventSource.close();
+}); 
+
+
+
+
+
 
 
 

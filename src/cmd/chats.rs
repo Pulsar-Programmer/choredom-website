@@ -331,3 +331,42 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
     HttpResponse::Ok().finish()
     //HttpResponse::Ok().json(Vec<String>)
 }
+
+
+
+
+
+
+
+
+
+
+use actix_web_lab::sse;
+use tokio::sync::mpsc;
+use std::{convert::Infallible, time::Duration};
+
+#[get("/chat-updates/{opposite}")]
+async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
+    let (tx, rx) = mpsc::channel(10);
+    //maybe make a timer that disables after a certain time bcs this could be intensive?
+    println!("I think I see you!!!!!");
+    let self_ = match unwrap_identity(self_){
+        Ok(i) => i,
+        Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
+    };
+    let opposite = opposite.into_inner();
+    let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
+    let room_id = RoomID::create([opposite, self_]);
+
+    tokio::spawn(async move {
+        let mut db = data.db.lock().await;
+        loop {
+            //I would think this is just as bad but Phind told me otherwise
+            if let Ok(None) = query_once_option::<ChatDBGiven>(&mut db, query, ("room_id", &room_id)).await{
+                let _ = tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await;
+            }
+        }
+    });
+
+    sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
+}
