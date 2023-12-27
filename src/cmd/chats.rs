@@ -363,7 +363,10 @@ async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Iden
         loop {
             //I would think this is just as bad but Phind told me otherwise
             if let Ok(None) = query_once_option::<ChatDBGiven>(&mut db, query, ("room_id", &room_id)).await{
-                let _ = tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await;
+                if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
+                    println!("CLIENT DISCONNECT ERROR");
+                    break;
+                }
             }
         }
     });
