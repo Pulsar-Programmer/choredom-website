@@ -24,7 +24,7 @@
   <main>
     <div class="container">
       <h2>Post a Job</h2>
-      <form id="jobForm" action="/post-job-2" method="post">
+      <div id="jobForm">
         <input id="title" name="title" type="text" placeholder="Title of your job" pattern="^[a-zA-Z0-9 ]*$" required>
         <input id="body" name="body" type="text" placeholder="Body of your job description" pattern="^[a-zA-Z0-9 ]*$"required>
         <div id="dropdown">
@@ -38,8 +38,8 @@
         </div>
         <input id="time" name="time" type="date" placeholder="Date of your job"required>
         <input id="price" name="price" type="number" placeholder="Price you are willing to pay"required>
-        <input type="submit">
-      </form>
+        <button onclick="submit_post">Submit Job Post</button>
+      </div>
     </div>
   </main>
   <footer>
@@ -47,5 +47,6 @@
     <img src="assets/background.jpg" alt="Background Image">
   </footer>
   <script defer src="./src-web/static/post.js"></script>
+  <script src="./src-web/static/error.js"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@ pub async fn post(identity: Option<Identity>) -> impl Responder{
 }
 
 #[post("/post-job-2")]
-pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
+pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     // let user = request.get_identity();
     // let username = user.unwrap().id().unwrap();
     let Ok(username) = super::signup::unwrap_identity(identity) else { return RainError::for_js("Illegal identity travel.")};
@@ -48,10 +48,11 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: O
 
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database
+    //its all cool if the location doesn't exist; people just won't see the job ¯\_(ツ)_/¯
     let mut iter = time.split('-');
-    let (Some(year), Some(month), Some(day)) = (iter.next(), iter.next(), iter.next())  else { return RainError::for_html("Ensure to enter a valid date!")};
-    let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return RainError::for_html("Ensure to enter a valid date!")};
-    let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return RainError::for_html("Ensure to enter a valid date!")};
+    let (Some(year), Some(month), Some(day)) = (iter.next(), iter.next(), iter.next())  else { return RainError::for_js_user("Ensure to enter a date!")};
+    let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return RainError::for_js_user("Ensure to enter a valid date!")};
+    let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return RainError::for_js_user("Ensure to enter a valid date!")};
     //time is written in the format: yyyy-mm-dd
 
     let job = Job::new(title, body, time, (price * 100.0) as u64, location);
@@ -64,9 +65,8 @@ pub async fn post_job(form: web::Form<JobData>, data: Data<AppData>, identity: O
     COMMIT TRANSACTION;"#;
     //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNA<E
     let mut db = data.db.lock().await;
-    let Ok(..) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await else{ return RainError::for_html_stderr() };
+    if let Err(e) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
 
-    
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
 }
 
