@@ -144,7 +144,8 @@ function upload_chats(){
     })
     .then(handle)
     .then(data => {
-        
+        let mylinks = String(data);
+        alert(`Successful upload! Your links are the following: \n${mylinks}`)
     })
     .catch(notify);
 }

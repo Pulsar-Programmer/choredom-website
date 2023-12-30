@@ -340,7 +340,7 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    process_images(form, container).await.unwrap();
+    if let Err(e) = process_images(form, container).await { return RainError::for_html(e) };
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
@@ -711,8 +711,6 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
     }
-
-    // if let Err(e) = process_images(form, format!("bio/{user}")).await { return RainError::for_js(e)};
 
     // HttpResponse::Ok().json()
     HttpResponse::Ok().finish()

@@ -4,7 +4,7 @@ use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}};
 use chrono::{DateTime, Utc};
 use futures_util::TryStreamExt;
-use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError}; 
+use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
 use RainError as r;
@@ -304,7 +304,7 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
-// #[get("/self/chats/{opposite}")]
+// #[get("/pics-chats/{opposite}")]
 // async fn chats_access(identity: Option<Identity>, opposite: Path<String>, data: Data<AppData>) -> Result<NamedFile, anyhow::Error>{
 //     let user = match unwrap_identity(identity){
 //         Ok(r) => r,
@@ -333,9 +333,34 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
     let mut db = data.db.lock().await;
     let Ok(v) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
     let Some(uuid) = v else { return RainError::for_js_user("Chat room does not exist!")};
-    if let Err(err) = crate::img::process_images(form, format!("chats/{uuid}")).await { return RainError::for_js_user(err) } ;
+
+    let mut file_count = 0;
+
+    if let Ok(paths) = std::fs::read_dir(format!("./tmp/chats/{uuid}/")){
+        for path in paths {
+            let Ok(path) = path else { break };
+            let path = path.path();
+            if path.is_file() {
+                file_count += 1;
+            }
+        }
+    }
+
+    let mut yourlinks = String::new();
+    let images = form.into_inner().images;
+    for (n, file) in images.into_iter().enumerate() {
+
+        if let Err(e) = verify_img(&file) { return RainError::for_js_user(e)};
+        let n = n + file_count;
+        let path = format!("/tmp/chats/{uuid}/{n}.png");
+        if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
+
+        yourlinks.push_str(&format!("https://choredom.com/chats/{uuid}/{n}.png\n"))
+    }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
-    HttpResponse::Ok().finish()
+    
+
+    HttpResponse::Ok().json(yourlinks)
     //HttpResponse::Ok().json(Vec<String>)
 }
 
@@ -350,7 +375,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
 
 use actix_web_lab::sse;
 use tokio::sync::mpsc;
-use std::{convert::Infallible, time::Duration};
+use std::time::Duration;
 
 #[get("/chat-updates/{opposite}")]
 async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
