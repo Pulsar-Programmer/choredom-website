@@ -145,7 +145,7 @@ function upload_chats(){
     .then(handle)
     .then(data => {
         let mylinks = String(data);
-        alert(`Successful upload! Your links are the following: \n${mylinks}`)
+        alert(`Successful upload! Your links are the following: \n${mylinks} You can paste the links in and they will auto-resolve.`)
     })
     .catch(notify);
 }

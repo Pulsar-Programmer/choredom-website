@@ -108,6 +108,9 @@ function upload_pfp(){
         body: formData
     })
     .then(handle)
+    .then(_ => {
+        alert(`Successful upload!`)
+    })
     .catch(notify);
 }
 
@@ -122,5 +125,9 @@ function upload_bio(){
         body: formData,
     })
     .then(handle)
+    .then(data => {
+        let mylinks = String(data);
+        alert(`Successful upload! Your links are the following: \n${mylinks} You can paste the links in and they will auto-resolve.`)
+    })
     .catch(notify);
 }

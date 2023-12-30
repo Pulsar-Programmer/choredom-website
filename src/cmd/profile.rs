@@ -648,19 +648,13 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
         Ok(r) => r,
         Err(x) => return RainError::for_js(x),
     };
-    let container = format!("pfp/{user}");
-    crate::img::clear_directory(&container);
-    if let Err(e) = process_images(form, container).await { return RainError::for_js_user(e)};
-    // let images = form.into_inner().images;
-    // for (n, file) in images.into_iter().enumerate() {
 
-    //     if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
-
-    //     let path = format!("/tmp/pfp/{user}/{n}.png");
-    //     if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
-        
-    // }
-    //this will aactually overwrite data so we don't need it
+    let mut images = form.into_inner().images;
+    let file = images.remove(0);
+    if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
+    let path = format!("/tmp/pfp/{user}/0.png");
+    if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
+    //this will aactually overwrite data so we don't need [the clear function]
 
     let mut db = data.db.lock().await;
     let url = format!("/tmp/pfp/{user}/0.png"); //<< does this need to be stored at all with this concept?
@@ -670,11 +664,11 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 }
 
 
-#[get("/users/{username}/bio/{name}")]
-async fn bio_access(username: Path<String>, name: Path<String>) -> impl Responder{
+#[get("/users/{username}/bio/{num}")]
+async fn bio_access(username: Path<String>, num: Path<String>) -> impl Responder{
     let username = username.into_inner();
-    let name = name.into_inner();
-    let path = format!("/tmp/bio/{username}/{name}"); //.png
+    let num = num.into_inner();
+    let path = format!("/tmp/bio/{username}/{num}"); //.png
     NamedFile::open(path).unwrap()
 }
 
@@ -683,37 +677,21 @@ async fn bio_access(username: Path<String>, name: Path<String>) -> impl Responde
 pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
 
-    let mut file_count = 0;
 
-    if let Ok(paths) = std::fs::read_dir(format!("./tmp/bio/{user}/")){
-        
-        for path in paths {
-            let Ok(path) = path else { break };
-            let path = path.path();
-            if path.is_file() {
-                file_count += 1;
-            }
-        }
-        //get the amount of forms posted to ensure
-        if file_count >= 3{
-            return RainError::for_js_user("No uploading over 3 files!");
-        }
-    }
-    let container = format!("bio/{user}");
-
+    let mut yourlinks = String::new();
     let images = form.into_inner().images;
     for (n, file) in images.into_iter().enumerate() {
-        if n == 3 - file_count { break } //maybe latrer add a msg
+        if n == 3 { break }
 
         if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
 
-        let path = format!("/tmp/{container}/{}.png", n + file_count);
+        let path = format!("/tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
+        yourlinks.push_str(&format!("· https://choredom.com/users/{user}/bio/{n}.png\n"));
     }
 
-    // HttpResponse::Ok().json()
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(yourlinks)
 }
 
 

@@ -355,7 +355,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         let path = format!("/tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
-        yourlinks.push_str(&format!("https://choredom.com/chats/{uuid}/{n}.png\n"))
+        yourlinks.push_str(&format!("· https://choredom.com/chats/{uuid}/{n}.png\n"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     
