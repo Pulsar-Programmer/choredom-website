@@ -54,6 +54,9 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return RainError::for_js_user("Ensure to enter a valid date!")};
     let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return RainError::for_js_user("Ensure to enter a valid date!")};
     //time is written in the format: yyyy-mm-dd
+    if price.is_nan() || price.is_infinite() {
+        return RainError::for_js_user("Enter a valid price!")
+    }
 
     let job = Job::new(title, body, time, (price * 100.0) as u64, location);
 
