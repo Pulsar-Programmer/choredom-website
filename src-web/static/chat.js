@@ -132,7 +132,7 @@ function upload_chats(){
     const fileInputElement = document.getElementById("file_upload_chats");
     let formData = new FormData();
     for(f of fileInputElement.files){
-        formData.append('file', f, 'filename.jpg');
+        formData.append('file', f, 'filename.png');
     }
     var path = window.location.pathname;
     var pathParts = path.split('/');

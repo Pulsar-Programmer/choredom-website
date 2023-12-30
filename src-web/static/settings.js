@@ -101,7 +101,7 @@ function prefill(username, displayname, location, bio, pfplink){
 function upload_pfp(){
     const fileInputElement = document.getElementById("file_upload_pfp");
     let formData = new FormData();
-    formData.append('file', fileInputElement.files[0], 'filename.jpg');
+    formData.append('file', fileInputElement.files[0], 'filename.png');
     console.log(formData)
     fetch('/settings/pics-pfp', {
         method: 'POST',
@@ -118,7 +118,7 @@ function upload_bio(){
     const fileInputElement = document.getElementById("file_upload_bio");
     let formData = new FormData();
     for(f of fileInputElement.files){
-        formData.append('file', f, 'filename.jpg');
+        formData.append('file', f, 'filename.png');
     }
     fetch('/settings/pics-bio', {
         method: 'POST',

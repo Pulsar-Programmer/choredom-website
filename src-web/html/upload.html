@@ -7,9 +7,10 @@
 <body>
 <h1>Upload valid gov ID of yourself (If you aren't a minor), or upload valid gov ID of a parent or legal guardian that gives you permission to work</h1>
 <h2>This will be reviewed for validity<h2>
-<form action="/settings/upload/form" method="post" enctype="multipart/form-data">
-    <input type="file" accept=".jpg, .jpeg, .png" max-size="20MB">
-    <input type="submit" value="Upload">
-</form>
+<div>
+    <input type="file" accept=".jpg, .jpeg, .png" max-size="20MB" id="file_upload">
+    <button onclick="upload()">Upload Gov. ID</button>
+</div>
+<script defer src="/src-web/static/upload.js"></script>
 </body>
 </html>

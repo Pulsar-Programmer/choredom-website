@@ -32,3 +32,19 @@ document.getElementById('upload-form').addEventListener('submit', async (event) 
     }
 });
    
+function upload(){
+    const fileInputElement = document.getElementById("file_upload");
+    let formData = new FormData();
+    for(f of fileInputElement.files){
+        formData.append('file', f, 'filename.png');
+    }
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(handle)
+    .then(_ => {
+        alert(`Successful upload!`)
+    })
+    .catch(notify);
+}

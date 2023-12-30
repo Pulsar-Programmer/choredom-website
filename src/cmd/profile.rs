@@ -338,16 +338,16 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
 
 #[post("/settings/upload/form")]
 pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    let Ok(username) = unwrap_identity(identity) else { return RainError::for_html("Illegal Identity Smuggling is Afoot!!!")};
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_js_user("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
-    if let Err(e) = process_images(form, container).await { return RainError::for_html(e) };
+    if let Err(e) = process_images(form, container).await { return RainError::for_js_user(e) };
 
     let new_state = super::signup::AccountState::PendingVerification;
     let params = (("state", "username"), (new_state, username));
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     let db = &mut data.db.lock().await;
-    let Ok(_) = sole_query(db, surrealql, params).await else { return RainError::for_html_stderr()};
+    if let Err(e) = sole_query(db, surrealql, params).await { return RainError::for_js(e)};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
