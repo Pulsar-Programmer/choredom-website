@@ -32,7 +32,7 @@ pub struct Code{
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Account{
     pub displayname: String,
-    pub username: String, //USERNAME STORED IN DB AS ID
+    pub username: String,
     pub creation_date: chrono::DateTime<chrono::Utc>,
     // pub last_location: Location,
     pub location: String, //just a string for now

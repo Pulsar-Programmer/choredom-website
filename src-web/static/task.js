@@ -5,6 +5,7 @@ function generateJobHTML(job) {
     return `
         <div class="job">
         <h3>${job.data.title}</h3>
+        <img src="${job.user.page.pfp_url}" height="500" width="500">
         <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)</h4>
         <p>${job.data.body}</p>
         <p>Date of Task: ${job.data.time}</p>

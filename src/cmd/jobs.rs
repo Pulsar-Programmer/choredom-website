@@ -2,7 +2,7 @@ use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError}
 use actix_identity::Identity;
 use actix_web::{web::{Data, self}, Responder, get, post, HttpResponse};
 use surrealdb::sql::Thing;
-use super::sites::{POST, TASK};
+use super::{sites::{POST, TASK}, signup::AccountPage};
 use chrono::{DateTime, Utc};
 use super::signup::AccountState;
 
@@ -147,6 +147,7 @@ struct JobRecordLink{
     displayname: String,
     username: String,
     state: AccountState,
+    page: AccountPage,
 }
 
 //new model idea: have two types of functions, ones to call from js, and others to occur when you go to a certain page. They shouldn't have much overlap? IDK . WE CAN DO THISSSSSSSSSS
