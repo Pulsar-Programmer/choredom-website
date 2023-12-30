@@ -1,5 +1,4 @@
 async function handle(response) {
-    const answer = await response.json();
     if(response.status === 303){
         //we are going to have to
         //check if the response is SeeOther somehow
@@ -10,6 +9,7 @@ async function handle(response) {
         window.location.reload();
     }
     if (!response.ok) {
+        const answer = await response.json();
         throw {msg: answer.message, for_user: answer.for_user};
     }
     return response.json();
