@@ -62,13 +62,13 @@ window.addEventListener("load", function() {
     })
     .then(handle)
     .then(data => {
-        prefill(data.username, data.displayname, data.location, data.bio)
+        prefill(data.username, data.displayname, data.location, data.bio, data.pfplink)
     })
     .catch(notify);
 });
 
-function prefill(username, displayname, location, bio){
-    //does the profile pic show up during settings-present?
+function prefill(username, displayname, location, bio, pfplink){
+    document.getElementById('pfp').src = pfplink;
     document.getElementById('displayname').value = displayname;
     document.getElementById('username').value = username;
     document.getElementById('bio').value = bio;

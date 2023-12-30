@@ -265,6 +265,7 @@ struct SettingsPresentData<'a>{
     displayname: &'a String,
     location: &'a String,
     bio: &'a String,
+    pfplink: &'a String,
 }
 
 #[post("/settings/present_data")]
@@ -273,8 +274,8 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let Ok(identity)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
     let Some(curry_2) = q1.get(0) else { return RainError::for_js("No curry for you!")};
-    let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:_, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
-    let settings_data = SettingsPresentData{username, displayname, location, bio};
+    let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:pfplink, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
+    let settings_data = SettingsPresentData{username, displayname, location, bio, pfplink};
     //YESSS SO COOOLLL
     HttpResponse::Ok().content_type("application/json").json(settings_data)
 }

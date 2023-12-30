@@ -31,8 +31,9 @@ window.onload = function() {
 
 
 /// Function to generate the HTML for each chat
-function generateChatHTML(chat) {
+function generateChatHTML(chat, pfpurl) {
     return `<div class="message">
+    <img src=${pfpurl} width="500" height="500">
     <h4><a href="/users/${chat.sender}">${chat.sender}</a></h4>
     <p>${chat.timestamp}</p>
     <p>${expandImages(chat.msg)}</p>
@@ -47,8 +48,8 @@ function displayChats(chatsData) {
     console.log(chatsData);
     // chatsData = Array.from(chatsData);
     // console.log(chatsData);
-  chatsData.forEach((chat) => {
-      const chatHTML = generateChatHTML(chat);
+  chatsData.data.forEach((chat) => {
+      const chatHTML = generateChatHTML(chat, chatsData.pfpurl);
       console.log(chatHTML);
       chatContainer.innerHTML += chatHTML;
   });

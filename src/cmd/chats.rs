@@ -46,16 +46,23 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
     }
     HttpResponse::Ok().body(CHAT)
 }
+#[derive(serde::Serialize)]
+struct ChatFrontDataBundle{
+    data: Vec<ChatFrontData>,
+    pfpurl: String,
+}
 
 #[post("/chats_obtain")]
 pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, data: Data<crate::AppData>) -> impl Responder{
     let Ok(sender) = unwrap_identity(identity) else { return RainError::for_js("Identity cannot be extracted.")};
     let receiver = receiver.into_inner();
-    let room_id = RoomID::create([sender, receiver.clone()]);
+    let room_id = RoomID::create([sender.clone(), receiver.clone()]);
 
     //build a room and send to db if one doesn't exist >> use indicies for this
     let mut db = data.db.lock().await;
 
+    //query accounts for pfp
+    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT pfp_url FROM accounts WHERE username=$username;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
 
     let opposite = room_id[true] == receiver;
     let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
@@ -75,7 +82,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     }).collect();
 
     //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
-    HttpResponse::Ok().json(vec)
+    HttpResponse::Ok().json(ChatFrontDataBundle{ data: vec, pfpurl})
 }
 
 

@@ -92,8 +92,11 @@ pub struct AccountPage{
 }
 impl AccountPage{
     fn new() -> Self{
-        Self{ 
-            pfp_url: String::from("https://scontent-bos5-1.xx.fbcdn.net/v/t1.6435-9/95831445_10158064886431023_5042264117713305600_n.png?_nc_cat=111&ccb=1-7&_nc_sid=174925&_nc_ohc=jHdUksJywWcAX9BT5L0&_nc_ht=scontent-bos5-1.xx&oh=00_AfDnQ6lMQYJNm3VoLJiExu-JdGTp9T585V3NfmnukAornw&oe=64E0D75B"),
+        let options = ["yellow", "blue", "red", "green", "pink"];
+        let u = rand::thread_rng().gen_range(0..5);
+        let pfp_url = format!("/src-web/assets/stdpfps/{}.png", options[u]);
+        Self{
+            pfp_url,
             avg_rating: rust_decimal::Decimal::ZERO, reviews: Vec::new(),
             bio: String::new(),
         }

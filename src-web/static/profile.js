@@ -23,7 +23,7 @@ window.addEventListener("load", function() {
 
 function prefill_profile(data){
     //display user data:
-    document.getElementById("profile_pic").href = data.pfp_url;
+    document.getElementById("profile_pic").src = data.pfp_url;
     document.getElementById("displayName").innerHTML = "Name: " + data.displayname;
     document.getElementById("username").innerHTML = "Username: " + data.username;
     document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
