@@ -54,6 +54,10 @@ pub fn verify_type_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>
 
 
 pub async fn upload_file(f: TempFile, path: &str) -> Result<(), Box<dyn std::error::Error>>{
+    let mut items: Vec<String> = path.split('/').map(ToString::to_string).collect();
+    _ = items.pop();
+    let prepath = items.into_iter().reduce(|a,b|format!("{a}/{b}")).ok_or("Error parsing path.")?;
+    std::fs::create_dir_all(prepath)?;
     f.file.persist(path)?;
     //upload the file to some unknown destination (google drive, etc.)
     //next delete it when that finishes
