@@ -62,7 +62,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let mut db = data.db.lock().await;
 
     //query accounts for pfp
-    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT pfp_url FROM accounts WHERE username=$username;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
 
     let opposite = room_id[true] == receiver;
     let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
@@ -378,7 +378,7 @@ use tokio::sync::mpsc;
 use std::time::Duration;
 
 #[get("/chat-updates/{opposite}")]
-async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
+pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
     let (tx, rx) = mpsc::channel(10);
     //maybe make a timer that disables after a certain time bcs this could be intensive?
     println!("I think I see you!!!!!");
