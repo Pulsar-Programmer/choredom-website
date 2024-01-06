@@ -1,5 +1,19 @@
 
+// function signup_request(){
 
+
+//     let password1 = document.getElementById("password").value;
+//     let password2 = document.getElementById("password2").value;
+
+//     if (password2 !== password1){
+//         alert('Passwords do not match. Please try again.');
+//     }
+
+//     let data = {
+//         password: password1,
+//     }
+
+// }
 
 window.addEventListener("load", function() {
         // const submitButton = form.querySelector('input[type="submit"]');
