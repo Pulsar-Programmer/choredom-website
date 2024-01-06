@@ -1,3 +1,4 @@
+use actix_files::NamedFile;
 use actix_identity::IdentityMiddleware;
 use actix_web::{web, App, HttpServer, cookie::Key, HttpResponse};
 use actix_session::SessionMiddleware;
@@ -75,8 +76,8 @@ async fn main() -> std::io::Result<()> {
                 actix_web::middleware::ErrorHandlers::new()
                 .handler(actix_web::http::StatusCode::NOT_FOUND, not_found)
             )
-            // .service(actix_files::Files::new("/tmp/bio", "./tmp/bio").show_files_listing())
-            // .service(actix_files::Files::new("/tmp/pfp", "./tmp/pfp").show_files_listing())
+            .service(actix_files::Files::new("/usr/bio", "./tmp/bio"))
+            .service(actix_files::Files::new("/usr/pfp", "./tmp/pfp"))
             // .service(actix_files::Files::new("/tmp/chats", "./tmp/chats").show_files_listing())
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets"))
             .service(actix_files::Files::new("/src-web/static", "./src-web/static"));

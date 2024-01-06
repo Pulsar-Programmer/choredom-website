@@ -1,7 +1,7 @@
 use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::NOUSER};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
-use actix_files::{NamedFile, Files, Directory};
+use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -346,8 +346,7 @@ pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>,
     let params = (("state", "username"), (new_state, username));
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
-    let db = &mut data.db.lock().await;
-    if let Err(e) = sole_query(db, surrealql, params).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&mut * data.db.lock().await, surrealql, params).await { return RainError::for_js(e)};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
@@ -636,11 +635,11 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
 }
 
 
-#[get("/users/{username}/pfp")]
-async fn pfp_access(username: Path<String>) -> impl Responder{
-    let path = format!("/tmp/pfp/{username}/0.png");
-    NamedFile::open(path).unwrap()
-}
+// #[get("/users/{username}/pfp")]
+// async fn pfp_access(username: Path<String>) -> impl Responder{
+//     let path = format!("/tmp/pfp/{username}/0.png");
+//     NamedFile::open(path).unwrap()
+// }
 
 #[post("/settings/pics-pfp")]
 pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
@@ -657,20 +656,20 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     //this will aactually overwrite data so we don't need [the clear function]
 
     let mut db = data.db.lock().await;
-    let url = format!("/tmp/pfp/{user}/0.png"); //<< does this need to be stored at all with this concept?
+    let url = format!("/usr/pfp/{user}/0.png"); 
     if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
 }
 
 
-#[get("/users/{username}/bio/{num}")]
-async fn bio_access(username: Path<String>, num: Path<String>) -> impl Responder{
-    let username = username.into_inner();
-    let num = num.into_inner();
-    let path = format!("/tmp/bio/{username}/{num}"); //.png
-    NamedFile::open(path).unwrap()
-}
+// #[get("/users/{username}/bio/{num}")]
+// async fn bio_access(username: Path<String>, num: Path<String>) -> impl Responder{
+//     let username = username.into_inner();
+//     let num = num.into_inner();
+//     let path = format!("/tmp/bio/{username}/{num}"); //.png
+//     NamedFile::open(path).unwrap()
+// }
 
 
 #[post("/settings/pics-bio")]
@@ -688,7 +687,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         let path = format!("/tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
-        yourlinks.push_str(&format!("· https://choredom.com/users/{user}/bio/{n}.png\n"));
+        yourlinks.push_str(&format!("· https://choredom.com/usr/bio/{user}/{n}.png\n"));
     }
 
     HttpResponse::Ok().json(yourlinks)

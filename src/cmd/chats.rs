@@ -1,7 +1,7 @@
 use actix_files::NamedFile;
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
-use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}};
+use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
 use futures_util::TryStreamExt;
 use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
@@ -304,31 +304,34 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
-// #[get("/pics-chats/{opposite}")]
-// async fn chats_access(identity: Option<Identity>, opposite: Path<String>, data: Data<AppData>) -> Result<NamedFile, anyhow::Error>{
-//     let user = match unwrap_identity(identity){
-//         Ok(r) => r,
-//         Err(x) => return Err(RainError::for_js(x)),
-//     };
-//     let room_id = RoomID::create([user, opposite.into_inner()]);
-//     // let uuid = todo!("{opposite}");
-//     let mut db = data.db.lock().await;
-//     let Ok(o) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id", ("room_id", room_id)).await else { return Err(RainError::for_html_stderr())};
-//     let Some(id) = o else { return Err(RainError::for_html(NOUSER))};
-//     let path = format!("/tmp/chats/{id}");
-//     // match NamedFile::open(format!("/tmp/chats/{opposite}.png")){
-//     //     Ok(f) => Box::new(f),
-//     //     Err(_) => Box::new(HttpResponse::NotFound().finish()),
-//     // };
-//     // todo!() as HttpResponse
-//     NamedFile::open(path).map_err(|_|RainError::for_js("Error getting picture info."))
-// }
+#[get("/usr/chats/{uuid}/{n}")]
+async fn chats_access(identity: Option<Identity>, uuid: Path<String>, n: Path<String>, data: Data<AppData>, req: HttpRequest) -> impl Responder{
+    let user = match unwrap_identity(identity){
+        Ok(r) => r,
+        Err(x) => return RainError::for_html(x),
+    };
+    let uuid = uuid.into_inner();
+    let n = n.into_inner();
+
+    let mut db = data.db.lock().await;
+    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT room_id FROM chats WHERE id=$id", ("id", &uuid)).await else { return RainError::for_html_stderr()};
+    let Some(room) = o else { return RainError::for_html(NOUSER)};
+    if !room.contains(&user){
+        return RainError::for_html(NOUSER)
+    }
+
+    let path = format!("/tmp/chats/{uuid}/{n}.png");
+    match NamedFile::open(path){
+        Ok(f) => f.into_response(&req),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}
 
 
 #[post("/pics-chats")]
 pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>, opposite_chatter: Json<String>, data: Data<AppData>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
-    println!("Tree");
+    // println!("Tree");
     let room_id = RoomID::create([username, opposite_chatter.into_inner()]);
     let mut db = data.db.lock().await;
     let Ok(v) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
@@ -355,7 +358,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         let path = format!("/tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
-        yourlinks.push_str(&format!("· https://choredom.com/chats/{uuid}/{n}.png\n"))
+        yourlinks.push_str(&format!("· https://choredom.com/usr/chats/{uuid}/{n}.png\n"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     

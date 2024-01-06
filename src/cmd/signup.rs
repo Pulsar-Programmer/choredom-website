@@ -68,7 +68,7 @@ pub enum AccountState{
     Verified,
 }
 impl AccountState{
-    pub fn as_str(&self) -> &str{
+    pub const fn as_str(&self) -> &str{
         match self{
             AccountState::NonVerified => "NonVerified",
             AccountState::PendingVerification => "PendingVerification",
@@ -306,8 +306,8 @@ pub fn retrieve_user(identity: Identity) -> Result<String, actix_identity::error
     identity.id()
 }
 
-pub fn unwrap_identity(identity: Option<Identity>) -> Result<String, anyhow::Error>{
-    Ok(retrieve_user(identity.ok_or(anyhow::anyhow!("The identity could not be extracted."))?)?)
+pub fn unwrap_identity(identity: Option<Identity>) -> Result<String, Box<dyn std::error::Error>>{
+    Ok(retrieve_user(identity.ok_or("The identity could not be extracted.")?)?)
 }
 
 pub fn logout_user(identity: Identity){
