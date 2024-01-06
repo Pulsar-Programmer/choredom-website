@@ -487,7 +487,7 @@ async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Optio
             "-"
         }
     );
-    sole_query(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.unwrap();
+    if sole_query(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.is_err() { return RainError::for_html_stderr() };
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -659,7 +659,9 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     let url = format!("/usr/pfp/{user}/0.png"); 
     if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
+    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
+    // .json(url)
+    HttpResponse::Ok().finish()
 }
 
 
@@ -687,7 +689,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         let path = format!("/tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
-        yourlinks.push_str(&format!("· https://choredom.com/usr/bio/{user}/{n}.png\n"));
+        yourlinks.push_str(&format!("· https://www.choredom.com/usr/bio/{user}/{n}.png\n"));
     }
 
     HttpResponse::Ok().json(yourlinks)

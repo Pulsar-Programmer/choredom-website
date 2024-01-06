@@ -304,7 +304,7 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 
-#[get("/usr/chats/{uuid}/{n}")]
+#[get("/usr/chats/{uuid}/{n}.png")]
 async fn chats_access(identity: Option<Identity>, uuid: Path<String>, n: Path<String>, data: Data<AppData>, req: HttpRequest) -> impl Responder{
     let user = match unwrap_identity(identity){
         Ok(r) => r,
@@ -358,7 +358,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         let path = format!("/tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
-        yourlinks.push_str(&format!("· https://choredom.com/usr/chats/{uuid}/{n}.png\n"))
+        yourlinks.push_str(&format!("· https://www.choredom.com/usr/chats/{uuid}/{n}.png\n"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     

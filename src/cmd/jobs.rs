@@ -70,7 +70,8 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     let mut db = data.db.lock().await;
     if let Err(e) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
+    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
+    HttpResponse::Ok().finish()
 }
 
 #[derive(serde::Serialize)]

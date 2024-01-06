@@ -14,6 +14,9 @@ function submit_post(){
         body: JSON.stringify(jobdata), 
     })
     .then(handle)
-    .then(console.log)
+    .then(_ => {
+        window.location.href = "/post-job";
+        window.location.reload();
+    })
     .catch(notify);
 }

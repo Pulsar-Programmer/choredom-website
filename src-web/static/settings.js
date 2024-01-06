@@ -110,7 +110,8 @@ function upload_pfp(){
     })
     .then(handle)
     .then(_ => {
-        alert(`Successful upload!`)
+        // let data = String(data);
+        alert(`Successful upload!`); //Your url is https:://www.choredom.com${data}
     })
     .catch(notify);
 }
