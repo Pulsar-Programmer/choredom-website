@@ -15,8 +15,7 @@ function submit_post(){
     })
     .then(handle)
     .then(_ => {
-        window.location.href = "/post-job";
-        window.location.reload();
+        redirect("/post-job");
     })
     .catch(notify);
 }

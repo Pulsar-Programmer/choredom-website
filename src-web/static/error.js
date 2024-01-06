@@ -1,5 +1,6 @@
 async function handle(response) {
     //The SeeOther functionality was scrapped to be specific for certain JS files.
+    //They will be path-specific concepts.
     if (!response.ok) {
         const answer = await response.json();
         throw {msg: answer.message, for_user: answer.for_user};
@@ -16,4 +17,14 @@ function notify(error){
     } else {
         console.log(error);
     }
+}
+
+function redirect(url){
+    window.location.assign(url);
+    window.location.reload();
+}
+
+function direct(url){
+    window.location.replace(url);
+    // window.location.reload();
 }

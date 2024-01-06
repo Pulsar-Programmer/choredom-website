@@ -1,5 +1,5 @@
 function settings_post(){
-    let url = 'http://localhost:8080/settings-post';
+    let url = '/settings-post';
 
     let username = document.getElementById('username').value;
     // let password = document.getElementById('password-confirmation').value;
@@ -35,7 +35,9 @@ function settings_post(){
         body: JSON.stringify(data), 
     })
     .then(handle)
-    .then(data => console.log(data))
+    .then(_ => {
+        redirect("/settings");
+    })
     .catch(notify);
 }
 

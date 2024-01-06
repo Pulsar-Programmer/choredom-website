@@ -1,4 +1,4 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::NOUSER};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::{NOUSER, SUCCESS}};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
 use actix_files::{NamedFile, Directory};
@@ -289,7 +289,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
 
 
 #[post("/settings-post")]
-pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsData>, data: Data<AppData>) -> impl Responder{
+pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
     let true = settings_data.is_valid() else { return RainError::for_js_user("Invalid given data.") };
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
@@ -298,16 +298,16 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     let mut db: tokio::sync::MutexGuard<'_, surrealdb::Surreal<surrealdb::engine::remote::ws::Client>> = data.db.lock().await;
     //I cannot believe I literally forgot to implement this feature
     if settings_data.username != username{
-        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username", ("username", &settings_data.username)).await else { return RainError::for_html_stderr()};
+        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username", ("username", &settings_data.username)).await else { return RainError::for_js("Issue querying account.")};
         if !v.is_empty(){
-            return RainError::for_html("This username is taken!");
+            return RainError::for_js_user("This username is taken!");
         }
     }
-    let Ok(Some(a)) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &username)).await else { return RainError::for_html_stderr()};
+    let Ok(Some(a)) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &username)).await else { return RainError::for_js("Account not found or not queried.")};
     if settings_data.displayname != a.displayname{
-        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE displayname=$displayname", ("displayname", &settings_data.displayname)).await else { return RainError::for_html_stderr()};
+        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE displayname=$displayname", ("displayname", &settings_data.displayname)).await else { return RainError::for_js("Issue querying account.")};
         if !v.is_empty(){
-            return RainError::for_html("This displayname is taken!");
+            return RainError::for_js_user("This displayname is taken!");
         }
     }
     
@@ -322,10 +322,11 @@ pub async fn settings_post(identity: Option<Identity>, setting: Form<SettingsDat
     WHERE username = $username2;
     ";
     
-    let Ok(..) = sole_query(&mut db, surrealql, settings_data).await else { return RainError::for_html_stderr()};
+    if let Err(e) = sole_query(&mut db, surrealql, settings_data).await { return RainError::for_js(e)};
     //might get a runtime error bcs of surrealql since password field is unused?
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    HttpResponse::Ok().finish()
 }
 
 #[get("/settings/upload")]
@@ -764,6 +765,5 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
     //if there is no account it will be -> id: account:NONE
     let mut db = data.db.lock().await;
     let Ok(_) = sole_query(&mut db, surrealql, info).await else{ return RainError::for_html_stderr() };
-    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/contacts")).body(CONTACT)
-    HttpResponse::Ok().body("Dispute form successfully sent!")
+    HttpResponse::Ok().body(SUCCESS)
 }
