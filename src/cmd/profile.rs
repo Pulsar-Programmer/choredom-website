@@ -303,13 +303,13 @@ pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsDat
             return RainError::for_js_user("This username is taken!");
         }
     }
-    let Ok(Some(a)) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &username)).await else { return RainError::for_js("Account not found or not queried.")};
-    if settings_data.displayname != a.displayname{
-        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE displayname=$displayname", ("displayname", &settings_data.displayname)).await else { return RainError::for_js("Issue querying account.")};
-        if !v.is_empty(){
-            return RainError::for_js_user("This displayname is taken!");
-        }
-    }
+    // let Ok(Some(a)) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &username)).await else { return RainError::for_js("Account not found or not queried.")};
+    // if settings_data.displayname != a.displayname{
+    //     let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE displayname=$displayname", ("displayname", &settings_data.displayname)).await else { return RainError::for_js("Issue querying account.")};
+    //     if !v.is_empty(){
+    //         return RainError::for_js_user("This displayname is taken!");
+    //     }
+    // } //People can have same displayname, right?
     
     //woah i forgot you could compose it like this... 
     let settings_data = SettingsData2::new(settings_data, username);
