@@ -16,7 +16,7 @@ pub mod sites{
         POST; "post",
         TASK; "task",
         SIGNUP; "signup",
-        EMAIL; "email",
+        // EMAIL; "email",
         UPLOAD; "upload",
         SETTINGS; "settings",
         PROFILE; "profile",

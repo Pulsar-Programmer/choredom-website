@@ -1,8 +1,9 @@
-use super::sites::{SIGNUP, EMAIL, LOGIN, HOMEPAGE, EMAIL_LOG};
+use super::sites::{SIGNUP, LOGIN, HOMEPAGE, EMAIL_LOG};
 use crate::AppData;
 use crate::db::{query_once, sole_query};
 use actix_identity::Identity;
 use actix_web::http::header;
+use actix_web::web::Json;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
 use chrono::{Utc, Duration};
 use lettre::transport::smtp::response::Response;
@@ -13,20 +14,6 @@ use crate::RainError as r;
 #[derive(serde::Deserialize)]
 pub struct SignupTransmitter{
     pub code: i64,
-}
-
-#[derive(serde::Deserialize)]
-pub struct SignupData {
-    email: String,
-    password: String,
-    username: String,
-    displayname: String,
-    location: String,
-}
-
-#[derive(serde::Deserialize)]
-pub struct Code{
-    pub code: i64
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
@@ -103,13 +90,27 @@ impl AccountPage{
     }
 }
 
+#[derive(serde::Deserialize)]
+pub struct SignupData {
+    email: String,
+    password: String,
+    username: String,
+    displayname: String,
+    location: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct Code{
+    pub code: i64
+}
+
 #[get("/signup")]
 pub async fn signup() -> impl Responder{
     HttpResponse::Ok().body(SIGNUP)
 }
 
 #[post("/verify-email")]
-pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Form<SignupData>) -> impl Responder{
+pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Json<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
     let true = satisfies_displayname(&displayname) else { return r::for_html("Invalid displayname!")};
     let true = satisfies_username(&username) else { return r::for_html("Invalid username!")};
@@ -140,7 +141,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 
     let Ok(..) = transmission_transmit("account", &session, account) else { return r::for_html_stderr() };
 
-    HttpResponse::Ok().body(EMAIL)
+    HttpResponse::Ok().finish()
 }
 
 //you are gonna have to add a middle man : get.
