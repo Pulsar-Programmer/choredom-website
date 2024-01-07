@@ -30,40 +30,39 @@ function signup_request(){
     .then(handle)
     .then(_ => {
         initiate_verification();
-        // redirect("/post-job");
-    })
+    }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
     .catch(notify);
 }
 
-window.addEventListener("load", function() {
-        // const submitButton = form.querySelector('input[type="submit"]');
-    // submitButton.addEventListener("click", function(event) {
-    const form = document.getElementById("signupForm");
-    form.addEventListener("submit", function(event) {
-        let password1Field = document.getElementById("password");
-        let password2Field = document.getElementById("password2");
+// window.addEventListener("load", function() {
+//         // const submitButton = form.querySelector('input[type="submit"]');
+//     // submitButton.addEventListener("click", function(event) {
+//     const form = document.getElementById("signupForm");
+//     form.addEventListener("submit", function(event) {
+//         let password1Field = document.getElementById("password");
+//         let password2Field = document.getElementById("password2");
 
-        // let inputFields = form.getElementsByTagName('input');
+//         // let inputFields = form.getElementsByTagName('input');
         
-        // // Loop through each input field
-        // for(let i = 0; i < inputFields.length; i++) {
-        //     // Check if the input field is empty
-        //     if (inputFields[i].type == "submit"){
-        //         continue;
-        //     }
-        //     if(inputFields[i].value == "" || inputFields[i].value == null) {
-        //         alert('Please fill all the fields');
-        //         event.preventDefault(); // prevents the form from submitting
-        //         return; // exit the loop
-        //     }
-        // }
+//         // // Loop through each input field
+//         // for(let i = 0; i < inputFields.length; i++) {
+//         //     // Check if the input field is empty
+//         //     if (inputFields[i].type == "submit"){
+//         //         continue;
+//         //     }
+//         //     if(inputFields[i].value == "" || inputFields[i].value == null) {
+//         //         alert('Please fill all the fields');
+//         //         event.preventDefault(); // prevents the form from submitting
+//         //         return; // exit the loop
+//         //     }
+//         // }
         
-        if (password2Field.value !== password1Field.value){
-            alert('Passwords do not match. Please try again.');
-            event.preventDefault(); // prevents the form from submitting
-        } else {
-            password2Field.disabled = true; // disables the password2 field
-            form.submit(); // now submit the form as is
-        }
-    });
-});
+//         if (password2Field.value !== password1Field.value){
+//             alert('Passwords do not match. Please try again.');
+//             event.preventDefault(); // prevents the form from submitting
+//         } else {
+//             password2Field.disabled = true; // disables the password2 field
+//             form.submit(); // now submit the form as is
+//         }
+//     });
+// });

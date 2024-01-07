@@ -5,7 +5,12 @@ async function handle(response) {
         const answer = await response.json();
         throw {msg: answer.message, for_user: answer.for_user};
     }
-    return response.json();
+    let text = await response.text();
+    try {
+        return Promise.resolve(JSON.parse(text));
+    } catch (_error) {
+        return Promise.resolve("");
+    }
 }
 
 function notify(error){

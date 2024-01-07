@@ -112,34 +112,34 @@ pub async fn signup() -> impl Responder{
 #[post("/verify-email")]
 pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Json<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
-    let true = satisfies_displayname(&displayname) else { return r::for_html("Invalid displayname!")};
-    let true = satisfies_username(&username) else { return r::for_html("Invalid username!")};
-    let true = satisfies_email(&to_email) else { return r::for_html("Invalid email!")};
-    let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
+    let true = satisfies_displayname(&displayname) else { return r::for_js_user("Invalid displayname!")};
+    let true = satisfies_username(&username) else { return r::for_js_user("Invalid username!")};
+    let true = satisfies_email(&to_email) else { return r::for_js_user("Invalid email!")};
+    let true = satisifies_password(&password) else { return r::for_js_user("Invalid password!")};
     //how much let is too much let? when does pattern matching become TOO op?
 
     let to_email = to_email.trim();
     let mut db = app_data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_html_stderr()};
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_js("Error querying account.")};
     let len1 = result.len();
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await else { return r::for_html_stderr()};
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await else { return r::for_js("Error querying account x2.")};
     let len2 = result.len();
     if len1 >= 1 {
-        return r::for_html("That username is taken. Choose a different username.")
+        return r::for_js_user("That username is taken. Choose a different username.")
     }
     if len1 != len2{
-        return r::for_html("That email is taken. Choose a different email.")
+        return r::for_js_user("That email is taken. Choose a different email.")
     }
     let code = rand::thread_rng().gen_range(100000..1000000);
     // transmission_transmit("signup", &session, code).unwrap();
-    let Ok(..) = signup_transmission_transmit(&session, code.to_string()) else { return r::for_html_stderr() };
-    let Ok(..) = confirmation_email(to_email, &displayname, code) else { return r::for_html_stderr() };
+    if let Err(e) = signup_transmission_transmit(&session, code.to_string()) { return r::for_js(e) };
+    if let Err(e) = confirmation_email(to_email, &displayname, code) { return r::for_js(e) };
 
-    let Ok((password, salt)) = password_hash_argon2(password) else { return r::for_html_stderr() };
+    let Ok((password, salt)) = password_hash_argon2(password) else { return r::for_js("Error hashing password.") };
 
     let account: Account = Account::new(username.clone(), displayname , password, salt.to_string(), to_email.to_string(), location);
 
-    let Ok(..) = transmission_transmit("account", &session, account) else { return r::for_html_stderr() };
+    if let Err(e) = transmission_transmit("account", &session, account) { return r::for_js(e) };
 
     HttpResponse::Ok().finish()
 }

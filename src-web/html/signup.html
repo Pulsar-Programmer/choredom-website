@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./src-web/static/signup.css">
+  <link rel="stylesheet" href="/src-web/static/signup.css">
 </head>
 <body>
   <header>
@@ -34,7 +34,7 @@
     <select required name="location" id="city" style="width: 300px;">
     </select>
   </div>
-  <input type="submit" class="continue button is-primary">
+  <button onclick="signup_request()">Create Account</button>
 </div>
 <body>
   <footer>
@@ -43,4 +43,5 @@
 </body>
 <script src="/src-web/static/error.js"></script>
 <script src="/src-web/static/verify.js"></script>
+<script src="/src-web/static/signup.js"></script>
 <script defer src="/src-web/static/us-cities.js"></script>
