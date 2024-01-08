@@ -621,7 +621,7 @@ pub async fn home_redirect_settings(session: Session, code: Form<super::signup::
     //Remove it one case yet obtain it in another
     let new_email: String = if let Ok(i) = transmission_receive("set", &session) {i} else { return RainError::for_html_stderr()};
     
-    let Ok(password_matches) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_html_stderr()};
+    let Ok(password_matches) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_html_stderr()};
 
     if !password_matches{
         return RainError::for_html("Passwords do not match!");

@@ -101,7 +101,7 @@ pub struct SignupData {
 
 #[derive(serde::Deserialize)]
 pub struct Code{
-    pub code: i64
+    pub code: String
 }
 
 #[get("/signup")]
@@ -145,22 +145,21 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 }
 
 #[post("/ve")]
-pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
-    let Ok(transmitter) = signup_transmission_receive(&session) else { return r::for_html_stderr() };
+pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
+    let Ok(transmitter) = signup_transmission_receive(&session) else { return r::for_js("Metronome factory.") };
     //Remove in one case and obtain in another
-    let Ok(account) = transmission_receive::<Account>("account", &session) else { return r::for_html_stderr() };
+    let Ok(account) = transmission_receive::<Account>("account", &session) else { return r::for_js("Error getting account.") };
 
-    let Ok(passwords_match) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr() };
+    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_js("Error w/ code.") };
 
     if !passwords_match{
-        return r::for_html("Codes don't match!")
-        // return HttpResponse::SeeOther().append_header((header::LOCATION, "/signup")).body(SIGNUP)
+        return r::for_js_user("Codes don't match!")
     }
     let mut db = data.db.lock().await;
 
     //We want to create the account only AFTER we verify codes.
 
-    let Ok(..) = sole_query(&mut db, r#"
+    if let Err(e) = sole_query(&mut db, r#"
     CREATE accounts
     SET
     username = $username,
@@ -173,12 +172,11 @@ pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web:
     password_salt = $password_salt,
     balance = $balance,
     location = $location;
-    "#, Some(&account)).await else { return r::for_html_stderr() };
+    "#, Some(&account)).await { return r::for_js(e) };
 
-    let Ok(..) = login_user(&request, account.username) else { return r::for_html_stderr() };
+    if let Err(e) = login_user(&request, account.username) { return r::for_js(e) };
 
-    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
-    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+    HttpResponse::Ok().finish()
 }
 
 
@@ -278,7 +276,7 @@ pub async fn home_redirect_login(session: Session, code: Form<Code>, request: Ht
     //Remove in one case and obtain in another
     let Ok(username) = transmission_receive::<String>("log", &session) else { return r::for_html_stderr()};
 
-    let Ok(passwords_match) = verify_password(&code.into_inner().code.to_string(), &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr()};
 
     if !passwords_match{
         return r::for_html("Codes don't match!")
