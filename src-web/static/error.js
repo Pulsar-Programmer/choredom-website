@@ -28,7 +28,7 @@ function redirect(url){
     window.location.assign(url);
     setTimeout(() => {
         window.location.reload();
-    }, 0);
+    }, 100);
 }
 
 function direct(url){

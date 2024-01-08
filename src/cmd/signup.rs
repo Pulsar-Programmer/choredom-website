@@ -146,11 +146,16 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
 
 #[post("/ve")]
 pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
-    let Ok(transmitter) = signup_transmission_receive(&session) else { return r::for_js("Metronome factory.") };
+    let transmitter = match signup_transmission_receive(&session) {
+        Ok(t) => t,
+        Err(e) => return r::for_js_user(e),
+    };
+    
+    // { return  };
     //Remove in one case and obtain in another
     let Ok(account) = transmission_receive::<Account>("account", &session) else { return r::for_js("Error getting account.") };
 
-    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_js("Error w/ code.") };
+    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_js("Metronome factory.") };
 
     if !passwords_match{
         return r::for_js_user("Codes don't match!")

@@ -30,7 +30,7 @@ function signup_request(){
     })
     .then(handle)
     .then(_ => {
-        initiate_verification();
+        initiate_verification("/ve");
     }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
     .catch(notify);
 }
