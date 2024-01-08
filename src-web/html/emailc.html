@@ -6,7 +6,7 @@
 <body>
     <h2>Change Email</h2>
 
-    <form id="emailForm" method="post" action="/settings/email/form">
+    <div id="verify_replacable">
         <label for="currentemail">Current email:</label><br>
         <input type="email" id="currentemail" name="e_old" required><br>
 
@@ -14,9 +14,12 @@
         <input id="newEmail" name="e_new" type="email"pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Should only contain valid characters only"required><br>
 
         <label for="currentPassword">Current Password:</label><br>
-        <input name="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"> 
+        <input id="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"> 
 
-        <input type="submit" value="Change Email">
-    </form>
+        <button onclick="emailc_request()">Change Email</button>
+    </div>
 </body>
+<script src="/src-web/static/emailc.js"></script>
+<script src="/src-web/static/error.js"></script>
+<script src="/src-web/static/verify.js"></script>
 </html>

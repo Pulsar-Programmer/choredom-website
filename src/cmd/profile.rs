@@ -1,6 +1,6 @@
 use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::{NOUSER, SUCCESS}};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
-use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, EMAIL_CHANGE_VERIFY, NOLOG};
+use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, NOLOG};
 use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -581,33 +581,33 @@ pub struct EmailData{
 }
 
 #[post("/settings/email/form")]
-pub async fn settings_email(identity: Option<Identity>, form: Form<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
+pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
     let EmailData {e_old:current_email_input,e_new:new_email, password: entered_pass } = form.into_inner();
     if !satisfies_email(&new_email){
-        return RainError::for_html("The new email does not exist!")
+        return RainError::for_js_user("The new email does not exist!")
     }
 
     let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
-    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_html_stderr()};
-    let Some(q2) = q1.get(0) else { return RainError::for_html_stderr()};
+    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Wahoo!")};
+    let Some(q2) = q1.get(0) else { return RainError::for_js("No account!")};
     if q2.email != current_email_input{
-        return RainError::for_html("Emails do not match!");
+        return RainError::for_js_user("Emails do not match!");
     }
     
-    let Ok(passwords_match) = verify_password(&entered_pass, &q2.password, &q2.password_salt) else { return RainError::for_html_stderr() };
+    let Ok(passwords_match) = verify_password(&entered_pass, &q2.password, &q2.password_salt) else { return RainError::for_js("Day da!") };
     if !passwords_match{
-        return RainError::for_html("Password is incorrect!");
+        return RainError::for_js_user("Password is incorrect!");
     }
 
     //use current_email_input to email
     use rand::Rng;
     let code = rand::thread_rng().gen_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
-    let Ok(..) = settings_transmission_transmit(&session, code.to_string()) else { return RainError::for_html_stderr()};
-    let Ok(..) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code) else { return RainError::for_html_stderr()};
-    let Ok(..) = transmission_transmit("set", &session, new_email) else { return RainError::for_html_stderr()};
+    if let Err(e) = settings_transmission_transmit(&session, code.to_string()) { return RainError::for_js(e)}
+    if let Err(e) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code) { return RainError::for_js(e)}
+    if let Err(e) = transmission_transmit("set", &session, new_email) { return RainError::for_js(e)}
 
-    HttpResponse::Ok().body(EMAIL_CHANGE_VERIFY)
+    HttpResponse::Ok().finish()
 }
 
 fn settings_verification_email(email: &String, displayname: &String, new_email: &String, code: i32) -> anyhow::Result<lettre::transport::smtp::response::Response>{
@@ -616,21 +616,25 @@ fn settings_verification_email(email: &String, displayname: &String, new_email: 
 }
 
 #[post("/ve_set")]
-pub async fn home_redirect_settings(session: Session, code: Form<super::signup::Code>, data: Data<AppData>) -> impl Responder{
-    let Ok(transmitter) = settings_transmission_receive(&session) else { return RainError::for_html_stderr() };
+pub async fn home_redirect_settings(session: Session, code: Json<super::signup::Code>, data: Data<AppData>) -> impl Responder{
+    let transmitter = match settings_transmission_receive(&session){
+        Ok(t) => t,
+        Err(e) => return RainError::for_js_user(e),
+    };
     //Remove it one case yet obtain it in another
-    let new_email: String = if let Ok(i) = transmission_receive("set", &session) {i} else { return RainError::for_html_stderr()};
+    let new_email: String = if let Ok(i) = transmission_receive("set", &session) {i} else { return RainError::for_js("Mario.")};
     
-    let Ok(password_matches) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_html_stderr()};
+    let Ok(password_matches) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_js("Mamma mia!")};
 
     if !password_matches{
-        return RainError::for_html("Passwords do not match!");
+        return RainError::for_js_user("Passwords do not match!");
     }
 
     let mut db = data.db.lock().await;
-    if sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await.is_err() { return RainError::for_html_stderr()};
+    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await { return RainError::for_js(e)};
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/operation_successful")).body(super::sites::SUCCESS)
+    // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/operation_successful")).body(super::sites::SUCCESS)
+    HttpResponse::Ok().finish()
 }
 
 
