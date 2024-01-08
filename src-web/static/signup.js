@@ -10,6 +10,7 @@ function signup_request(){
 
     if (password2 !== password1){
         alert('Passwords do not match. Please try again.');
+        return;
     }
 
     let data = {

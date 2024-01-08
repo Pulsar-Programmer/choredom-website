@@ -144,8 +144,6 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     HttpResponse::Ok().finish()
 }
 
-//you are gonna have to add a middle man : get.
-
 #[post("/ve")]
 pub async fn home_redirect_signup(session: Session, code: Form<Code>, data: web::Data<AppData>, request: HttpRequest) -> impl Responder{
     let Ok(transmitter) = signup_transmission_receive(&session) else { return r::for_html_stderr() };

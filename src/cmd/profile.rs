@@ -225,8 +225,7 @@ pub struct SettingsData{
     username: String,
     displayname: String,
     location: String,
-    bio: String,
-    // pfp_pic: 
+    bio: String, 
 }
 impl SettingsData{
     fn is_valid(&self) -> bool{
@@ -241,7 +240,6 @@ pub struct SettingsData2{
     displayname: String,
     location: String,
     bio: String,
-    // pfp_pic: 
 }
 impl SettingsData2{
     fn new(data: SettingsData, username2: String) -> Self{
@@ -311,7 +309,7 @@ pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsDat
     //     }
     // } //People can have same displayname, right?
     
-    //woah i forgot you could compose it like this... 
+    //woah i forgot you could compose it like this... << u can't silly I just made a special function to make it into fields lmao
     let settings_data = SettingsData2::new(settings_data, username);
     
     let surrealql = "UPDATE accounts SET
