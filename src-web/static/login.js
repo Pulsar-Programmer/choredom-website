@@ -1,29 +1,24 @@
-// // Attach a submit event listener to the form
-// document.querySelector('form').addEventListener('submit', async (event) => {
-//     // Prevent the form from submitting normally
-//     event.preventDefault();
-  
-//     // Get the email and password from the form
-//     const email = document.querySelector('input[name="email"]').value;
-//     const password = document.querySelector('input[name="password"]').value;
-  
-//     // Query the surrealDB for the user
-//     const user = await surrealDB.getUserByEmail(email);
-  
-//     if (!user) {
-//       alert('No user found with this email');
-//       return;
-//     }
-  
-//     // Compare the provided password with the stored password
-//     const isMatch = await surrealDB.comparePassword(password, user.password);
-  
-//     if (!isMatch) {
-//       alert('Incorrect password');
-//       return;
-//     }
-  
-//     // If the email and password match, proceed with sign-in
-//     // This could be redirecting to another page, showing a welcome message, etc.
-//     alert('Sign in successful');
-//   });
+
+function login_request(){
+    
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    let data = {
+        email: email,
+        password: password,
+    }
+
+    fetch("/signin", {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), 
+    })
+    .then(handle)
+    .then(_ => {
+        initiate_verification("/ve_log");
+    }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
+    .catch(notify);
+}

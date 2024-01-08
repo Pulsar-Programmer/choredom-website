@@ -21,12 +21,13 @@
         </nav>
       </header>
 <main>
-<form action="/signin" method="POST">
+<div id="verify_replacable">
   <!-- We don't need the Regex requirements here since it matches against the DB. -->
-<input type="email" name="email" placeholder="Email" id="email">
-<input type="password" name="password" placeholder="Password">
-<input type="submit" value="Sign In">
-</form>
+  <input type="email" name="email" placeholder="Email" id="email">
+  <input type="password" name="password" placeholder="Password">
+  <input type="submit" value="Sign In">
+  <button onclick="login_request()">Sign In</button>
+</div>
 </main>
 
 <footer>
@@ -34,4 +35,7 @@
     <img src="src-web/assets/background.jpg" alt="Background Image">
   </footer>
 </body>
+<script src="/src-web/static/login.js"></script>
+<script src="/src-web/static/error.js"></script>
+<script src="/src-web/static/verify.js"></script>
 </html>

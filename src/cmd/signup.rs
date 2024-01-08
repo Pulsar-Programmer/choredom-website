@@ -1,4 +1,4 @@
-use super::sites::{SIGNUP, LOGIN, HOMEPAGE, EMAIL_LOG};
+use super::sites::{SIGNUP, LOGIN, HOMEPAGE};
 use crate::AppData;
 use crate::db::{query_once, sole_query};
 use actix_identity::Identity;
@@ -248,7 +248,7 @@ pub async fn login() -> impl Responder{
 }
 
 #[post("/signin")] // will this work if we choose homepage instead? ERROR ERROR PLEASE SEE ME
-pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
+pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: Session) -> impl Responder{
     let LoginData { email, password } = form.into_inner();
 
     // let true = satisfies_email(&email) else { return r::for_html("Invalid email!")};
@@ -257,38 +257,41 @@ pub async fn signin(form: Form<LoginData>, data : web::Data<AppData>, session: S
 
     let email = email.trim();
     let mut db = data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_html_stderr()};
-    let Some(account) = result.get(0) else { return r::for_html("Ensure to create the account, first!")};
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_js("Account query issue.")};
+    let Some(account) = result.get(0) else { return r::for_js_user("Account not found. Ensure to create the account, first!")};
 
-    let Ok(passwords_match) = verify_password(&password, &account.password, &account.password_salt) else { return r::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&password, &account.password, &account.password_salt) else { return r::for_js("Password verification error.")};
 
     if !passwords_match{
-        return r::for_html("Passwords don't match!");
+        return r::for_js_user("Passwords don't match!");
     }
     
     let code = rand::thread_rng().gen_range(100000..1000000);
-    let Ok(..) = login_transmission_transmit(&session, code.to_string()) else { return r::for_html_stderr()};
-    let Ok(..) = confirmation_email(&account.email, &account.displayname, code) else { return r::for_html("Error sending email.") };
-    let Ok(..) = transmission_transmit("log", &session, account.username.clone()) else { return r::for_html_stderr()};
-    HttpResponse::Ok().body(EMAIL_LOG)
+    if let Err(e) = login_transmission_transmit(&session, code.to_string()) { return r::for_js(e)};
+    if let Err(e) = confirmation_email(&account.email, &account.displayname, code) { return r::for_js(e) };
+    if let Err(e) = transmission_transmit("log", &session, account.username.clone()) { return r::for_js(e)};
+    HttpResponse::Ok().finish()
     // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
 }
 
 
 #[post("/ve_log")]
-pub async fn home_redirect_login(session: Session, code: Form<Code>, request: HttpRequest) -> impl Responder{
-    let Ok(transmitter) = login_transmission_receive(&session) else{ return r::for_html_stderr()};
+pub async fn home_redirect_login(session: Session, code: Json<Code>, request: HttpRequest) -> impl Responder{
+    let transmitter = match login_transmission_receive(&session) {
+        Ok(t) => t,
+        Err(e) => return r::for_js_user(e),
+    };
     //Remove in one case and obtain in another
-    let Ok(username) = transmission_receive::<String>("log", &session) else { return r::for_html_stderr()};
+    let Ok(username) = transmission_receive::<String>("log", &session) else { return r::for_js("Error..!")};
 
-    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return r::for_js("Chains on me.")};
 
     if !passwords_match{
-        return r::for_html("Codes don't match!")
+        return r::for_js_user("Codes don't match!")
     }
-    let Ok(..) = login_user(&request, username) else { return r::for_html_stderr()};
-    // HttpResponse::TemporaryRedirect().append_header(("Location", "/")).body(HOMEPAGE)
-    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+    if let Err(e) = login_user(&request, username) { return r::for_js(e)};
+
+    HttpResponse::Ok().finish()
 }
 
 
