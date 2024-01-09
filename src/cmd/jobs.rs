@@ -123,8 +123,8 @@ pub async fn tasks(identity: Option<Identity>) -> impl Responder{
 pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> impl Responder{
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let Ok(mut res2) = query_once::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", ("location", address)).await else { return RainError::for_js("Location query error.")};
-    let result: Vec<_> = res2.iter_mut().map(|a|{
+    let Ok(res2) = query_once::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", ("location", address)).await else { return RainError::for_js("Location query error.")};
+    let result: Vec<_> = res2.into_iter().map(|mut a|{
         a.timestamp_converted().unwrap_or_default();
         a
     }).collect();
