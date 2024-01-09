@@ -1,7 +1,7 @@
 <head>
   <link rel="stylesheet" type="text/css" href="/src-web/static/settings.css">
 </head>
-  <form action="/settings-post" method="POST">
+  <div>
     <label for="username">Username:</label><br>
     <input type="text" id="username" name="username"pattern="^[A-Za-z0-9]+$" title="Should only contain letters and numbers"required><br>
 
@@ -20,8 +20,9 @@
 
     <label for="bio">Bio:</label><br>
     <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea><br>
-    <input type="submit" value="Submit">
-  </form>
+    <!-- <input type="submit" value="Submit"> -->
+    <button onclick="settings_post()">Submit</button>
+  </div>
 
   <div>
     Current Profile Picture:
