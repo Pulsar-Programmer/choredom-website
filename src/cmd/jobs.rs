@@ -11,7 +11,7 @@ pub struct JobData{
     title: String,
     body: String,
     time: String, 
-    price: f32,
+    price: String,
     location: String,
 }
 
@@ -54,7 +54,9 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return RainError::for_js_user("Ensure to enter a valid date!")};
     let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return RainError::for_js_user("Ensure to enter a valid date!")};
     //time is written in the format: yyyy-mm-dd
-    if price.is_nan() || price.is_infinite() {
+    let Ok(price) = price.parse::<f32>() else { return RainError::for_js_user("The price could not be resolved.")};
+
+    if price.is_nan() || price.is_infinite() || price <= 0. {
         return RainError::for_js_user("Enter a valid price!")
     }
 

@@ -4,7 +4,16 @@ function submit_post(){
     let location = document.getElementById("city").value;
     let time = document.getElementById("time").value;
     let price = document.getElementById("price").value;
-    let jobdata = {title: title, body: body, location: location, time: time, price: parseFloat(price)};
+    // try {
+    //     price = parseFloat(price);
+    // } catch (error) {
+    //     alert("The amount of money could not be resolved. Please try again.");
+    //     return;
+    // }
+    // if(price === undefined || price === null){
+        
+    // }
+    let jobdata = {title: title, body: body, location: location, time: time, price: price};
 
     fetch("/post-job-2", {
         method: 'POST', 
