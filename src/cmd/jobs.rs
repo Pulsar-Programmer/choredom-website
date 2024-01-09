@@ -123,7 +123,7 @@ pub async fn tasks(identity: Option<Identity>) -> impl Responder{
 pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> impl Responder{
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let Ok(res2) = query_once::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user.accounts;", ("location", address)).await else { return RainError::for_js("Location query error.")};
+    let Ok(res2) = query_once::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user;", ("location", address)).await else { return RainError::for_js("Location query error.")};
     let result: Vec<_> = res2.into_iter().map(|mut a|{
         a.timestamp_converted().unwrap_or_default();
         a
@@ -135,15 +135,25 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
 struct JobPost{
     id: Thing,
     
-    data: JobData,
+    data: JobPostData,
 
     user: JobRecordLink,
 }
 impl JobPost{
     fn timestamp_converted(&mut self) -> Result<(), Box<dyn std::error::Error>>{
         self.data.time = convert_timestamp(&self.data.time)?;
+        // self.data.price /= 100.;
         Ok(())
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct JobPostData{
+    title: String,
+    body: String,
+    time: String,
+    price: u32, 
+    location: String,
 }
 
 
