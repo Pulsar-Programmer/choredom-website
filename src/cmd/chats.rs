@@ -376,36 +376,72 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
 
 
 
-use actix_web_lab::sse;
-use tokio::sync::mpsc;
-use std::time::Duration;
+// use actix_web_lab::sse;
+// use tokio::sync::mpsc;
+// use std::time::Duration;
 
-#[get("/chat-updates/{opposite}")]
-pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
-    let (tx, rx) = mpsc::channel(10);
-    //maybe make a timer that disables after a certain time bcs this could be intensive?
-    println!("I think I see you!!!!!");
-    let self_ = match unwrap_identity(self_){
-        Ok(i) => i,
-        Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
-    };
-    let opposite = opposite.into_inner();
-    let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
-    let room_id = RoomID::create([opposite, self_]);
+// #[get("/chat-updates/{opposite}")]
+// pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
+//     let (tx, rx) = mpsc::channel(10);
+//     //maybe make a timer that disables after a certain time bcs this could be intensive?
+//     println!("I think I see you!!!!!");
+//     let self_ = match unwrap_identity(self_){
+//         Ok(i) => i,
+//         Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
+//     };
+//     let opposite = opposite.into_inner();
+//     let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
+//     let room_id = RoomID::create([opposite, self_]);
 
-    tokio::spawn(async move {
-        let mut db = data.db.lock().await;
-        loop {
-            //I would think this is just as bad but Phind told me otherwise
-            if let Ok(None) = query_once_option::<ChatDBGiven>(&mut db, query, ("room_id", &room_id)).await{
-                continue;
-            }
-            if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
-                println!("CLIENT DISCONNECT ERROR");
-                break;
-            }
-        }
-    });
+//     tokio::spawn(async move {
+//         let mut db = data.db.lock().await;
+//         loop {
+//             //I would think this is just as bad but Phind told me otherwise
+//             if let Ok(None) = query_once_option::<ChatDBGiven>(&mut db, query, ("room_id", &room_id)).await{
+//                 continue;
+//             }
+//             if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
+//                 println!("CLIENT DISCONNECT ERROR");
+//                 break;
+//             }
+//         }
+//     });
 
-    sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
-}
+//     sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
+// }
+
+
+// use actix::prelude::*;
+// use actix_web::{web, Error};
+// use actix_web_actors::ws;
+
+// #[get("/chat/updates")]
+// async fn websocket_route(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
+//     ws::start(
+//        WsSession {},
+//        &req,
+//        stream,
+//     )
+// }
+
+// struct WsSession;
+
+// impl Actor for WsSession {
+//    type Context = ws::WebsocketContext<Self>;
+// }
+
+// impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
+//    fn handle(
+//        &mut self,
+//        msg: Result<ws::Message, ws::ProtocolError>,
+//        ctx: &mut Self::Context,
+//    ) {
+//        match msg {
+//            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
+//            Ok(ws::Message::Text(text)) => ctx.text(text),
+//            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
+//         //    Ok(ws::Message)
+//            _ => (),
+//        }
+//    }
+// }

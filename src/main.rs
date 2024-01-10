@@ -5,7 +5,7 @@ use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;
 use chrono::Duration;
-use cmd::chats::updates;
+// use cmd::chats::updates;
 use cmd::homepage;
 use cmd::signup::*;
 use cmd::jobs::*;
