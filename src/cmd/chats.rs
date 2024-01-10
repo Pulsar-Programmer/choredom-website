@@ -3,7 +3,7 @@ use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
-use futures_util::TryStreamExt;
+use futures_util::{TryStreamExt, StreamExt as _};
 use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
@@ -376,39 +376,49 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
 
 
 
-// use actix_web_lab::sse;
-// use tokio::sync::mpsc;
-// use std::time::Duration;
+use actix_web_lab::sse;
+use tokio::sync::mpsc;
+use std::time::Duration;
 
-// #[get("/chat-updates/{opposite}")]
-// pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
-//     let (tx, rx) = mpsc::channel(10);
-//     //maybe make a timer that disables after a certain time bcs this could be intensive?
-//     println!("I think I see you!!!!!");
-//     let self_ = match unwrap_identity(self_){
-//         Ok(i) => i,
-//         Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
-//     };
-//     let opposite = opposite.into_inner();
-//     let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
-//     let room_id = RoomID::create([opposite, self_]);
+#[get("/chat-updates/{opposite}")]
+pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
+    let (tx, rx) = mpsc::channel(10);
+    //maybe make a timer that disables after a certain time bcs this could be intensive?
+    println!("I think I see you!!!!!");
+    let self_ = match unwrap_identity(self_){
+        Ok(i) => i,
+        Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
+    };
+    let opposite = opposite.into_inner();
+    // let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
+    let room_id = RoomID::create([opposite, self_]);
+    let mut db = data.db.lock().await;
+    let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT id FROM chats WHERE room_id=$room_id);", ("room_id", room_id)).await{
+        Ok(Some(o)) => o,
+        Ok(None) => panic!("SSE None Error."),
+        Err(e) => {
+            panic!("SSE Error:{e}");
+        }
+    };
+    drop(db);
 
-//     tokio::spawn(async move {
-//         let mut db = data.db.lock().await;
-//         loop {
-//             //I would think this is just as bad but Phind told me otherwise
-//             if let Ok(None) = query_once_option::<ChatDBGiven>(&mut db, query, ("room_id", &room_id)).await{
-//                 continue;
-//             }
-//             if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
-//                 println!("CLIENT DISCONNECT ERROR");
-//                 break;
-//             }
-//         }
-//     });
+    tokio::spawn(async move {
+        let db = data.db.lock().await;
+        // Listen to updates on a specific record
+        let mut stream = db.select(("chats", id)).live().await.unwrap();
+        // The returned stream implements `futures::Stream` so we can
+        // use it with `futures::StreamExt`, for example.
+        while let Some(result) = stream.next().await {
+            let result: surrealdb::Notification<Room> = result.unwrap();
+            if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
+                println!("CLIENT DISCONNECT ERROR");
+                break;
+            }
+        }
+    });
 
-//     sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
-// }
+    sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
+}
 
 
 // use actix::prelude::*;
