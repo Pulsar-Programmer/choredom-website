@@ -355,7 +355,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
 
         if let Err(e) = verify_img(&file) { return RainError::for_js_user(e)};
         let n = n + file_count;
-        let path = format!("/tmp/chats/{uuid}/{n}.png");
+        let path = format!("./tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
         yourlinks.push_str(&format!("· https://www.choredom.com/usr/chats/{uuid}/{n}.png\n"))

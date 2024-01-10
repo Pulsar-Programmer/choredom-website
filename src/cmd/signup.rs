@@ -267,6 +267,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     }
     
     let code = rand::thread_rng().gen_range(100000..1000000);
+    println!("{code}"); //delete me when done testing
     if let Err(e) = login_transmission_transmit(&session, code.to_string()) { return r::for_js(e)};
     if let Err(e) = confirmation_email(&account.email, &account.displayname, code) { return r::for_js(e) };
     if let Err(e) = transmission_transmit("log", &session, account.username.clone()) { return r::for_js(e)};
@@ -298,10 +299,10 @@ pub async fn home_redirect_login(session: Session, code: Json<Code>, request: Ht
 #[post("/signout")]
 pub async fn signout(identity: Option<Identity>) -> impl Responder{
     let Some(identity) = identity else { return r::for_js_user("Sign in to first sign out!")};
+    // println!("Goodbye: {:?}!", logout_user(identity));
+    logout_user(identity);
 
-    println!("Goodbye: {:?}!", logout_user(identity));
-
-    HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)
+    HttpResponse::Ok().finish()
 }
 
 pub fn login_user(http_request: &HttpRequest, username: String) -> Result<Identity, actix_identity::error::LoginError>{

@@ -26,9 +26,9 @@ function notify(error){
 
 function redirect(url){
     window.location.assign(url);
-    setTimeout(() => {
-        window.location.reload();
-    }, 100);
+    // setTimeout(() => {
+    //     window.location.reload();
+    // }, 100);
 }
 
 function direct(url){

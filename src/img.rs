@@ -17,7 +17,7 @@ pub async fn process_images(form: MultipartForm<ImageUploads>, container: String
 
         verify_img(&file)?;
 
-        let path = format!("/tmp/{container}/{n}.png");
+        let path = format!("./tmp/{container}/{n}.png");
         upload_file(file, &path).await?;
         
     }

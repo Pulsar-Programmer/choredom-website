@@ -334,20 +334,23 @@ pub async fn upload(identity: Option<Identity>) -> impl Responder{
     }
     HttpResponse::Ok().body(UPLOAD)
 }
-
+#[derive(serde::Serialize)]
+struct UploadInfoToDB{
+    username: String,
+    state: super::signup::AccountState,
+}
 #[post("/settings/upload/form")]
 pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js_user("Illegal Identity Smuggling is Afoot!!!")};
     let container = format!("verification/{username}");
     if let Err(e) = process_images(form, container).await { return RainError::for_js_user(e) };
 
-    let new_state = super::signup::AccountState::PendingVerification;
-    let params = (("state", "username"), (new_state, username));
+    let params = UploadInfoToDB{ username, state: super::signup::AccountState::PendingVerification};
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
     
     if let Err(e) = sole_query(&mut * data.db.lock().await, surrealql, params).await { return RainError::for_js(e)};
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    HttpResponse::Ok().finish()
 }
 
 
@@ -654,7 +657,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     let mut images = form.into_inner().images;
     let file = images.remove(0);
     if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
-    let path = format!("/tmp/pfp/{user}/0.png");
+    let path = format!("./tmp/pfp/{user}/0.png");
     if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
     //this will aactually overwrite data so we don't need [the clear function]
 
@@ -689,7 +692,7 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
 
         if let Err(e) = verify_img(&file) {return RainError::for_js_user(e)};
 
-        let path = format!("/tmp/bio/{user}/{n}.png");
+        let path = format!("./tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
         yourlinks.push_str(&format!("· https://www.choredom.com/usr/bio/{user}/{n}.png\n"));

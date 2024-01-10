@@ -9,7 +9,7 @@ document.getElementById("signout-button").addEventListener("click", function() {
         },
     })
     .then(handle)
-    // .then(data => data)
+    .then(_ => alert("Signout successful!"))
     .catch(notify);
 
 });
