@@ -4,21 +4,22 @@
 
 
 let urlbase = window.location.href.substring(0, window.location.href.indexOf('chats')).trim();
+var path = window.location.pathname;
+var pathParts = path.split('/');
+var opposite = pathParts[pathParts.indexOf('chats') + 1];
 
 window.onload = function() {
-    var path = window.location.pathname;
-    var pathParts = path.split('/');
-    var newPath = pathParts[pathParts.indexOf('chats') + 1];
+    
     let url = urlbase + "chats_obtain";
     // console.log(url);
     // console.log(newPath);
-    document.getElementById("room-title").innerHTML = newPath;
+    document.getElementById("room-title").innerHTML = opposite;
     fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newPath),
+        body: JSON.stringify(opposite),
     })
     .then(handle)
     .then(chatsData => {
@@ -85,17 +86,17 @@ function send_chat(){
 
 ///Done. This function works 
 function receive_chat(){
-    const roomSplitter = window.location.href.split('/').filter((val) => {
-        return ! (val == "" || val == null);
-    });
-    const roomTitle = roomSplitter[roomSplitter.length - 1];
+    // const roomSplitter = window.location.href.split('/').filter((val) => {
+    //     return ! (val == "" || val == null);
+    // });
+    // const roomTitle = roomSplitter[roomSplitter.length - 1];
     // let url = urlbase + "chat/receive";
     fetch("/chat/receive", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(roomTitle),
+        body: JSON.stringify(opposite),
     })
     .then(handle)
     .then(chatsData => {
@@ -107,16 +108,16 @@ function receive_chat(){
 //Erase this when doing long polling or the SSEs.
 // setInterval(receive_chat, 10_000);
 
-var eventSource = new EventSource("/chat-updates");
+var eventSource = new EventSource(`/chat-updates/${opposite}`);
 
 eventSource.onmessage = function(event) {
     if(event.data === "UPDATE"){
         receive_chat();
-    } 
+    }
 };
 
 
-window.addEventListener('beforeunload', function (e) {
+window.addEventListener('beforeunload', function (_e) {
     eventSource.close();
 }); 
 
