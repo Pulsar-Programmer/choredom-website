@@ -72,7 +72,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let Ok(result) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return r::for_js("Error getting chats.")};
     let Some(result) = result.get(0) else {
         let room = Room{room_id, messages: Vec::new()};
-        let Ok(_) = sole_query(&mut db, "CREATE chats SET room_id=$room_id, chats=$chats;", room).await else { return r::for_js("Error creating new chat room.")};
+        let Ok(_) = sole_query(&mut db, "CREATE chats SET room_id=$room_id, messages=$messages;", room).await else { return r::for_js("Error creating new chat room.")};
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     };
     let Room { room_id: _, messages: vec } = result;
@@ -393,7 +393,7 @@ pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<
     // let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
     let room_id = RoomID::create([opposite, self_]);
     let mut db = data.db.lock().await;
-    let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT id FROM chats WHERE room_id=$room_id);", ("room_id", room_id)).await{
+    let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await{
         Ok(Some(o)) => o,
         Ok(None) => panic!("SSE None Error."),
         Err(e) => {
