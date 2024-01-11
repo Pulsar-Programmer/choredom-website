@@ -162,6 +162,16 @@ pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web:
     }
     let mut db = data.db.lock().await;
 
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &account.username)).await else { return r::for_js("Error querying account.")};
+    let len1 = result.len();
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &account.email)).await else { return r::for_js("Error querying account x2.")};
+    let len2 = result.len();
+    if len1 >= 1 {
+        return r::for_js_user("That username is taken. Choose a different username.")
+    }
+    if len1 != len2{
+        return r::for_js_user("That email is taken. Choose a different email.")
+    }
     //We want to create the account only AFTER we verify codes.
 
     if let Err(e) = sole_query(&mut db, r#"
@@ -413,8 +423,8 @@ pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &acti
 }
 pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
-    let value = session.remove(&derived_field).ok_or("Failed to transmit using transmitter.")?;
-    // session.purge(); I don't know how to fix this but for now it just breaks it.
+    let value = session.remove(&derived_field).ok_or("Failed to transmit. Please reload the page.")?;
+    // session.purge(); I don't know how to fix this but for now it just breaks it. >>> we don't need to anymore bcs new method
     Ok(serde_json::from_str(&value)?)
 }
 

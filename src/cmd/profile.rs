@@ -634,6 +634,13 @@ pub async fn home_redirect_settings(session: Session, code: Json<super::signup::
     }
 
     let mut db = data.db.lock().await;
+
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &new_email)).await else { return RainError::for_js("Error querying account x2.")};
+    let len2 = result.len();
+    if len2 >= 1{
+        return RainError::for_js_user("That email is taken. Choose a different email.")
+    }
+
     if let Err(e) = sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await { return RainError::for_js(e)};
 
     // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/operation_successful")).body(super::sites::SUCCESS)
