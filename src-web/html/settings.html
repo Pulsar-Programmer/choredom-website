@@ -46,10 +46,10 @@
   <a href="/settings/upload">Upload a Gov ID</a>
 
 
-  <form id="delete-account-form" action="/settings/delete" method="POST" >
+  <div>
       <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
-      <input type="submit" value="Delete Account">
-  </form>
+      <button onclick="delete_form()">Delete Account</button>
+  </div>
 
 
   <script src="/src-web/static/error.js"></script>

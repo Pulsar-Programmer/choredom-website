@@ -44,19 +44,6 @@ function settings_post(){
 
 window.addEventListener("load", function() {
 
-    const delete_form = document.getElementById("delete-account-form");
-    delete_form.addEventListener("submit", function(event) {
-        var passwordConfirmation = document.getElementById("password-confirmation").value;
-        if (passwordConfirmation === "") {
-            alert("Please enter your password to confirm deletion.");
-            event.preventDefault();
-        }
-        let didConfirm = confirm('Are you sure you want to delete your account? This action cannot be undone.');
-        if (didConfirm){
-            delete_form.submit();
-        }
-    });
-
     fetch('/settings/present_data', {
         method: 'POST', 
         headers: {
@@ -135,3 +122,30 @@ function upload_bio(){
     })
     .catch(notify);
 }
+
+function delete_form() {
+    var passwordConfirmation = document.getElementById("password-confirmation").value;
+    if (passwordConfirmation === "") {
+        alert("Please enter your password to confirm deletion.");
+        return;
+    }
+    let didConfirm = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+    if (!didConfirm){
+        return;
+    }
+
+    let data = {
+        password: passwordConfirmation,
+    }
+
+    fetch("/settings/delete", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(handle)
+    .then(_ => redirect("/"))
+    .catch(notify);
+};

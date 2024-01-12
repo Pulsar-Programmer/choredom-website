@@ -412,23 +412,23 @@ pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>,
 pub struct DeleteConfirmation{password:String}
 
 #[post("/settings/delete")]
-pub async fn delete(identity: Option<Identity>, password: Form<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
+pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_html_stderr()};
-    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_html_stderr()};
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_js("Error querying account in delete.")};
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_js("Account does not exist pas.")};
 
-    let Ok(passwords_match) = verify_password(&password_entered, password_db, salt) else { return RainError::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&password_entered, password_db, salt) else { return RainError::for_js("Password verification error.")};
 
     if !passwords_match {
-        return RainError::for_html("Passwords do not match!");
+        return RainError::for_js_user("Passwords do not match!");
     }
 
-    let Ok(..) = sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_html_stderr()};
+    if let Err(e) = sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await { return RainError::for_js(e)};
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/")).body(HOMEPAGE)
+    HttpResponse::Ok().finish()
 }
 
 
