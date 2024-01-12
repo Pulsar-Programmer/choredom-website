@@ -378,28 +378,28 @@ struct PasswordChangeData{
 }
 
 #[post("/settings/password/form")]
-pub async fn password_change_form(data: Data<AppData>, form: Form<PasswordData>, identity: Option<Identity>) -> impl Responder{
+pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>, identity: Option<Identity>) -> impl Responder{
 
     let PasswordData { p_old, p_new } = form.into_inner();
-    let true = satisifies_password(&p_new) else { return RainError::for_html("Invalid given new password!")};
+    let true = satisifies_password(&p_new) else { return RainError::for_js_user("Invalid given new password!")};
 
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
     let mut db = data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_html_stderr()};
-    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_html_stderr() };
+    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_js("Error querying account in passcode.")};
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_js("Fail to destructure account.") };
 
-    let Ok(..) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)) else { return RainError::for_html_stderr()};
+    if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)) { return RainError::for_js(e)};
 
-    let Ok(passwords_match) = verify_password(&p_old, p_old_2, salt) else { return RainError::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&p_old, p_old_2, salt) else { return RainError::for_js("Error verifying password.")};
 
     if !passwords_match {
-        return RainError::for_html("Passwords do not match!");
+        return RainError::for_js_user("Password is incorrect!");
     }
 
-    let Ok((password, password_salt)) = super::signup::password_hash_argon2(p_new) else { return RainError::for_html_stderr() };
-    let Ok(..) = sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await else { return RainError::for_html_stderr()};
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
+    let Ok((password, password_salt)) = super::signup::password_hash_argon2(p_new) else { return RainError::for_js("Error hashing password.") };
+    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await { return RainError::for_js(e)};
+    HttpResponse::Ok().finish()
 }
 
 

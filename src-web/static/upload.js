@@ -38,7 +38,7 @@ function upload(){
     for(f of fileInputElement.files){
         formData.append('file', f, 'filename.png');
     }
-    fetch('./upload/form', {
+    fetch('/settings/upload/form', {
         method: 'POST',
         body: formData
     })

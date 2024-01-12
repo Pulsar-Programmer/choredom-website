@@ -1,36 +1,44 @@
-window.addEventListener("load", function() {
-    const form = document.getElementById("passwordForm");
-    form.addEventListener("submit", function(event) {
+function submit_passcode(){
 
+    let currentPassword = document.getElementById("currentPassword").value;
+    let newPassword = document.getElementById("newPassword").value;
+    let confirmPasswordField = document.getElementById("confirmPassword");
 
-        let currentPassword = document.getElementById("currentPassword").value;
-        let newPassword = document.getElementById("newPassword").value;
-        let confirmPasswordField = document.getElementById("confirmPassword");
+    // Check if new password and confirm password match
+    if (newPassword !== confirmPasswordField.value) {
+        alert("New password and confirm password do not match");
+        return;
+    }
 
-        // Check if new password and confirm password match
-        if (newPassword !== confirmPasswordField.value) {
-            alert("New password and confirm password do not match");
-            event.preventDefault();
-        }
+    // Check if current password is not empty
+    if (currentPassword === "") {
+        alert("Please enter your current password");
+        return;
+    }
 
-        // Check if current password is not empty
-        if (currentPassword === "") {
-            alert("Please enter your current password");
-            event.preventDefault();
-        }
+    if (newPassword === "") {
+        alert("Please enter your current password");
+        return;
+    }
 
-        if (newPassword === "") {
-            alert("Please enter your current password");
-            event.preventDefault();
-        }
+    if (confirmPasswordField.value === "") {
+        alert("Please enter your current password");
+        return;
+    }
 
-        if (confirmPasswordField.value === "") {
-            alert("Please enter your current password");
-            event.preventDefault();
-        }
-        confirmPasswordField.disabled = true; // disables the password2 field
+    let data = {
+        p_old: currentPassword,
+        p_new: newPassword,
+    }
 
-        // now submit the form as is
-        form.submit();
-    });
-});
+    fetch('/settings/password/form', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(handle)
+    .then(_ => redirect("/settings"))
+    .catch(notify);
+}
