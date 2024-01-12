@@ -349,7 +349,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         }
     }
 
-    let mut yourlinks = String::new();
+    let mut yourlinks = Vec::new();
     let images = form.into_inner().images;
     for (n, file) in images.into_iter().enumerate() {
 
@@ -358,13 +358,12 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         let path = format!("./tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
-        yourlinks.push_str(&format!("· https://www.choredom.com/usr/chats/{uuid}/{n}.png\n"))
+        yourlinks.push(format!("https://www.choredom.com/usr/chats/{uuid}/{n}.png"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     
 
     HttpResponse::Ok().json(yourlinks)
-    //HttpResponse::Ok().json(Vec<String>)
 }
 
 

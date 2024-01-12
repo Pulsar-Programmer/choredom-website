@@ -7,8 +7,3 @@ function expandImages(msg){
         return `<img src="${url}">`;
     });
 }
-
-// function addURLToText(id, url){
-//     let textbox = document.getElementById(id);
-//     textbox.value += ` ${url}`;
-// }

@@ -166,8 +166,17 @@ function upload_chats(){
     })
     .then(handle)
     .then(data => {
-        let mylinks = String(data);
-        alert(`Successful upload! Your links are the following: \n${mylinks} You can paste the links in and they will auto-resolve.`)
+        let mylinks = Array.from(data);
+        mylinks.forEach((url) => {
+            addURLToText(url);
+        })
+        alert(`Successful Upload! Your image has been sent in chat!`);
+        send_chat();
     })
     .catch(notify);
+}
+
+function addURLToText(url){
+    let textbox = document.getElementById("message-input");
+    textbox.value += `\n ${url}`;
 }
