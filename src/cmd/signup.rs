@@ -1,10 +1,9 @@
-use super::sites::{SIGNUP, LOGIN, HOMEPAGE};
+use super::sites::{SIGNUP, LOGIN};
 use crate::AppData;
 use crate::db::{query_once, sole_query};
 use actix_identity::Identity;
-use actix_web::http::header;
 use actix_web::web::Json;
-use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web::{Form, self}, post};
+use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web, post};
 use chrono::{Utc, Duration};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
@@ -424,7 +423,6 @@ pub fn transmission_transmit<Args: serde::Serialize>(field: &str, session: &acti
 pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &str, session: &actix_session::Session) -> Result<Transmitter, Box<dyn std::error::Error>>{
     let derived_field = format!("{}_transmitter", field);
     let value = session.remove(&derived_field).ok_or("Failed to transmit. Please reload the page.")?;
-    // session.purge(); I don't know how to fix this but for now it just breaks it. >>> we don't need to anymore bcs new method
     Ok(serde_json::from_str(&value)?)
 }
 

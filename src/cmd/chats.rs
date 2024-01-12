@@ -3,7 +3,7 @@ use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
-use futures_util::{TryStreamExt, StreamExt as _};
+use futures_util::StreamExt as _;
 use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
@@ -402,7 +402,7 @@ pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<
     };
     drop(db);
 
-    tokio::spawn(async move {
+    actix_web::rt::spawn(async move {
         let db = data.db.lock().await;
         // Listen to updates on a specific record
         let mut stream = db.select(("chats", id)).live().await.unwrap();

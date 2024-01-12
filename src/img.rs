@@ -1,5 +1,4 @@
 use actix_multipart::form::{tempfile::TempFile, MultipartForm};
-use anyhow::anyhow;
 // #[derive(MultipartForm)]
 // pub struct ImageUpload {
 //     image: TempFile,

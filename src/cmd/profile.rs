@@ -464,7 +464,7 @@ struct ChangeFundData{
 
 
 #[post("/settings/funds/change")]
-async fn deposit(form: Form<FundData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
+async fn deposit(form: Json<FundData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let FundData { changed_funds, password, add } = form.into_inner();
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
