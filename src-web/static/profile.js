@@ -29,7 +29,14 @@ function prefill_profile(data){
     document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
     document.getElementById("CreationDate").innerHTML = "Joined: " + data.creation_date;
     document.getElementById("state").innerHTML = data.state;
-    document.getElementById("bio").innerHTML = expandImages(data.bio);
+    document.getElementById("bio").innerHTML = data.bio;
+    const pics = document.getElementById("pics");
+    data.bio_imgs.forEach(url => {
+        if(url === null || url === undefined || url === ""){
+            return;
+        }
+        pics.innerHTML += `<img src="${url}">`;
+    });
 
     //display rater data
     data.reviews.forEach(review => {

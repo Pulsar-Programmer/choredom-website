@@ -187,3 +187,10 @@ function addURLToText(url){
     let textbox = document.getElementById("message-input");
     textbox.value += `\n ${url}`;
 }
+
+function expandImages(msg){
+    var urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return msg.replace(urlRegex, function(url) {
+        return `<img src="${url}">`;
+    });
+}

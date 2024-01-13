@@ -1,65 +1,69 @@
 <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Profile Page</title>
-    </head>
-    <body>
-        <div class="profile">
-            <img src="" id="profile_pic" height="500" width="500">
-            <h1 id="displayName">Name: {}</h1>
-            <h2 id="username">Username: {}</h2>
-            <h3 id="AvgRating">Rating: {}</h3>
-            <h4 id="CreationDate">Joined: {}</h4>
-            <h5 id="state">{}</h5>
-            <p id="bio">{}</p>
-        </div><div class=ratings>
+<html>
+
+<head>
+  <title>Profile Page</title>
+</head>
+
 <body>
-  <header>
-    <a href="#">
-      <img src="src-web/assets/logo.png" alt="Choredom Logo">
-    </a>
-    <h1>Choredom</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="chat" id="chat-button">Chat</a>
-      <a href="tasks">Tasks in your Area</a>
-      <a href="settings">Settings</a>
-      <a href="post-job" id="post-button">Post</a>
-      <a href="#" id="signout-button">Sign Out</a>
-    </nav>
-  </header>
-</div>
   <div class="profile">
-      <div class="rating">
-          <input id="star5" type="radio" name="rating" value="5">
-          <label for="star5">5★</label>
-          <input id="star4" type="radio" name="rating" value="4">
-          <label for="star4">4★</label>
-          <input id="star3" type="radio" name="rating" value="3">
-          <label for="star3">3★</label>
-          <input id="star2" type="radio" name="rating" value="2">
-          <label for="star2">2★</label>
-          <input id="star1" type="radio" name="rating" value="1">
-          <label for="star1">1★</label>
-      </div>
-      
-      <textarea id="body" placeholder="Enter your review here..."></textarea>
-      <button onclick="submitReviewForm()">Submit rating</button>
+    <img src="" id="profile_pic" height="500" width="500">
+    <h1 id="displayName">Name: {}</h1>
+    <h2 id="username">Username: {}</h2>
+    <h3 id="AvgRating">Rating: {}</h3>
+    <h4 id="CreationDate">Joined: {}</h4>
+    <h5 id="state">{}</h5>
+    <p id="bio">{}</p>
+    <div id="pics"></div>
+  </div>
+  <div class=ratings>
+
+    <body>
+      <header>
+        <a href="#">
+          <img src="src-web/assets/logo.png" alt="Choredom Logo">
+        </a>
+        <h1>Choredom</h1>
+        <nav>
+          <a href="/">Home</a>
+          <a href="chat" id="chat-button">Chat</a>
+          <a href="tasks">Tasks in your Area</a>
+          <a href="settings">Settings</a>
+          <a href="post-job" id="post-button">Post</a>
+          <a href="#" id="signout-button">Sign Out</a>
+        </nav>
+      </header>
+  </div>
+  <div class="profile">
+    <div class="rating">
+      <input id="star5" type="radio" name="rating" value="5">
+      <label for="star5">5★</label>
+      <input id="star4" type="radio" name="rating" value="4">
+      <label for="star4">4★</label>
+      <input id="star3" type="radio" name="rating" value="3">
+      <label for="star3">3★</label>
+      <input id="star2" type="radio" name="rating" value="2">
+      <label for="star2">2★</label>
+      <input id="star1" type="radio" name="rating" value="1">
+      <label for="star1">1★</label>
+    </div>
+
+    <textarea id="body" placeholder="Enter your review here..."></textarea>
+    <button onclick="submitReviewForm()">Submit rating</button>
 
 
-      <button onclick="delete_rating()">Delete rating</button>
-      <div class="reviews">
-          <!-- Reviews will be added here -->
-      </div>
+    <button onclick="delete_rating()">Delete rating</button>
+    <div class="reviews">
+      <!-- Reviews will be added here -->
+    </div>
 
   </div>
   <footer>
-      <p>&copy; 2023 Choredom</p>
-      <img src="assets/background.jpg" alt="Background Image">
+    <p>&copy; 2023 Choredom</p>
+    <img src="assets/background.jpg" alt="Background Image">
   </footer>
   <script src="/src-web/static/error.js"></script>
   <script defer src="/src-web/static/profile.js"></script>
-  <script src="/src-web/static/img.js"></script>
   <link rel="stylesheet" href="/src-web/static/profile.css">
 </body>
 <div id="reviews"></div>

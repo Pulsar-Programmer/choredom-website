@@ -349,7 +349,7 @@ async fn chats_access(identity: Option<Identity>, uuid: Path<String>, n: Path<St
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
-
+// struct OCForm{opposite_chatter: String}
 
 #[post("/pics-chats")]
 pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>, opposite_chatter: Json<String>, data: Data<AppData>) -> impl Responder{

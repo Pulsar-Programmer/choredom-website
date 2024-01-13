@@ -27,6 +27,7 @@ struct UsersFrontData<'a>{
     creation_date: String,
     state: &'a str,
     bio: &'a String,
+    bio_imgs: &'a Vec<String>,
     reviews: &'a Vec<PageRatingData>,
 }
 
@@ -41,10 +42,11 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
         return RainError::for_js("Account does not exist.");
     };
     let Some(avg_rating) = page.avg_rating.to_f64() else { return RainError::for_js("Error parsing average rating.")};
+    let bio_imgs = page.bio_imgs;
     let data = UsersFrontData{ 
         displayname, pfp_url: &page.pfp_url, username, avg_rating, 
         creation_date: creation_date.format("%m/%d/%Y").to_string(), 
-        state: state.as_str(), bio: &page.bio ,
+        state: state.as_str(), bio: &page.bio , bio_imgs,
         reviews: &page.reviews,
     };
     HttpResponse::Ok().json(data)
@@ -685,14 +687,18 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 //     let path = format!("/tmp/bio/{username}/{num}"); //.png
 //     NamedFile::open(path).unwrap()
 // }
-
+#[derive(serde::Serialize)]
+struct BioImgs{
+    bio_imgs: [String; 3],
+    username: String,
+}
 
 #[post("/settings/pics-bio")]
-pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>) -> impl Responder{
+pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let Ok(user) = unwrap_identity(user) else { return RainError::for_js("User not found.")};
 
 
-    let mut yourlinks = String::new();
+    let mut yourlinks = [String::new(), String::new(), String::new()];
     let images = form.into_inner().images;
     for (n, file) in images.into_iter().enumerate() {
         if n == 3 { break }
@@ -702,10 +708,18 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>)
         let path = format!("./tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
         
-        yourlinks.push_str(&format!("· https://www.choredom.com/usr/bio/{user}/{n}.png\n"));
+        yourlinks[n] = format!("/usr/bio/{user}/{n}.png");
     }
+    
+    let bio_imgs = BioImgs{ 
+        bio_imgs: yourlinks, 
+        username: user,
+    };
 
-    HttpResponse::Ok().json(yourlinks)
+    let mut db = data.db.lock().await;
+    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET page.bio_imgs = $bio_imgs WHERE username = $username;", bio_imgs).await { return RainError::for_js(e)};
+
+    HttpResponse::Ok().finish()
 }
 
 
