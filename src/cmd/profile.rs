@@ -5,7 +5,7 @@ use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
-use actix_web::{get, post, Responder, web::{Data, Form, self, Json, Path}, HttpResponse};
+use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
 use rust_decimal::prelude::ToPrimitive;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
