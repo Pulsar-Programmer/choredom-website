@@ -1,6 +1,6 @@
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::{NOUSER, SUCCESS}};
+use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::SUCCESS};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
-use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, HOMEPAGE, PROFILE, CONTACT, NOLOG};
+use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, PROFILE, CONTACT, NOLOG};
 use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -27,7 +27,7 @@ struct UsersFrontData<'a>{
     creation_date: String,
     state: &'a str,
     bio: &'a String,
-    bio_imgs: &'a Vec<String>,
+    bio_imgs: &'a [String; 3],
     reviews: &'a Vec<PageRatingData>,
 }
 
@@ -42,7 +42,7 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
         return RainError::for_js("Account does not exist.");
     };
     let Some(avg_rating) = page.avg_rating.to_f64() else { return RainError::for_js("Error parsing average rating.")};
-    let bio_imgs = page.bio_imgs;
+    let bio_imgs = &page.bio_images;
     let data = UsersFrontData{ 
         displayname, pfp_url: &page.pfp_url, username, avg_rating, 
         creation_date: creation_date.format("%m/%d/%Y").to_string(), 
@@ -274,7 +274,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let Ok(identity)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
     let Some(curry_2) = q1.get(0) else { return RainError::for_js("No curry for you!")};
-    let Account { displayname, username, creation_date:_, location, email: _, page: super::signup::AccountPage { pfp_url:pfplink, avg_rating:_, reviews:_, bio }, state:_, password:_, password_salt:_, balance:_ } = curry_2;
+    let Account { displayname, username, location, page: super::signup::AccountPage { pfp_url:pfplink, reviews:_, bio, .. }, ..} = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio, pfplink};
     //YESSS SO COOOLLL
     HttpResponse::Ok().content_type("application/json").json(settings_data)
@@ -710,14 +710,14 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>,
         
         yourlinks[n] = format!("/usr/bio/{user}/{n}.png");
     }
-    
+
     let bio_imgs = BioImgs{ 
         bio_imgs: yourlinks, 
         username: user,
     };
 
     let mut db = data.db.lock().await;
-    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET page.bio_imgs = $bio_imgs WHERE username = $username;", bio_imgs).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET page.bio_images = $bio_imgs WHERE username = $username;", bio_imgs).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
