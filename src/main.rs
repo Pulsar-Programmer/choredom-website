@@ -100,7 +100,7 @@ async fn main() -> std::io::Result<()> {
             chat_nav, nav_links,
             delete_rating,
             pics_bio, pics_pfp, pics_chats //last time check of #143
-            , updates
+            // , updates
             // ,test
         )
         .app_data(app_state.clone())

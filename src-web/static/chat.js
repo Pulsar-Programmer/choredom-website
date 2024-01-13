@@ -24,7 +24,7 @@ window.onload = function() {
     .then(handle)
     .then(chatsData => {
         console.log('Chats Success:', chatsData);
-        displayChats(chatsData);
+        displayStartupChats(chatsData);
     })
     .catch(notify);
 }
@@ -43,17 +43,24 @@ function generateChatHTML(chat, pfpurl) {
 
 
 let chatContainer = document.getElementById('chat_box');
+function displayStartupChats(chatsDataPFP){
+    chatsDataPFP.forEach((chat) => {
+        const chatHTML = generateChatHTML(chat.data, chat.pfpurl);
+        console.log(chatHTML);
+        chatContainer.innerHTML += chatHTML;
+    });
+}
 
 // Function to display jobs on the frontend
 function displayChats(chatsData) {
     console.log(chatsData);
     // chatsData = Array.from(chatsData);
     // console.log(chatsData);
-  chatsData.data.forEach((chat) => {
-      const chatHTML = generateChatHTML(chat, chatsData.pfpurl);
-      console.log(chatHTML);
-      chatContainer.innerHTML += chatHTML;
-  });
+    chatsData.data.forEach((chat) => {
+        const chatHTML = generateChatHTML(chat, chatsData.pfpurl);
+        console.log(chatHTML);
+        chatContainer.innerHTML += chatHTML;
+    });
 }
 
 ///This function must send a chat to the DB but NOT make it appear on the screen.
@@ -74,7 +81,7 @@ function send_chat(){
     .then(handle)
     .then(chat => {
         console.log('Chats Bounceback Success:', chat);
-        const chatHTML = generateChatHTML(chat);
+        const chatHTML = generateChatHTML(chat.data, chat.pfp);
         console.log(chatHTML);
         chatContainer.innerHTML += chatHTML;
     })
@@ -106,15 +113,15 @@ function receive_chat(){
     .catch(notify);
 }
 //Erase this when doing long polling or the SSEs.
-// setInterval(receive_chat, 10_000);
+setInterval(receive_chat, 10_000);
 
-var eventSource = new EventSource(`/chat-updates/${opposite}`);
+// var eventSource = new EventSource(`/chat-updates/${opposite}`);
 
-eventSource.onmessage = function(event) {
-    if(event.data === "UPDATE"){
-        receive_chat();
-    }
-};
+// eventSource.onmessage = function(event) {
+//     if(event.data === "UPDATE"){
+//         receive_chat();
+//     }
+// };
 
 
 // window.addEventListener('beforeunload', function (_e) {

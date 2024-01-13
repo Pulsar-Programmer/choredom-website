@@ -130,6 +130,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
         return r::for_js_user("That email is taken. Choose a different email.")
     }
     let code = rand::thread_rng().gen_range(100000..1000000);
+    println!("{code}");
     // transmission_transmit("signup", &session, code).unwrap();
     if let Err(e) = signup_transmission_transmit(&session, code.to_string()) { return r::for_js(e) };
     if let Err(e) = confirmation_email(to_email, &displayname, code) { return r::for_js(e) };

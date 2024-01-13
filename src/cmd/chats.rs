@@ -46,9 +46,10 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
     }
     HttpResponse::Ok().body(CHAT)
 }
+
 #[derive(serde::Serialize)]
-struct ChatFrontDataBundle{
-    data: Vec<ChatFrontData>,
+struct ChatFrontDataPFP{
+    data: ChatFrontData,
     pfpurl: String,
 }
 
@@ -60,9 +61,6 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
     //build a room and send to db if one doesn't exist >> use indicies for this
     let mut db = data.db.lock().await;
-
-    //query accounts for pfp
-    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
 
     let opposite = room_id[true] == receiver;
     let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
@@ -77,12 +75,21 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     };
     let Room { room_id: _, messages: vec } = result;
 
-    let vec : Vec<ChatFrontData> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+    let mut pfps = Vec::new();
+    for ChatData { sender, ..} in vec{
+        let sender = room_id[sender.to_owned()].to_owned();
+        let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+        pfps.push(pfpurl);
+    }
+
+    let vec : Vec<ChatFrontDataPFP> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
+        let sender = room_id[sender.to_owned()].to_owned();
+        let data = ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender };
+        ChatFrontDataPFP { data, pfpurl: pfps.remove(0)}
     }).collect();
 
     //update the DOM the most recent chat messages (later having JavaScript add any new ones to the DOM)
-    HttpResponse::Ok().json(ChatFrontDataBundle{ data: vec, pfpurl})
+    HttpResponse::Ok().json(&vec)
 }
 
 
@@ -128,6 +135,13 @@ pub struct FrontSentData{
     msg: String,
 }
 
+
+
+#[derive(serde::Serialize)]
+struct ChatFrontDataBundle{
+    data: Vec<ChatFrontData>,
+    pfpurl: String,
+}
 //text_message
 /// This, given the msg and the sender, sends a message and logs it in the Database.
 /// It then can be retrieved from the receive message function.
@@ -177,7 +191,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
     let mut db = data.db.lock().await;
-    println!("{useful_data:?}");
+    // println!("{useful_data:?}");
     let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
     let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
     let chats_vec = &dbgiven.messages;
@@ -187,7 +201,12 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
-    HttpResponse::Ok().json(&chats_vec)
+
+    //query accounts for pfp
+    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &opposite)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+
+    let bundle = ChatFrontDataBundle{ data: chats_vec, pfpurl };
+    HttpResponse::Ok().json(&bundle)
 }
 
 
