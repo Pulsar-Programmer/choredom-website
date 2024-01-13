@@ -162,9 +162,13 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let mut db = app.db.lock().await;
     let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await else { return r::for_js("Error adding chat to room.")};
     
+    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &named_sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+    
     let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y").to_string(), msg, sender: named_sender };
+
+    let plus_pfp = ChatFrontDataPFP{ data: to_frontend, pfpurl };
     // println!("Chat bounceback: {to_frontend:?}");
-    HttpResponse::Ok().json(to_frontend)
+    HttpResponse::Ok().json(plus_pfp)
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]

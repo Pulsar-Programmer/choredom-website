@@ -81,7 +81,7 @@ function send_chat(){
     .then(handle)
     .then(chat => {
         console.log('Chats Bounceback Success:', chat);
-        const chatHTML = generateChatHTML(chat.data, chat.pfp);
+        const chatHTML = generateChatHTML(chat.data, chat.pfpurl);
         console.log(chatHTML);
         chatContainer.innerHTML += chatHTML;
     })
