@@ -329,13 +329,10 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 #[get("/usr/chats/{uuid}/{n}.png")]
 pub async fn chats_access(identity: Option<Identity>, uuidn: Path<(String, String)>, data: Data<AppData>, req: HttpRequest) -> impl Responder{
-    println!("Try!");
     let user = match unwrap_identity(identity){
         Ok(r) => r,
-        // Err(x) => return RainError::for_html(x),
         Err(_) => return HttpResponse::NotFound().finish(),
     };
-    println!("Try2!");
 
     let (uuid, n) = uuidn.into_inner();
 
@@ -347,14 +344,14 @@ pub async fn chats_access(identity: Option<Identity>, uuidn: Path<(String, Strin
     if !room.contains(&user){
         return RainError::for_html(NOUSER)
     }
-    // println!("Wut!?");
+
     let path = format!("./tmp/chats/{uuid}/{n}.png");
-    // println!("1:{path}");
-    // let path = format!("/tmp/chats/{}/{}.png", uuid, n);
-    // println!("2:{path}");
+
+
+
     match NamedFile::open(path){
-        Ok(f) => {println!("You're kidding me!"); f.into_response(&req)},
-        Err(e) => {println!("You're kidding me, right? {e}"); HttpResponse::NotFound().finish()},
+        Ok(f) => {println!("You're kidding me, right?"); f.into_response(&req)},
+        Err(e) => {println!("You-you're kidding me! {e}"); HttpResponse::NotFound().finish()},
     }
 }
 // struct OCForm{opposite_chatter: String}
