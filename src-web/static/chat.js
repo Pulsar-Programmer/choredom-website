@@ -166,8 +166,8 @@ function upload_chats(){
     var path = window.location.pathname;
     var pathParts = path.split('/');
     var opposite_chatter = pathParts[pathParts.indexOf('chats') + 1];
-    formData.append('opposite_chatter', JSON.stringify(opposite_chatter));
-    fetch('/pics-chats', {
+    // formData.append('opposite_chatter', JSON.stringify(opposite_chatter));
+    fetch(`/pics-chats/${opposite_chatter}`, {
         method: 'POST',
         body: formData,
     })
@@ -177,15 +177,16 @@ function upload_chats(){
         mylinks.forEach((url) => {
             addURLToText(url);
         })
-        alert(`Successful Upload! Your image has been sent in chat!`);
         send_chat();
+        alert(`Successful Upload! Your image has been sent in chat!`);
+        document.getElementById("message-input").value = "";
     })
     .catch(notify);
 }
 
 function addURLToText(url){
     let textbox = document.getElementById("message-input");
-    textbox.value += `\n ${url}`;
+    textbox.value += `\n <img src="${url}">`;
 }
 
 function expandImages(msg){

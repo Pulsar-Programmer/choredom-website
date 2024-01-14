@@ -5,12 +5,11 @@ use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;
 use chrono::Duration;
-use cmd::chats::updates;
 use cmd::homepage;
 use cmd::signup::*;
 use cmd::jobs::*;
 use cmd::profile::*;
-use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats};
+use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats, updates, chats_access};
 mod db;
 use cmd::sites::NOUSER;
 use db::setup_db;
@@ -99,7 +98,8 @@ async fn main() -> std::io::Result<()> {
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
             delete_rating,
-            pics_bio, pics_pfp, pics_chats //last time check of #143
+            pics_bio, pics_pfp, pics_chats, //last time check of #143
+            chats_access
             // , updates
             // ,test
         )

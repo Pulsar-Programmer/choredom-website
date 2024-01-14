@@ -328,36 +328,44 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
 
 
 #[get("/usr/chats/{uuid}/{n}.png")]
-async fn chats_access(identity: Option<Identity>, uuid: Path<String>, n: Path<String>, data: Data<AppData>, req: HttpRequest) -> impl Responder{
+pub async fn chats_access(identity: Option<Identity>, uuidn: Path<(String, String)>, data: Data<AppData>, req: HttpRequest) -> impl Responder{
+    println!("Try!");
     let user = match unwrap_identity(identity){
         Ok(r) => r,
-        Err(x) => return RainError::for_html(x),
+        // Err(x) => return RainError::for_html(x),
+        Err(_) => return HttpResponse::NotFound().finish(),
     };
-    let uuid = uuid.into_inner();
-    let n = n.into_inner();
+    println!("Try2!");
+
+    let (uuid, n) = uuidn.into_inner();
 
     let mut db = data.db.lock().await;
-    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT room_id FROM chats WHERE id=$id", ("id", &uuid)).await else { return RainError::for_html_stderr()};
+    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::thing(\"chats\", $id)).room_id;", ("id", &uuid)).await else { return RainError::for_html_stderr()};
+    // if let Err(e) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::thing(\"chats\", $id)).room_id;", ("id", &uuid)).await { println!("{}: {e}", line!()); return RainError::for_html(e)};
+    // let o: Option<RoomID> = todo!();
     let Some(room) = o else { return RainError::for_html(NOUSER)};
     if !room.contains(&user){
         return RainError::for_html(NOUSER)
     }
-
-    let path = format!("/tmp/chats/{uuid}/{n}.png");
+    // println!("Wut!?");
+    let path = format!("./tmp/chats/{uuid}/{n}.png");
+    // println!("1:{path}");
+    // let path = format!("/tmp/chats/{}/{}.png", uuid, n);
+    // println!("2:{path}");
     match NamedFile::open(path){
-        Ok(f) => f.into_response(&req),
-        Err(_) => HttpResponse::NotFound().finish(),
+        Ok(f) => {println!("You're kidding me!"); f.into_response(&req)},
+        Err(e) => {println!("You're kidding me, right? {e}"); HttpResponse::NotFound().finish()},
     }
 }
 // struct OCForm{opposite_chatter: String}
 
-#[post("/pics-chats")]
-pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>, opposite_chatter: Json<String>, data: Data<AppData>) -> impl Responder{
+#[post("/pics-chats/{opposite_chatter}")]
+pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity: Option<Identity>, opposite_chatter: Path<String>, data: Data<AppData>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
     // println!("Tree");
     let room_id = RoomID::create([username, opposite_chatter.into_inner()]);
     let mut db = data.db.lock().await;
-    let Ok(v) = query_once_option::<String>(&mut db, "SELECT id FROM chats WHERE room_id=$room_id;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
+    let Ok(v) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
     let Some(uuid) = v else { return RainError::for_js_user("Chat room does not exist!")};
 
     let mut file_count = 0;
@@ -381,7 +389,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         let path = format!("./tmp/chats/{uuid}/{n}.png");
         if let Err(e) = upload_file(file, &path).await { return RainError::for_js_user(e)};
 
-        yourlinks.push(format!("https://www.choredom.com/usr/chats/{uuid}/{n}.png"))
+        yourlinks.push(format!("/usr/chats/{uuid}/{n}.png"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
     
