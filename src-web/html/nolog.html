@@ -1,20 +1,37 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Access Denied</title>
     <link rel="stylesheet" href="/src-web/static/nolog.css">
 </head>
-<body style="background-color: #1dbf73;">
-    <div class="banner-card">
-    <img src="/src-web/assets/temp_clip.png">
-    <div class="banner-text">
-    <h1>Access Denied</h1>
-    <p>You need to be signed in to access this page.</p>
-    <a href="/login" class="text-1">Click here to sign in.</a>
-    <a href="/signup" class="text-2">Click here to sign up.</a>
-    <a href="/policies" class="text-3">Why do I have to be signed in?</a>
+
+<body style="background-color: white;">
+    <header>
+        <a href="#">
+            <img src="/src-web/assets/logo.png" alt="Choredom Logo">
+          </a>
+        <nav>
+          <a href="#">Home</a>
+          <a href="chat" id="chat-button">Chat</a>
+          <a href="tasks">Tasks in your Area</a>
+          <a href="settings">Settings</a>
+          <a href="post-job" id="post-button">Post</a>
+          <a href="#" id="signout-button">Sign Out</a>
+        </nav>
+      </header>
+    <div>
+        <div class="container">
+            <h1>Access Denied</h1>
+            <p>You need to be signed-in to access this page.</p>
+            <a href="/login" class="text-1">Click here to sign in.</a>
+            <a href="/signup" class="text-2">Click here to sign up.</a>
+            <a href="/policies" class="text-3">Why do I have to be signed in?</a>
+        </div>
     </div>
-    </div>
-    </div>
+    <footer>
+        <p>&copy; 2023 Choredom</p>
+    </footer>
 </body>
+
 </html>
