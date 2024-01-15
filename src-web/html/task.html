@@ -1,5 +1,18 @@
 <!DOCTYPE html>
 <html>
+  <header>
+    <a href="#">
+      <img src="/src-web/assets/Choredom.png" alt="Choredom Logo">
+    </a>
+    <nav>
+      <a href="#">Home</a>
+      <a href="chat" id="chat-button">Chat</a>
+      <a href="tasks">Tasks in your Area</a>
+      <a href="settings">Settings</a>
+      <a href="post-job" id="post-button">Post</a>
+      <a href="#" id="signout-button">Sign Out</a>
+    </nav>
+  </header>
 <head>
   <title>Choredom: View Tasks</title>
   <meta charset="utf-8">
@@ -10,31 +23,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <div id="jobs_add">
-      <button onclick="get_location_data()">Filter Towns</button>
-      <div id="dropdown">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-        <script src="/src-web/static/us-cities.js"></script>
-        <label for="city">Filter Towns...</label>
-        <select name="location" id="city" style="width: 300px;">
-        </select>
-      </div>
+  <div id="jobs_add">
+    <button onclick="get_location_data()">Filter Towns</button>
+    <div id="dropdown">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+      <script src="/src-web/static/us-cities.js"></script>
+      <label for="city">Filter Towns...</label>
+      <select name="location" id="city" style="width: 300px;">
+      </select>
     </div>
-    <h1>Choredom</h1>
-    <a href="#">
-      <img src="assets/logo.png" alt="Choredom Logo">
-    </a>
-    <nav>
-      <a href="/">Home</a>
-      <!-- <a href="/chat">Chat</a> -->
-      <a href="/post-job">Post</a>
-      <a href="#">Tasks in your Area</a>
-      <a href="/settings">Settings</a>
-    </nav>
-  </header>
+  </div>
   <main>
     <div id="filters">
       <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
