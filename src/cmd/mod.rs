@@ -31,7 +31,8 @@ pub mod sites{
         NOLOG; "nolog",
         NOUSER; "nouser",
         ERRHTML; "error",
-        SUCCESS; "success"
+        SUCCESS; "success",
+        POLICY; "policies"
     );
 }
 
@@ -48,5 +49,12 @@ pub async fn homepage() -> impl Responder{
     HttpResponse::Ok().body(sites::HOMEPAGE)
 }
 
+#[get("/policy")]
+pub async fn policy() -> impl Responder{
+    HttpResponse::Ok().body(sites::POLICY)
+}
 
-
+#[get("/success")]
+pub async fn success() -> impl Responder{
+    HttpResponse::Ok().body(sites::SUCCESS)
+}

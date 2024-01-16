@@ -5,7 +5,7 @@ use actix_session_surrealdb::SurrealSessionStore;
 
 mod cmd;
 use chrono::Duration;
-use cmd::homepage;
+use cmd::{homepage, policy, success};
 use cmd::signup::*;
 use cmd::jobs::*;
 use cmd::profile::*;
@@ -98,8 +98,9 @@ async fn main() -> std::io::Result<()> {
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
             delete_rating,
-            pics_bio, pics_pfp, pics_chats, //last time check of #143
-            chats_access
+            pics_bio, pics_pfp, pics_chats, 
+            chats_access,
+            policy, success //last time check of #143
             // , updates
             // ,test
         )
