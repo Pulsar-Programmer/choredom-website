@@ -72,13 +72,8 @@ html, body {
   }
   
   .container a {
-    display: inline-block;
-    background-color: #1dbf73;
-    color: #ffffff;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 20px;
+    color: black;
+    font-family:sans-serif;
   }
   
   @media (max-width: 600px) {
