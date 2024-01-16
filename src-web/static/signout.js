@@ -6,6 +6,6 @@ document.getElementById("signout-button").addEventListener("click", function() {
         },
     })
     .then(handle)
-    .then(_ => alert("Signout successful!"))
+    .then(_ => redirect("/success"))
     .catch(notify);
 });
