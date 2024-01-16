@@ -513,7 +513,7 @@ pub async fn transfer_funds(identity: Option<Identity>) -> impl Responder{
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct CreditsData{
-    credits: u64,
+    credits: String,
     to_username: String,
     self_password: String,
     //make an abstraction based on parts and forms and links in the js and buttons
@@ -530,24 +530,31 @@ pub struct TransferData{
 
 
 #[post("/settings/funds/transfer/form")]
-async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
+async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
     
     let CreditsData { credits, self_password, to_username } = form.into_inner();
     let Ok(self_username) = unwrap_identity(identity) else {return RainError::for_js("User not found.")};
+    if self_username == to_username {
+        return RainError::for_js_user("You may not send funds to yourself!");
+    }
 
+    let credits = match credits.parse(){
+        Ok(c) => c,
+        Err(_) => return RainError::for_js_user("Invalid number!")
+    };
 
     let mut db = data.db.lock().await;
 
-    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_html_stderr()};
+    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_js_user("That account does not exist!")};
 
     if balance < credits {
-        return RainError::for_html("You cannot give more than you have! Add some funds in order to transfer that much!");
+        return RainError::for_js_user("You cannot give more than you have! Add some funds in order to transfer that much!");
     }
 
-    let Ok(passwords_match) = verify_password(&self_password, &password, &password_salt) else { return RainError::for_html_stderr()};
+    let Ok(passwords_match) = verify_password(&self_password, &password, &password_salt) else { return RainError::for_js("Password obtaining error!")};
 
     if !passwords_match{
-        return RainError::for_html("Passwords do not match!");
+        return RainError::for_js_user("Passwords do not match!");
     }
 
     let transferdata = TransferData{credits, self_username, to_username};
@@ -556,9 +563,9 @@ async fn transfer(form: Form<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits WHERE username = $to_username;
     ";
-    if sole_query(&mut db, surrealql, transferdata).await.is_err() { return RainError::for_html_stderr() };
+    if let Err(e) = sole_query(&mut db, surrealql, transferdata).await { return RainError::for_js(e) };
 
-    HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings/funds/transfer")).body(TRANSFER)
+    HttpResponse::Ok().finish()
 }
 
 
