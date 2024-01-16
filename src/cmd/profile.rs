@@ -415,7 +415,8 @@ pub struct DeleteConfirmation{password:String}
 
 #[post("/settings/delete")]
 pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmation>, data: Data<AppData>) -> impl Responder{
-    let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
+    let Some(identity) = identity else { return RainError::for_js("Identity not found.")};
+    let Ok(username)= identity.id() else {return RainError::for_js("Identity not found.")};
     let password_entered = password.into_inner().password;
     let mut db = data.db.lock().await;
     
@@ -429,6 +430,8 @@ pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmatio
     }
 
     if let Err(e) = sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await { return RainError::for_js(e)};
+
+    super::signup::logout_user(identity);
 
     HttpResponse::Ok().finish()
 }
