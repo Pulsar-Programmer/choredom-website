@@ -23,13 +23,19 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 */
 #[get("/chats/{receiver}")]
 pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    let receiver = receiver.into_inner();
+    let Ok(sender) = unwrap_identity(identity) else {return RainError::for_html(NOLOG)};
     let mut db = app_data.db.lock().await;
+    let Ok(Some(a)) = query_once_option::<super::signup::AccountState>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
+    match a {
+        crate::AccountState::Verified => {},
+        _ => {return RainError::for_html(super::sites::NOVER)}
+    }
+
+    let receiver = receiver.into_inner();
     let Ok(result) = query_once::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await else {return RainError::for_html_stderr()};
     if result.len() != 1 {
         return RainError::for_html(NOUSER);
     }
-    let Ok(sender) = unwrap_identity(identity) else {return RainError::for_html(NOLOG)};
     if sender == receiver{
         return RainError::for_html("
         <!DOCTYPE html>

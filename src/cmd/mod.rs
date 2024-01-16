@@ -32,7 +32,8 @@ pub mod sites{
         NOUSER; "nouser",
         ERRHTML; "error",
         SUCCESS; "success",
-        POLICY; "policies"
+        POLICY; "policies",
+        NOVER; "no-ver"
     );
 }
 
