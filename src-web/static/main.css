@@ -71,7 +71,7 @@ header img {
   line-height: 1.6;
 }
 
-.container a {
+.container .pp {
   display: inline-block;
   background-color: #1dbf73;
   color: #ffffff;
@@ -79,6 +79,26 @@ header img {
   text-decoration: none;
   border-radius: 5px;
   margin-top: 20px;
+}
+
+.container a {
+color:black
+}
+
+header button{
+  display: inline-block;
+  background-color: #1dbf73;
+  color: #ffffff;
+  border-color: white;
+  cursor: pointer;
+}
+
+.container select{
+  display: inline-block;
+  background-color:#1dbf73;
+  color: #ffffff;
+  border-color: white;
+  cursor: pointer;
 }
 
 @media (max-width: 600px) {
