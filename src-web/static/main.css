@@ -85,11 +85,24 @@ header img {
 color:black
 }
 
-header button{
+header button {
   display: inline-block;
   background-color: #1dbf73;
   color: #ffffff;
-  border-color: white;
+  border: 1px solid white; 
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.1s ease;
+ } 
+
+ header button:hover {
+  background-color: white;
+  color:#1dbf73;
+ }
+
+.container button{
+  display: inline-block;
+  background-color: white;
   cursor: pointer;
 }
 
