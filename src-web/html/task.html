@@ -39,14 +39,18 @@
   <main>
     <div id="filters">
       <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
+    </div><div>
       <select id="statusFilter">
         <option value="">Select verification status</option>
         <option value="Verified">Verified</option>
         <option value="Non-verified">Non-verified</option>
-      </select>
+      </select></div><div>
       <input type="date" id="timeFilter" placeholder="Filter by time">
+      </div><div>
       <input type="number" id="minPriceFilter" placeholder="Minimum price">
+      </div><div>
       <input type="number" id="maxPriceFilter" placeholder="Maximum price">
+      </div>
       <button onclick="filterJobs()">Apply Filters</button>
     </div>
     <div id="job-container">
