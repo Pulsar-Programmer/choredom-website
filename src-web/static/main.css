@@ -106,6 +106,12 @@ header button {
   cursor: pointer;
 }
 
+.container button:hover {
+  background-color: black;
+  color:white;
+  border-color: #1dbf73;
+ }
+
 .container select{
   display: inline-block;
   background-color:#1dbf73;
