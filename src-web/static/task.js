@@ -1,3 +1,76 @@
+// document.addEventListener("DOMContentLoaded", function(){
+//     document.getElementById('city').addEventListener('change', function(event){
+//         // event.stopPropagation();
+//         // event.stopImmediatePropagation();
+//         // event.preventDefault();
+//         console.log("Hello!?");
+//         get_location_data();
+//     });
+// });
+// function setupEventListener() {
+//     document.getElementById('city').addEventListener('change', get_location_data);
+//     console.log("Hello!??");
+// }
+// setupEventListener();
+
+// if (document.readyState === "loading") {
+//     // Document is still loading, add the event listener when it loads
+//     document.addEventListener("DOMContentLoaded", setupEventListener);
+// } else {
+//     // Document has already loaded, set up the event listener immediately
+//     setupEventListener();
+// }
+   
+// $('#city').selectize({
+//     onChange: function(value) {
+//         this.$input[0].dispatchEvent(new Event("change"));
+//     }
+// });
+
+// document.getElementById('city').selectize.on('change', function() {
+//     get_location_data();
+// });
+
+// document.addEventListener("DOMContentLoaded", function(event){
+//     event.stopPropagation();
+//     // event.stopImmediatePropagation();
+//     // event.preventDefault();
+//     console.log("YUHH!")
+//     document.getElementById('city').selectize.on('change', function() {
+//         get_location_data();
+//     });
+// });
+
+$(function() {
+    $('#city').selectize({
+        options: [],
+        items: [],
+        render: {
+            option: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            },
+            item: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            }
+        },
+        load: function(query, callback) {
+            if (!query.length) return callback();
+            fetch('/src-web/assets/us_cities.json')
+            .then(response => response.json())
+            .then(data => {
+                callback(data.map(city => ({text: `${city.CITY}, ${city.STATE_NAME}`, value: `${city.CITY}, ${city.STATE_NAME}`})));
+            });
+        },
+        // onchange: get_location_data,
+        onChange: function(){
+            get_location_data();
+        },
+        // preload: true,
+    });
+});
+
+
+
 // Function to generate the HTML for each job
 function generateJobHTML(job) {
     // console.log(job.id.id.String);
@@ -20,6 +93,7 @@ function generateJobHTML(job) {
 
 // Get the post container element
 const jobContainer = document.getElementById("job-container");
+
 
 // Function to display jobs on the frontend
 function displayJobs(jobsData) {
@@ -93,7 +167,7 @@ function get_location_data(){
     .then(handle)
     .then(jobsData => {
         console.log('Location Success:', jobsData);
-        
+
         console.log('Jobs Success:', jobsData);
         displayJobs(jobsData);
     })
