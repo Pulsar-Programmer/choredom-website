@@ -13,6 +13,11 @@ function submit_post(){
     // if(price === undefined || price === null){
         
     // }
+    if(String(title).trim() === "") {
+        alert("Please fill in the `title` field.");
+        return;
+    }
+
     let jobdata = {title: title, body: body, location: location, time: time, price: price};
 
     fetch("/post-job-2", {

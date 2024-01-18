@@ -46,6 +46,10 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     
     let JobData { title, body, time, price, location } = form.into_inner();
 
+    if title.trim().is_empty(){
+        return RainError::for_js_user("Title is empty!");
+    }
+
     use chrono::TimeZone;
     //https://github.com/kelvins/US-Cities-Database
     //its all cool if the location doesn't exist; people just won't see the job ¯\_(ツ)_/¯
