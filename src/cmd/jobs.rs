@@ -1,9 +1,9 @@
-use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError};
+use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError, unwrap_identity};
 use actix_identity::Identity;
-use actix_web::{web::{Data, self}, Responder, get, post, HttpResponse};
+use actix_web::{web::{Data, self, Json}, Responder, get, post, HttpResponse};
 use surrealdb::sql::Thing;
 use super::{sites::{POST, TASK}, signup::AccountPage};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, TimeZone};
 use super::signup::AccountState;
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
@@ -13,6 +13,32 @@ pub struct JobData{
     time: String, 
     price: String,
     location: String,
+}
+impl JobData{
+
+    fn to_job(self) -> Result<Job, HttpResponse>{
+        let Self { title, body, time, price, location } = self;
+
+        if title.trim().is_empty(){
+            return Err(RainError::for_js_user("Title is empty!"));
+        }
+
+        //https://github.com/kelvins/US-Cities-Database
+        //its all cool if the location doesn't exist; people just won't see the job ¯\_(ツ)_/¯
+        let mut iter = time.split('-');
+        let (Some(year), Some(month), Some(day)) = (iter.next(), iter.next(), iter.next())  else { return Err(RainError::for_js_user("Ensure to enter a date!"))};
+        let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return Err(RainError::for_js_user("Ensure to enter a valid date!"))};
+        let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return Err(RainError::for_js_user("Ensure to enter a valid date!"))};
+        //time is written in the format: yyyy-mm-dd
+        let Ok(price) = price.parse::<f32>() else { return Err(RainError::for_js_user("The price could not be resolved."))};
+
+        if price.is_nan() || price.is_infinite() || price <= 0. {
+            return Err(RainError::for_js_user("Enter a valid price!"))
+        }
+
+        let job = Job::new(title, body, time, (price * 100.0) as u64, location);
+        Ok(job)
+    }
 }
 
 
@@ -44,27 +70,10 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     // let username = user.unwrap().id().unwrap();
     let Ok(username) = super::signup::unwrap_identity(identity) else { return RainError::for_js("Illegal identity travel.")};
     
-    let JobData { title, body, time, price, location } = form.into_inner();
-
-    if title.trim().is_empty(){
-        return RainError::for_js_user("Title is empty!");
-    }
-
-    use chrono::TimeZone;
-    //https://github.com/kelvins/US-Cities-Database
-    //its all cool if the location doesn't exist; people just won't see the job ¯\_(ツ)_/¯
-    let mut iter = time.split('-');
-    let (Some(year), Some(month), Some(day)) = (iter.next(), iter.next(), iter.next())  else { return RainError::for_js_user("Ensure to enter a date!")};
-    let (Ok(year), Ok(month), Ok(day)) = (year.parse(), month.parse(), day.parse()) else { return RainError::for_js_user("Ensure to enter a valid date!")};
-    let Some(time) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else { return RainError::for_js_user("Ensure to enter a valid date!")};
-    //time is written in the format: yyyy-mm-dd
-    let Ok(price) = price.parse::<f32>() else { return RainError::for_js_user("The price could not be resolved.")};
-
-    if price.is_nan() || price.is_infinite() || price <= 0. {
-        return RainError::for_js_user("Enter a valid price!")
-    }
-
-    let job = Job::new(title, body, time, (price * 100.0) as u64, location);
+    let job = match form.into_inner().to_job(){
+        Ok(j) => j,
+        Err(e) => return e,
+    };
 
     let surrealql = 
     r#"
@@ -175,4 +184,45 @@ struct JobRecordLink{
 pub fn convert_timestamp(timestamp: &str) -> Result<String, Box<dyn std::error::Error>> {
     let datetime = DateTime::parse_from_rfc3339(timestamp)?.with_timezone(&Utc);
     Ok(datetime.format("%m/%d/%Y").to_string())
+}
+
+#[derive(serde::Deserialize)]
+struct EditPostData{
+    id: String,
+    change: JobData,
+}
+
+
+#[post("/edit-post")]
+async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<EditPostData>) -> impl Responder{
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
+    
+    let EditPostData { id, change } = edit.into_inner();
+    //id should be internally defined
+    //job_id should be given by the frontend
+    //we must check that username matches the valid job_id
+
+    let jobified_change = match change.to_job(){
+        Ok(J) => J,
+        Err(E) => return E,
+    };
+
+    let mut db = data.db.lock().await;
+    todo!();
+    if let Err(e) = sole_query(&mut db, "", ()).await { return RainError::for_js(e)};
+
+    HttpResponse::Ok().finish()
+}
+
+
+#[post("/delete-post")]
+async fn delete_post(identity: Option<Identity>, data: Data<AppData>, job_id: Json<String>) -> impl Responder{
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
+    //job_id should be given by the frontend
+    //we must check that username matches the valid job_id
+
+    todo!();
+
+
+    HttpResponse::Ok().finish()
 }
