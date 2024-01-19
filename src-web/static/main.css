@@ -29,7 +29,7 @@ header nav {
   gap: 10px;
 }
 
-header nav a {
+header nav a, header nav button {
   color: #ffffff;
   text-decoration: none;
   border: 1px solid #ffffff;
@@ -38,22 +38,27 @@ header nav a {
   transition: background-color 0.3s ease;
   display: inline-block;
   margin: 0 5px;
+  background-color: transparent; /* Ensure the button has no initial background */
+  cursor: pointer; /* To give a hand cursor on hover */
 }
+
+header nav a:hover, header nav button:hover {
+  background-color: #ffffff;
+  color: #1dbf73;
+}
+
+
 
 @media (max-width: 600px) {
   header nav {
     flex-direction: column;
   }
 
-  header nav a {
+  header nav a, header nav button{
     margin: 5px 0;
   }
 }
 
-header nav a:hover {
-  background-color: #ffffff;
-  color: #1dbf73;
-}
 
 header img {
   height: 50px;
