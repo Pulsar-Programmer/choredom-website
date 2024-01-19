@@ -20,6 +20,7 @@ function submit_code(url){
     var data = {
         code: code,
     }
+    // initiate_loading();
     fetch(url, {
         method: 'POST', 
         headers: {
@@ -29,8 +30,36 @@ function submit_code(url){
     })
     .then(handle)
     .then(_ => {
+        // revert_loading();
         redirect("/");
     })
     .catch(notify);
 }
 
+
+
+//@Lockroach
+function initiate_loading(){
+    var div = document.getElementById("verify_replacable");
+    // div.style.filter = "brightness(50%)";
+    div.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    div.style.display = "flex";
+    div.style.justifyContent = "center";
+    div.style.alignItems = "center";
+    var img = document.createElement('img');
+    img.src = "/src-web/assets/loading.png";
+    div.appendChild(img);
+}
+
+function revert_loading() {
+    var div = document.getElementById("verify_replacable");
+    div.style.filter = null; // Reverts to the original brightness
+    div.style.display = null; // Reverts to the original display type
+    div.style.justifyContent = null; // Reverts to the original alignment
+    div.style.alignItems = null; // Reverts to the original alignment
+ 
+    // Remove the loading logo
+    var img = div.getElementsByTagName('img')[0];
+    div.removeChild(img);
+}
+ 

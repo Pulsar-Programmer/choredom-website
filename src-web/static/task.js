@@ -1,3 +1,31 @@
+$(function() {
+    $('#city').selectize({
+        options: [],
+        items: [],
+        render: {
+            option: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            },
+            item: function(data, escape) {
+                return '<div>' + escape(data.text) + '</div>';
+            }
+        },
+        load: function(query, callback) {
+            if (!query.length) return callback();
+            fetch('/src-web/assets/us_cities.json')
+            .then(response => response.json())
+            .then(data => {
+                callback(data.map(city => ({text: `${city.CITY}, ${city.STATE_NAME}`, value: `${city.CITY}, ${city.STATE_NAME}`})));
+            });
+        },
+        onChange: function(){
+            get_location_data();
+        },
+    });
+});
+
+
+
 // Function to generate the HTML for each job
 function generateJobHTML(job) {
     // console.log(job.id.id.String);
@@ -20,6 +48,7 @@ function generateJobHTML(job) {
 
 // Get the post container element
 const jobContainer = document.getElementById("job-container");
+
 
 // Function to display jobs on the frontend
 function displayJobs(jobsData) {
@@ -93,7 +122,7 @@ function get_location_data(){
     .then(handle)
     .then(jobsData => {
         console.log('Location Success:', jobsData);
-        
+
         console.log('Jobs Success:', jobsData);
         displayJobs(jobsData);
     })
