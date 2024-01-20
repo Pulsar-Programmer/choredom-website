@@ -115,42 +115,6 @@ function receive_chat(){
 //Erase this when doing long polling or the SSEs.
 setInterval(receive_chat, 10_000);
 
-// var eventSource = new EventSource(`/chat-updates/${opposite}`);
-
-// eventSource.onmessage = function(event) {
-//     if(event.data === "UPDATE"){
-//         receive_chat();
-//     }
-// };
-
-
-// window.addEventListener('beforeunload', function (_e) {
-//     eventSource.close();
-// }); 
-
-// const socket = new WebSocket('ws://localhost:8080');
-// socket.onopen = function(event) {
-//     socket.send("Hello Server!");
-// };
-// socket.onmessage = function(event) {
-//     console.log("Message from server: ", event.data);
-// };
-// socket.onerror = function(error) {
-//     console.log(`WebSocket error: ${error}`);
-// };
-   
-// socket.onclose = function(event) {
-//     if (event.wasClean) {
-//         console.log(`Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-//     } else {
-//         console.log('Connection died');
-//     }
-// };
-   
-   
-
-
-
 
 
 

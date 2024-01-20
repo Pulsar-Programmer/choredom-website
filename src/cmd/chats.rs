@@ -187,6 +187,9 @@ pub struct ChatDBQuery{
     room_id: RoomID,
 }
 
+
+
+
 //GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
 /// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it. 
@@ -199,9 +202,32 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let opposite_unnamed = room_id[true] == opposite;
     let useful_data = ChatDBQuery{ sender: opposite_unnamed, room_id: room_id.clone() };
 
+
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
+    // ^^^^^^u are such a SMART BOI
     let mut db = data.db.lock().await;
-    // println!("{useful_data:?}");
+
+
+
+    //SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;
+    let Ok(Some(id)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", &room_id)).await else {
+        return RainError::for_js("Critical error obtaining ID from chat!");
+    };
+
+    // Listen to updates on a specific record
+    let mut stream = db.select(("chats", id)).live().await.unwrap();
+    // The returned stream implements `futures::Stream` so we can
+    // use it with `futures::StreamExt`, for example.
+    while let Some(result) = stream.next().await {
+        println!("I think I see you!!!!!");
+        let result: surrealdb::Notification<Room> = result.unwrap();
+
+        todo!("{result:?}");
+    }
+    drop(stream);
+
+
+
     let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
     let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
     let chats_vec = &dbgiven.messages;
@@ -218,6 +244,11 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let bundle = ChatFrontDataBundle{ data: chats_vec, pfpurl };
     HttpResponse::Ok().json(&bundle)
 }
+
+
+
+
+
 
 
 
@@ -400,91 +431,3 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
     HttpResponse::Ok().json(yourlinks)
 }
 
-
-
-
-
-
-
-
-
-
-use actix_web_lab::sse;
-use tokio::sync::mpsc;
-use std::time::Duration;
-
-#[get("/chat-updates/{opposite}")]
-pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
-    let (tx, rx) = mpsc::channel(10);
-    //maybe make a timer that disables after a certain time bcs this could be intensive?
-    println!("I think I see you!!!!!");
-    let self_ = match unwrap_identity(self_){
-        Ok(i) => i,
-        Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
-    };
-    let opposite = opposite.into_inner();
-    // let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
-    let room_id = RoomID::create([opposite, self_]);
-    let mut db = data.db.lock().await;
-    let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await{
-        Ok(Some(o)) => o,
-        Ok(None) => panic!("SSE None Error."),
-        Err(e) => {
-            panic!("SSE Error:{e}");
-        }
-    };
-    drop(db);
-
-    actix_web::rt::spawn(async move {
-        let db = data.db.lock().await;
-        // Listen to updates on a specific record
-        let mut stream = db.select(("chats", id)).live().await.unwrap();
-        // The returned stream implements `futures::Stream` so we can
-        // use it with `futures::StreamExt`, for example.
-        while let Some(result) = stream.next().await {
-            let result: surrealdb::Notification<Room> = result.unwrap();
-            if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
-                println!("CLIENT DISCONNECT ERROR");
-                break;
-            }
-        }
-    });
-
-    sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
-}
-
-
-// use actix::prelude::*;
-// use actix_web::{web, Error};
-// use actix_web_actors::ws;
-
-// #[get("/chat/updates")]
-// async fn websocket_route(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-//     ws::start(
-//        WsSession {},
-//        &req,
-//        stream,
-//     )
-// }
-
-// struct WsSession;
-
-// impl Actor for WsSession {
-//    type Context = ws::WebsocketContext<Self>;
-// }
-
-// impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
-//    fn handle(
-//        &mut self,
-//        msg: Result<ws::Message, ws::ProtocolError>,
-//        ctx: &mut Self::Context,
-//    ) {
-//        match msg {
-//            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
-//            Ok(ws::Message::Text(text)) => ctx.text(text),
-//            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
-//         //    Ok(ws::Message)
-//            _ => (),
-//        }
-//    }
-// }
