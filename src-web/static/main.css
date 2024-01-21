@@ -1,4 +1,4 @@
-/* Styles shared between the homepage and the signup page */
+
 html, body {
   height: 100%;
   margin: 0;
@@ -12,11 +12,12 @@ html, body {
 
 header {
   background-color: #1dbf73;
-  padding: 20px;
+  padding: 10px; /* Reduced top and bottom padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 
 header nav a, header nav button {
   color: #ffffff;
@@ -150,6 +151,103 @@ footer {
   box-sizing: border-box;
 }
 
+/* Styles to improve settings page alignment and reduce clunkiness */
+div {
+  max-width: 800px; /* Set a max-width for better alignment */
+  margin: 20px auto; /* Center the divs and add vertical spacing */
+  padding: 20px;
+  background-color: #ffffff; /* Match the background with the homepage */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Consistent with homepage styling */
+  border-radius: 5px; /* Rounded corners as on the homepage */
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+img {
+  max-width: 100%; /* Ensure images are not oversized */
+  height: auto;
+  display: block; /* Images appear on their own line */
+  margin-bottom: 10px;
+}
+
+/* Adjustments for file inputs to remove default styling */
+input[type="file"] {
+  border: none;
+  margin-bottom: 20px; /* Add space after file inputs */
+}
+
+/* Style links to match the homepage */
+a {
+  display: inline-block; /* Sit next to each other horizontally */
+  margin: 10px; /* Add space around the links */
+  padding: 10px 20px; /* Add space inside the links */
+  border-radius: 5px; /* Round the corners of the links */
+  background-color: #1dbf73; /* Fill the links with color */
+  color: #ffffff; /* Change the text color */
+  text-decoration: none; /* Remove the underline */
+  transition: background-color 0.2s ease, color 0.2s ease; /* Add a smooth transition when hovering */
+ }
+ 
+ a:hover {
+  background-color: #ffffff; /* Change the background color when hovering */
+  color: #1dbf73; /* Change the text color when hovering */
+}
+
+/* Increase the margin around each div to add more space between settings */
+div {
+  max-width: 800px;
+  margin: 40px auto; /* Increase the top and bottom margin */
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 5px;
+}
+
+/* Add a border to each label to visually separate them */
+label {
+  display: block;
+  margin-bottom: 15px; /* Increase space below each label */
+  font-weight: bold;
+  border-bottom: 1px solid #ccc; /* Add a light border for separation */
+  padding-bottom: 10px; /* Add padding to give space above the border */
+}
+
+/* Adjust input elements to have more space around them */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="file"],
+textarea,
+select {
+  width: calc(100% - 40px); /* Adjust width calculation for added padding */
+  padding: 15px; /* Increase padding for a larger click area */
+  margin-bottom: 20px; /* Increase space below each input */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Style buttons to be more prominent and spaced out */
+button {
+  background-color: #1dbf73;
+  color: white;
+  padding: 15px 20px; /* Increase padding for a larger button */
+  margin: 20px 0; /* Increase space above and below each button */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: bold; /* Make the text bold */
+}
+
+/* Adjust the hover effect on buttons for better visibility */
+button:hover {
+  background-color: #16a45f;
+  color: #ffffff; /* Ensure text color is white for contrast */
+}
 
 
 
