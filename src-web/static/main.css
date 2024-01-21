@@ -1,5 +1,5 @@
-
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -12,14 +12,16 @@ html, body {
 
 header {
   background-color: #1dbf73;
-  padding: 10px; /* Reduced top and bottom padding */
+  padding: 10px;
+  /* Reduced top and bottom padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 
-header nav a, header nav button {
+header nav a,
+header nav button {
   color: #ffffff;
   text-decoration: none;
   border: 1px solid #ffffff;
@@ -32,7 +34,8 @@ header nav a, header nav button {
   cursor: pointer;
 }
 
-header nav a:hover, header nav button:hover {
+header nav a:hover,
+header nav button:hover {
   background-color: #ffffff;
   color: #1dbf73;
 }
@@ -45,7 +48,8 @@ header a img {
 
 header img {
   height: 50px;
-  border: none; /* Add this line to remove the border */
+  border: none;
+  /* Add this line to remove the border */
 }
 
 nav {
@@ -66,7 +70,7 @@ nav {
 .container .contact_us {
   /* display: inline-block; */
   /* background-color: #1dbf73; */
-  color:#1dbf73;
+  color: #1dbf73;
   /* padding: 10px 20px; */
   text-decoration: none;
   /* border-radius: 5px; */
@@ -74,24 +78,24 @@ nav {
 }
 
 .policyc .contact_us {
-  color:#1dbf73;
+  color: #1dbf73;
   text-decoration: none;
-} 
+}
 
 .container {
   max-width: 360px;
   margin: 0 auto;
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.policyc{
+.policyc {
   max-width: 580px;
   margin: 0 auto;
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
 .stdf {
@@ -111,7 +115,7 @@ nav {
   padding: 20px;
   background-color: #ffffff;
   border-radius: 5px;
-  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
 }
 
 #verify_replacable input {
@@ -153,12 +157,17 @@ nav {
 
 /* Styles to improve settings page alignment and reduce clunkiness */
 .stdd {
-  max-width: 800px; /* Set a max-width for better alignment */
-  margin: 20px auto; /* Center the divs and add vertical spacing */
+  max-width: 800px;
+  /* Set a max-width for better alignment */
+  margin: 20px auto;
+  /* Center the divs and add vertical spacing */
   padding: 20px;
-  background-color: #ffffff; /* Match the background with the homepage */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Consistent with homepage styling */
-  border-radius: 5px; /* Rounded corners as on the homepage */
+  background-color: #ffffff;
+  /* Match the background with the homepage */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  /* Consistent with homepage styling */
+  border-radius: 5px;
+  /* Rounded corners as on the homepage */
 }
 
 .stdl {
@@ -168,52 +177,105 @@ nav {
 }
 
 .stdi {
-  max-width: 100%; /* Ensure images are not oversized */
+  max-width: 100%;
+  /* Ensure images are not oversized */
   height: auto;
-  display: block; /* Images appear on their own line */
+  display: block;
+  /* Images appear on their own line */
   margin-bottom: 10px;
 }
 
 /* Adjustments for file inputs to remove default styling */
 input[type="file"] {
   border: none;
-  margin-bottom: 20px; /* Add space after file inputs */
+  margin-bottom: 20px;
+  /* Add space after file inputs */
 }
 
 /* Style links to match the homepage */
 .stdh .stda {
-  display: inline-block; /* Sit next to each other horizontally */
-  margin: 10px; /* Add space around the links */
-  padding: 10px 20px; /* Add space inside the links */
-  border-radius: 5px; /* Round the corners of the links */
-  background-color: #1dbf73; /* Fill the links with color */
-  color: #ffffff; /* Change the text color */
-  text-decoration: none; /* Remove the underline */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Add a smooth transition when hovering */
- }
- 
- .stdh .stda:hover {
-  background-color: #ffffff; /* Change the background color when hovering */
-  color: #1dbf73; /* Change the text color when hovering */
+  display: inline-block;
+  /* Sit next to each other horizontally */
+  margin: 10px;
+  /* Add space around the links */
+  padding: 10px 20px;
+  /* Add space inside the links */
+  border-radius: 5px;
+  /* Round the corners of the links */
+  background-color: #1dbf73;
+  /* Fill the links with color */
+  color: #ffffff;
+  /* Change the text color */
+  text-decoration: none;
+  /* Remove the underline */
+  transition: background-color 0.2s ease, color 0.2s ease;
+  /* Add a smooth transition when hovering */
+}
+
+.stdh .stda:hover {
+  background-color: #ffffff;
+  /* Change the background color when hovering */
+  color: #1dbf73;
+  /* Change the text color when hovering */
+}
+
+.stda {
+  display: inline-block;
+  /* Sit next to each other horizontally */
+  margin: 10px;
+  /* Add space around the links */
+  padding: 10px 20px;
+  /* Add space inside the links */
+  border-radius: 5px;
+  /* Round the corners of the links */
+  background-color: #1dbf73;
+  /* Fill the links with color */
+  color: #ffffff;
+  /* Change the text color */
+  text-decoration: none;
+  /* Remove the underline */
+  transition: background-color 0.2s ease, color 0.2s ease;
+  /* Add a smooth transition when hovering */
+}
+
+.stda:hover {
+  background-color: #ffffff;
+  /* Change the background color when hovering */
+  color: #1dbf73;
+  /* Change the text color when hovering */
 }
 
 /* Increase the margin around each div to add more space between settings */
 .stdd {
   max-width: 800px;
-  margin: 40px auto; /* Increase the top and bottom margin */
+  margin: 40px auto;
+  /* Increase the top and bottom margin */
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.nologd {
+  max-width: 560px;
+  margin: 40px auto;
+  /* Increase the top and bottom margin */
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
 }
 
 /* Add a border to each label to visually separate them */
 .stdl {
   display: block;
-  margin-bottom: 15px; /* Increase space below each label */
+  margin-bottom: 15px;
+  /* Increase space below each label */
   font-weight: bold;
-  border-bottom: 1px solid #ccc; /* Add a light border for separation */
-  padding-bottom: 10px; /* Add padding to give space above the border */
+  border-bottom: 1px solid #ccc;
+  /* Add a light border for separation */
+  padding-bottom: 10px;
+  /* Add padding to give space above the border */
 }
 
 /* Adjust input elements to have more space around them */
@@ -223,9 +285,12 @@ input[type="email"],
 input[type="file"],
 textarea,
 select {
-  width: calc(100% - 40px); /* Adjust width calculation for added padding */
-  padding: 15px; /* Increase padding for a larger click area */
-  margin-bottom: 20px; /* Increase space below each input */
+  width: calc(100% - 40px);
+  /* Adjust width calculation for added padding */
+  padding: 15px;
+  /* Increase padding for a larger click area */
+  margin-bottom: 20px;
+  /* Increase space below each input */
   border: 1px solid #ccc;
   border-radius: 4px;
 }
@@ -234,31 +299,58 @@ select {
 .stdb {
   background-color: #1dbf73;
   color: white;
-  padding: 15px 20px; /* Increase padding for a larger button */
-  margin: 20px 0; /* Increase space above and below each button */
+  padding: 15px 20px;
+  /* Increase padding for a larger button */
+  margin: 20px 0;
+  /* Increase space above and below each button */
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  font-weight: bold; /* Make the text bold */
+  font-weight: bold;
+  /* Make the text bold */
 }
 
 /* Adjust the hover effect on buttons for better visibility */
 .stdb:hover {
   background-color: #16a45f;
-  color: #ffffff; /* Ensure text color is white for contrast */
+  color: #ffffff;
+  /* Ensure text color is white for contrast */
+}
+
+.signoutb {
+  background-color: #1dbf73;
+  color: white;
+  padding: 15px 20px;
+  /* Increase padding for a larger button */
+  margin: 20px 0;
+  /* Increase space above and below each button */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: bold;
+  /* Make the text bold */
+}
+
+/* Adjust the hover effect on buttons for better visibility */
+.signoutb:hover {
+  background-color: #16a45f;
+  color: #ffffff;
+  /* Ensure text color is white for contrast */
 }
 
 .banner-card {
   position: absolute;
 }
 
-.banner-card img{
+.banner-card img {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
 
 }
+
 .banner-text {
   top: 25%;
   right: 25px;
@@ -284,17 +376,22 @@ select {
   gap: 10px;
 } */
 
-.policyc h1{
+.policyc h1 {
   font-size: 25px;
 }
 
 
 #dropdown select {
-  -webkit-appearance: none; /* For WebKit browsers */
-  -moz-appearance: none;    /* For Mozilla Firefox browsers */
-  appearance: none;         /* For modern browsers */
-  display: block; /* To allow width to be set */
-  width: 100%; /* Set width to fill container */
+  -webkit-appearance: none;
+  /* For WebKit browsers */
+  -moz-appearance: none;
+  /* For Mozilla Firefox browsers */
+  appearance: none;
+  /* For modern browsers */
+  display: block;
+  /* To allow width to be set */
+  width: 100%;
+  /* Set width to fill container */
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -309,11 +406,14 @@ select::-ms-expand {
 
 /* Style focus state */
 #dropdown select:focus {
-  outline: none; /* Removes the default focus outline */
-  border-color: #1dbf73; /* Adds a border color on focus */
+  outline: none;
+  /* Removes the default focus outline */
+  border-color: #1dbf73;
+  /* Adds a border color on focus */
 }
 
 /* Style the options */
 #dropdown option {
-  padding: 10px; /* Adds padding to options */
+  padding: 10px;
+  /* Adds padding to options */
 }
