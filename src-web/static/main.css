@@ -24,7 +24,7 @@ font-family: Arial, sans-serif;
 }
 
 header {
-  background-color: #3b7258;
+  background-color: rgba(11,184,171,255);
   padding: 20px;
   display: flex;
   justify-content: space-between;
@@ -99,7 +99,9 @@ header img {
 }
 
 footer {
-  background-color: #1dbf73;
+  background-image: url(/src-web/assets/footer.png);
+    background-repeat:no-repeat;
+    background-size:cover;
   color: #ffffff;
   text-align: center;
   padding: 20px;
