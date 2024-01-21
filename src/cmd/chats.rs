@@ -4,6 +4,7 @@ use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
 use futures_util::StreamExt as _;
+use surrealdb::Action;
 use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
@@ -209,10 +210,12 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 
 
 
-    //SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;
-    let Ok(Some(id)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", &room_id)).await else {
-        return RainError::for_js("Critical error obtaining ID from chat!");
-    };
+    let sql = "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;";
+    let mut stream = db.query(sql).await.unwrap();
+    while let Some(update) = stream.next().await {
+        
+    }
+
 
     // Listen to updates on a specific record
     let mut stream = db.select(("chats", id)).live().await.unwrap();
