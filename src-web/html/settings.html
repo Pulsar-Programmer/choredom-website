@@ -38,31 +38,28 @@
     <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea><br>
     <!-- <input type="submit" value="Submit"> -->
     <button onclick="settings_post()">Submit</button>
-  </div>
 
-  <div>
-    Current Profile Picture:
+    <label>Current Profile Picture:</label>
     <img src="" id="pfp" width="500" height="500">
 
-    Upload a New One
+    <label>Upload a New Profile Picture</label>
     <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp"><br>
-    <button onclick="upload_pfp()">Submit Profile Picture</button>
-  </div>
+    <button onclick="upload_pfp()">Submit Profile Picture</button><br>
 
-  <div>
-    Bio Picture(s):
+    <label>Bio Picture(s):</label>
     <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_bio"><br>
     <button onclick="upload_bio()">Submit Profile Picture</button>
-  </div>
 
+    <label>Privacy </label>
   <a href="/settings/email">Change email</a>
   <a href="/settings/password">Change Password</a>
-
+  
+    <label>View Your Profile!</label>
   <a id="gritty" href="/users/"> View Profile</a>
-  <a href="/settings/upload">Upload a Gov ID</a>
+  <label>Get Verified:</label>
+  <a href="/settings/upload">Upload a Gov ID</a><br>
 
-
-  <div>
+      <label>Delete Account:</label>
       <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
       <button onclick="delete_form()">Delete Account</button>
   </div>
