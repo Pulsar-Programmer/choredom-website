@@ -21,7 +21,7 @@ function submit_post(){
     })
     .then(handle)
     .then(_ => {
-        redirect("/post-job");
+        redirect("/success");
     })
     .catch(notify);
 }
