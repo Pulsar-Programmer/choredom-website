@@ -14,7 +14,8 @@ function generateJobHTML(job) {
             <p>Date of Task: ${job.data.time}</p>
             <p>Price: $${job.data.price / 100.0}</p>
             <p>Location: ${job.data.location}</p>
-            <a href="/jobs/${job.id.id.String}">Visit Job Post</a>
+            <a id="job_id" href="/jobs/${job.id.id.String}">Visit Job Post</a>
+            <button onclick="delete_job('${job.id.id.String}')">Delete Job</button>
         </div>
     `;
 }
@@ -41,3 +42,25 @@ window.onload = function() {
     })
     .catch(notify);
 }
+
+
+
+function delete_job(job_id) {
+    fetch("/delete-post", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(job_id)
+    })
+    .then(handle)
+    .then(_ => {
+        redirect("/success");
+    })
+    .catch(notify);
+}
+
+// function edit_job(){
+
+    
+// }

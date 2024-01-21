@@ -101,7 +101,8 @@ async fn main() -> std::io::Result<()> {
             pics_bio, pics_pfp, pics_chats, 
             chats_access,
             policy, success, //last time check of #143
-            my_jobs, my_jobs_get
+            my_jobs, my_jobs_get,
+            delete_post
             // , updates
             // ,test
         )

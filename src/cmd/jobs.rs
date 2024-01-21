@@ -1,6 +1,7 @@
 use crate::{db::{query_once, sole_query}, AppData, cmd::sites::NOLOG, RainError, unwrap_identity};
 use actix_identity::Identity;
 use actix_web::{web::{Data, self, Json}, Responder, get, post, HttpResponse};
+use serde::Serialize;
 use surrealdb::sql::Thing;
 use super::{sites::{POST, TASK}, signup::AccountPage};
 use chrono::{DateTime, Utc, TimeZone};
@@ -214,15 +215,25 @@ async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<E
     HttpResponse::Ok().finish()
 }
 
+#[derive(Serialize)]
+struct IdUsername{
+    id: String,
+    username: String,
+}
+
 
 #[post("/delete-post")]
 async fn delete_post(identity: Option<Identity>, data: Data<AppData>, job_id: Json<String>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
-    //job_id should be given by the frontend
-    //we must check that username matches the valid job_id
-    
-    todo!();
 
+    let job_id = job_id.into_inner();
+    let mut db = data.db.lock().await;
+    
+    let parameters = IdUsername{ id: job_id, username };
+    if let Err(e) = sole_query(&mut db, r#"DELETE type::thing("jobs", $id) WHERE user.username=$username;"#, parameters).await { return RainError::for_js(e) };
+
+    //job_id should be given by the frontend DONE
+    //we must check that username matches the valid job_id DONE
 
     HttpResponse::Ok().finish()
 }
@@ -238,7 +249,7 @@ async fn my_jobs(identity: Option<Identity>) -> impl Responder{
 
 #[post("myjobs-get")]
 async fn my_jobs_get(identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
-    println!("Called!");
+    // println!("Called!");
 
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Cave island!")};
 
@@ -248,6 +259,6 @@ async fn my_jobs_get(identity: Option<Identity>, data: Data<AppData>) -> impl Re
         if let Err(e) = job.timestamp_converted() { return RainError::for_js(e)};
     }
 
-    println!("Sent!");
+    // println!("Sent!");
     HttpResponse::Ok().content_type("application/json").json(jobs_vec)
 }
