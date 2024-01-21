@@ -33,7 +33,8 @@ pub mod sites{
         ERRHTML; "error",
         SUCCESS; "success",
         POLICY; "policies",
-        NOVER; "no-ver"
+        NOVER; "no-ver",
+        MYJOBS; "myjobs"
     );
 }
 

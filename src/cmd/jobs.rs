@@ -220,9 +220,34 @@ async fn delete_post(identity: Option<Identity>, data: Data<AppData>, job_id: Js
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
     //job_id should be given by the frontend
     //we must check that username matches the valid job_id
-
+    
     todo!();
 
 
     HttpResponse::Ok().finish()
+}
+
+
+#[get("my-jobs")]
+async fn my_jobs(identity: Option<Identity>) -> impl Responder{
+    if identity.is_none(){
+        return RainError::for_html(NOLOG)
+    }
+    HttpResponse::Ok().body(crate::cmd::sites::MYJOBS)
+}
+
+#[post("myjobs-get")]
+async fn my_jobs_get(identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
+    println!("Called!");
+
+    let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Cave island!")};
+
+    let Ok(mut jobs_vec) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE user.username = $username FETCH user;"#, ("username", username)).await else { return RainError::for_js("Error querying jobs.")};
+
+    for job in jobs_vec.iter_mut(){
+        if let Err(e) = job.timestamp_converted() { return RainError::for_js(e)};
+    }
+
+    println!("Sent!");
+    HttpResponse::Ok().content_type("application/json").json(jobs_vec)
 }
