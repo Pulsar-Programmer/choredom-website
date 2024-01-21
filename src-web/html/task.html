@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="jobs_add">
+  <div id="jobs_add" class="container">
     <button onclick="get_location_data()">Filter Towns</button>
     <div id="dropdown">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
@@ -37,10 +37,10 @@
     </div>
   </div>
   <main>
-    <div id="filters">
+    <div id="filters" class="container">
       <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
       <select id="statusFilter">
-        <option value="">Select verification status</option>
+        <option value="">Select Verification Status</option>
         <option value="Verified">Verified</option>
         <option value="Non-verified">Non-verified</option>
       </select>
