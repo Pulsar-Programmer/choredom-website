@@ -208,34 +208,43 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     // ^^^^^^u are such a SMART BOI
     let mut db = data.db.lock().await;
 
-
-
-    let sql = "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;";
-    let mut stream = db.query(sql).await.unwrap();
-    while let Some(update) = stream.next().await {
+    // let sql = "LIVE SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;";
+    // let mut stream = db.query(sql).await.unwrap();
+    // while let Some(update) = stream.next().await {
         
-    }
+    // }
 
+    let Ok(Some(id)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", &room_id)).await else {
+        return RainError::for_js("Critical error obtaining ID from chat!");
+    };
+
+    let mut chats_vec = Vec::new();
 
     // Listen to updates on a specific record
-    let mut stream = db.select(("chats", id)).live().await.unwrap();
+    let Ok(mut stream) = db.select(("chats", id)).live().await else { return RainError::for_js("Error live querying.")};
     // The returned stream implements `futures::Stream` so we can
     // use it with `futures::StreamExt`, for example.
+    #[allow(clippy::never_loop)]
     while let Some(result) = stream.next().await {
         println!("I think I see you!!!!!");
-        let result: surrealdb::Notification<Room> = result.unwrap();
 
-        todo!("{result:?}");
+        let mut result: surrealdb::Notification<Room> = if let Ok(o) = result { o } else { return RainError::for_js("Error getting result in stream!")};
+        result.data.messages.retain(|elem|{
+            elem.sender == opposite_unnamed && !elem.was_read
+        });
+        println!("{result:?}");
+        chats_vec = result.data.messages;
+        break;
     }
     drop(stream);
 
 
 
-    let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
-    let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
-    let chats_vec = &dbgiven.messages;
+    // let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
+    // let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
+    // let chats_vec = &dbgiven.messages;
     //mark as read right before
-    let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
+    if let Err(e) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await { return r::for_js(format!("{e} - Could not mark chats as read."))};
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }

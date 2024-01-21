@@ -109,11 +109,13 @@ function receive_chat(){
     .then(chatsData => {
         console.log('Chats Success:', chatsData);
         displayChats(chatsData);
+        receive_chat();
     })
     .catch(notify);
 }
 //Erase this when doing long polling or the SSEs.
-setInterval(receive_chat, 10_000);
+// setInterval(receive_chat, 10_000);
+receive_chat();
 
 
 
