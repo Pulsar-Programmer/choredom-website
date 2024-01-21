@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
-  <header>
+  <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
-      <a href="/">Home</a>
-      <a href="/chat" id="chat-button">Chat</a>
-      <a href="/tasks">Tasks in your Area</a>
-      <a href="/post-job" id="post-button">Post</a>
-      <a href="/my-jobs" id="my-jobs">My Jobs</a>
-      <a href="/settings">Settings</a>
-      <a href="/contacts">Contact Us</a>
+      <a class="stda" href="/">Home</a>
+      <a class="stda" href="/chat" id="chat-button">Chat</a>
+      <a class="stda" href="/tasks">Tasks in your Area</a>
+      <a class="stda" href="/settings">Settings</a>
+      <a class="stda" href="/post-job" id="post-button">Post</a>
+      <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
+      <a class="stda" href="/contacts">Contact Us</a>
       <button id="signout-button">Sign Out</button>
     </nav>
   </header>
@@ -26,9 +26,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="jobs_add" class="container">
+  <div id="jobs_add" class="stdc">
     <button onclick="get_location_data()">Filter Towns</button>
-    <div id="dropdown">
+    <div id="dropdown" class="dropdown">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
@@ -39,7 +39,7 @@
     </div>
   </div>
   <main>
-    <div id="filters" class="container">
+    <div id="filters" class="stdc stdd">
       <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
       <select id="statusFilter">
         <option value="">Select Verification Status</option>
@@ -59,7 +59,7 @@
   <script defer src="/src-web/static/task.js"></script>
   <script src="/src-web/static/signout.js"></script>
 </body>
-<footer>
+<footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
 </html>

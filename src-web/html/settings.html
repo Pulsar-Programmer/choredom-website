@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
-  <header>
+  <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
-      <a href="/">Home</a>
-      <a href="chat" id="chat-button">Chat</a>
-      <a href="/tasks">Tasks in your Area</a>
-      <a href="/post-job" id="post-button">Post</a>
-      <a href="/my-jobs" id="my-jobs">My Jobs</a>
-      <a href="/settings">Settings</a>
-      <a href="/contacts">Contact Us</a>
+      <a class="stda" href="/">Home</a>
+      <a class="stda" href="/chat" id="chat-button">Chat</a>
+      <a class="stda" href="/tasks">Tasks in your Area</a>
+      <a class="stda" href="/settings">Settings</a>
+      <a class="stda" href="/post-job" id="post-button">Post</a>
+      <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
+      <a class="stda" href="/contacts">Contact Us</a>
       <button id="signout-button">Sign Out</button>
     </nav>
   </header>
@@ -19,14 +19,14 @@
   <link rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
   <link rel="stylesheet" href="/src-web/static/main.css">
 </head>
-  <div>
-    <label for="username">Username:</label><br>
+  <div class="stdd">
+    <label class="stdl" for="username">Username:</label><br>
     <input type="text" id="username" name="username"pattern="^[A-Za-z0-9]+$" title="Should only contain letters and numbers"required><br>
 
-    <label for="displayname">Display Name:</label><br>
+    <label class="stdl" for="displayname">Display Name:</label><br>
     <input type="text" id="displayname" name="displayname"pattern="^[A-Za-z0-9 ]+$"title="Should only contain letters, spaces, and numbers"required><br>
 
-    <div id="dropdown">
+    <div id="dropdown" class="dropdown">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
@@ -39,38 +39,38 @@
     <label for="bio">Bio:</label><br>
     <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea><br>
     <!-- <input type="submit" value="Submit"> -->
-    <button onclick="settings_post()">Submit</button>
+    <button class="stdb" onclick="settings_post()">Submit</button>
 
-    <label>Current Profile Picture:</label>
+    <label class="stdl">Current Profile Picture:</label>
     <img src="" id="pfp" width="500" height="500">
 
-    <label>Upload a New Profile Picture</label>
+    <label class="stdl">Upload a New Profile Picture</label>
     <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp"><br>
-    <button onclick="upload_pfp()">Submit Profile Picture</button><br>
+    <button class="stdb" onclick="upload_pfp()">Submit Profile Picture</button><br>
 
-    <label>Bio Picture(s):</label>
+    <label class="stdl">Bio Picture(s):</label>
     <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_bio"><br>
-    <button onclick="upload_bio()">Submit Profile Picture</button>
+    <button class="stdb" onclick="upload_bio()">Submit Profile Picture</button>
 
     <label>Privacy </label>
   <a href="/settings/email">Change email</a>
   <a href="/settings/password">Change Password</a>
   
-    <label>View Your Profile!</label>
+    <label class="stdl">View Your Profile!</label>
   <a id="gritty" href="/users/"> View Profile</a>
-  <label>Get Verified:</label>
+  <label class="stdl">Get Verified:</label>
   <a href="/settings/upload">Upload a Gov ID</a><br>
 
-      <label>Delete Account:</label>
+      <label class="stdl">Delete Account:</label>
       <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
-      <button onclick="delete_form()">Delete Account</button>
+      <button class="stdb" onclick="delete_form()">Delete Account</button>
   </div>
 
 
   <script src="/src-web/static/error.js"></script>
   <script defer src="./src-web/static/settings.js"></script>
   <script src="/src-web/static/signout.js"></script>
-  <footer>
+  <footer class="stdf">
     <p>&copy; 2024 Choredom</p>
   </footer>
   </html>

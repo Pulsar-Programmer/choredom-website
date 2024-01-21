@@ -1,53 +1,50 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <link rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
   <link rel="stylesheet" href="/src-web/static/main.css">
-    <header>
-      <a href="/">
-        <img src="/src-web/assets/logo.png" alt="Choredom Logo">
-      </a>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/chat" id="chat-button">Chat</a>
-        <a href="/tasks">Tasks in your Area</a>
-        <a href="/post-job" id="post-button">Post</a>
-        <a href="/my-jobs" id="my-jobs">My Jobs</a>
-        <a href="/settings">Settings</a>
-        <a href="/contacts">Contact Us</a>
-        <button id="signout-button">Sign Out</button>
-      </nav>
-    </header>
-    <title>Chat</title>
-    <h2>Don't respond to people you don't trust</h2>
-    <script defer src="/src-web/static/chat.js"></script>
+  <header class="stdh">
+    <a href="/">
+      <img src="/src-web/assets/logo.png" alt="Choredom Logo">
+    </a>
+    <nav>
+      <a class="stda" href="/">Home</a>
+      <a class="stda" href="/chat" id="chat-button">Chat</a>
+      <a class="stda" href="/tasks">Tasks in your Area</a>
+      <a class="stda" href="/post-job" id="post-button">Post</a>
+      <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
+      <a class="stda" href="/settings">Settings</a>
+      <a class="stda" href="/contacts">Contact Us</a>
+      <button id="signout-button">Sign Out</button>
+    </nav>
+  </header>
+  <title class="stdt">Chat</title>
+  <h2>Don't respond to people you don't trust</h2>
+  <script defer src="/src-web/static/chat.js"></script>
 </head>
-<body>
-    <div>
-      <label for="chatsPics">Send images...:</label><br>
-      <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
-      <button onclick="upload_chats()">Submit Chat Pictures</button>
-    </div>
-    <h1 id="room-title">Billy Bob Joe</h1>
-    <div id="message-input-div">
-        <input type="text" id="message-input" placeholder="Type a message">
-        <button onclick="send_chat()">Send</button>
-    </div>
-    <div id="chat_box"></div> 
-    <!-- <footer>
-        <p>&copy; 2023 Choredom</p>
-        <img src="/src-web/assets/background.jpg" alt="Background Image">
-    </footer> -->
 
-    <div id="chatList">
-      <!-- Chat boxes will be added here by JavaScript -->
-    </div>
-    <script src="/src-web/static/error.js"></script>
-    <script defer src="/src-web/static/chat-nav.js"></script>
-    <script src="/src-web/static/signout.js"></script>
+<body>
+  <div class="stdc stdd">
+    <label class="stdl" for="chatsPics">Send images...:</label><br>
+    <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
+    <button class="stdb" onclick="upload_chats()">Submit Chat Pictures</button>
+  </div>
+  <div id="message-input-div" class="stdc stdd">
+    <input type="text" id="message-input" placeholder="Type a message">
+    <button class="stdb" onclick="send_chat()">Send</button>
+  </div>
+  <div id="chat_box"></div>
+
+  <div id="chatList" class="stdc stdd">
+    <!-- Chat boxes will be added here by JavaScript -->
+  </div>
+  <script src="/src-web/static/error.js"></script>
+  <script defer src="/src-web/static/chat-nav.js"></script>
+  <script src="/src-web/static/signout.js"></script>
 </body>
-<footer>
+<footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
-</html>
 
+</html>

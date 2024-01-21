@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
-  <header>
+  <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
-      <a href="/">Home</a>
-      <a href="/chat" id="chat-button">Chat</a>
-      <a href="/tasks">Tasks in your Area</a>
-      <a href="/post-job" id="post-button">Post</a>
-      <a href="/my-jobs" id="my-jobs">My Jobs</a>
-      <a href="/settings">Settings</a>
-      <a href="/contacts">Contact Us</a>
+      <a class="stda" href="/">Home</a>
+      <a class="stda" href="/chat" id="chat-button">Chat</a>
+      <a class="stda" href="/tasks">Tasks in your Area</a>
+      <a class="stda" href="/settings">Settings</a>
+      <a class="stda" href="/post-job" id="post-button">Post</a>
+      <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
+      <a class="stda" href="/contacts">Contact Us</a>
       <button id="signout-button">Sign Out</button>
     </nav>
   </header>
@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="/src-web/static/main.css">
 </head>
 <body>
-<div id="verify_replacable">
+<div id="verify_replacable" class="stdd">
   <input id="email" type="email" class="email-input" placeholder="Email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Ensure it is a valid email.">
   <input id="password" name="password" type="password" class="password-input" placeholder="Password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters, and at least one special character" required>
   <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters and at least one special character" required>
@@ -45,7 +45,7 @@
 <script src="/src-web/static/signup.js"></script>
 <script src="/src-web/static/signout.js"></script>
 <script defer src="/src-web/static/us-cities.js"></script>
-<footer>
+<footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
 </html>

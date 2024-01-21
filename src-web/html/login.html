@@ -7,23 +7,23 @@
 <link rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
 </head>
 <body>
-  <header>
+  <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
-      <a href="/">Home</a>
-      <a href="/chat" id="chat-button">Chat</a>
-      <a href="/tasks">Tasks in your Area</a>
-      <a href="/post-job" id="post-button">Post</a>
-      <a href="/my-jobs" id="my-jobs">My Jobs</a>
-      <a href="/settings">Settings</a>
-      <a href="/contacts">Contact Us</a>
+      <a class="stda" href="/">Home</a>
+      <a class="stda" href="/chat" id="chat-button">Chat</a>
+      <a class="stda" href="/tasks">Tasks in your Area</a>
+      <a class="stda" href="/settings">Settings</a>
+      <a class="stda" href="/post-job" id="post-button">Post</a>
+      <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
+      <a class="stda" href="/contacts">Contact Us</a>
       <button id="signout-button">Sign Out</button>
     </nav>
   </header>
 <main>
-<div id="verify_replacable">
+<div id="verify_replacable" class="stdc stdd">
   <!-- We don't need the Regex requirements here since it matches against the DB. -->
   <input type="email" name="email" placeholder="Email" id="email">
   <input type="password" id="password" placeholder="Password">
@@ -35,7 +35,7 @@
 <script src="/src-web/static/error.js"></script>
 <script src="/src-web/static/verify.js"></script>
 <script src="/src-web/static/signout.js"></script>
-<footer>
+<footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
 </html>
