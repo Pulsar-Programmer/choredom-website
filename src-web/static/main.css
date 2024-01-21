@@ -2,9 +2,17 @@ html, body {
   height: 100vh;
   margin: 0;
 }
-
+/* 
 body {
   font-family: Arial, sans-serif;
+  background-color: #f32929;
+  color: #333;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+} */
+
+body {
   background-image: url(/src-web/assets/aerobackground.png);
   background-repeat:no-repeat;
   background-size:cover;
@@ -12,6 +20,7 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
+font-family: Arial, sans-serif;
 }
 
 header {
