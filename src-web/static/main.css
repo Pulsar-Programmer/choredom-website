@@ -5,7 +5,7 @@ html, body {
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #ffffff;
+  background-color: #f32929;
   color: #333;
   padding: 0;
   display: flex;
@@ -13,7 +13,7 @@ body {
 }
 
 header {
-  background-color: #1dbf73;
+  background-color: #3b7258;
   padding: 20px;
   display: flex;
   justify-content: space-between;
