@@ -193,9 +193,16 @@ struct EditPostData{
     change: JobData,
 }
 
+#[derive(serde::Serialize)]
+struct EditPostDataDB{
+    id: String,
+    change: Job,
+    username: String,
+}
+
 
 #[post("/edit-post")]
-async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<EditPostData>) -> impl Responder{
+pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<EditPostData>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
     
     let EditPostData { id, change } = edit.into_inner();
@@ -209,8 +216,8 @@ async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<E
     };
 
     let mut db = data.db.lock().await;
-    todo!();
-    if let Err(e) = sole_query(&mut db, "", ()).await { return RainError::for_js(e)};
+    let parameters = EditPostDataDB{ id, change: jobified_change, username };
+    if let Err(e) = sole_query(&mut db, r#"UPDATE type::thing("jobs", $id) SET data = $change WHERE user.username = $username;"#, parameters).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
