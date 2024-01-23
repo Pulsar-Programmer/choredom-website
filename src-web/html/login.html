@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Log In</title>
-<link rel="stylesheet" href="/src-web/static/main.css">
-<link rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <meta charset="UTF-8">
+  <title>Log In</title>
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <script src="/src-web/static/theme.js"></script>
 </head>
+
 <body>
   <header class="stdh">
     <a href="/">
-      <img src="/src-web/assets/logo.png" alt="Choredom Logo">
+      <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
     </a>
     <nav>
       <a class="stda" href="/">Home</a>
@@ -22,14 +26,14 @@
       <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<main>
-<div id="verify_replacable" class="stdc stdd">
-  <!-- We don't need the Regex requirements here since it matches against the DB. -->
-  <input type="email" name="email" placeholder="Email" id="email">
-  <input type="password" id="password" placeholder="Password">
-  <button id="vrbtn" onclick="login_request()">Log In</button>
-</div>
-</main>
+  <main>
+    <div id="verify_replacable" class="stdc stdd">
+      <!-- We don't need the Regex requirements here since it matches against the DB. -->
+      <input type="email" name="email" placeholder="Email" id="email">
+      <input type="password" id="password" placeholder="Password">
+      <button id="vrbtn" onclick="login_request()">Log In</button>
+    </div>
+  </main>
 </body>
 <script src="/src-web/static/login.js"></script>
 <script src="/src-web/static/error.js"></script>
@@ -38,4 +42,5 @@
 <footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
+
 </html>
