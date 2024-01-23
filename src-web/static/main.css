@@ -1,24 +1,12 @@
-html,
-body {
+html, body {
   height: 100%;
   margin: 0;
+  color: #333;
   padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #ffffff;
-  color: #333;
   display: flex;
   flex-direction: column;
 }
-
-.stdh {
-  background-color: #1dbf73;
-  padding: 10px;
-  /* Reduced top and bottom padding */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 
 .stdh nav a,
 .stdh nav button {
@@ -96,14 +84,6 @@ nav {
   padding: 20px;
   background-color: #ffffff;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.stdf {
-  background-color: #1dbf73;
-  color: #ffffff;
-  text-align: center;
-  padding: 20px;
-  margin-top: auto;
 }
 
 /* Additional styles to make the sign-in page similar to the homepage */

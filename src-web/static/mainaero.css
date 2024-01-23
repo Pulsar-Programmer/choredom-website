@@ -1,0 +1,60 @@
+html, body {
+    background-image: url(/src-web/assets/aerobackground.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #08867c;
+}
+
+.stdh {
+    background-color: rgba(11, 184, 171, 255);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stdf {
+    background-image: url(/src-web/assets/aerofooter.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    margin-top: auto;
+}
+
+.stdh .stda {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #08867c;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.stdh .stda:hover {
+    background-color: #ffffff;
+    /* Change the background color when hovering */
+    color: #08867c;
+    /* Change the text color when hovering */
+}
+
+/* .stdh .signoutb {
+    display: inline-block;
+    background-color: #1dbf73;
+    color: white;
+    border: white 1px solid;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+} */
+
+/* Adjust the hover effect on buttons for better visibility */
+/* .stdh .signoutb:hover {
+    background-color: white;
+    color: #1dbf73;
+} */

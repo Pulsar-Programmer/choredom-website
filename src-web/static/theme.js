@@ -45,3 +45,48 @@ window.onload = function theme(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const btn = document.getElementById('themeToggleBtn');
+// let currentThemeIndex = 0;
+// const themes = ['light', 'dark', 'high-contrast']; // Add more themes here if needed
+
+// btn.addEventListener('click', function () {
+//     // Remove all theme classes from the body
+//     document.body.className = '';
+
+//     // Cycle to the next theme
+//     currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+
+//     // Apply the new theme
+//     if (themes[currentThemeIndex] !== 'default') {
+//         document.body.classList.add(themes[currentThemeIndex]);
+//     }
+
+//     // Save the current theme
+//     localStorage.setItem('theme', themes[currentThemeIndex]);
+// });
+
+
