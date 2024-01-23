@@ -1,0 +1,36 @@
+html, body {
+    background-color: #393d41;
+}
+
+.stdh {
+    background-color: #282b2e;
+    padding: 20px;
+}
+
+.stdf {
+    background-color: #282b2e;
+}
+
+.stdh .stda {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #393d41;
+    color: #1dbf73;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.stdh .stda:hover {
+    background-color: #1dbf73;
+    /* Change the background color when hovering /
+    color: #393d41;
+    / Change the text color when hovering */
+}
+
+.stdc .homepage {
+    display: inline-block;
+    background-color: #393d41;
+    color: #1dbf73;
+  }
