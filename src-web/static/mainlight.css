@@ -6,14 +6,7 @@ html, body {
     background-color: #1dbf73;
     padding: 10px;
     /* Reduced top and bottom padding */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 .stdf {
     background-color: #1dbf73;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px;
-    margin-top: auto;
 }

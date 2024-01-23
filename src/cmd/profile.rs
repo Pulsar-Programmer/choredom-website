@@ -5,7 +5,7 @@ use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
-use actix_web::{get, post, Responder, web::{Data, Form, self, Json}, HttpResponse};
+use actix_web::{get, post, web::{Data, Form, self, Json}, HttpRequest, HttpResponse, Responder};
 use rust_decimal::prelude::ToPrimitive;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
@@ -802,4 +802,53 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
     let mut db = data.db.lock().await;
     let Ok(_) = sole_query(&mut db, surrealql, info).await else{ return RainError::for_html_stderr() };
     HttpResponse::Ok().body(SUCCESS)
+}
+
+
+
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum Themes{
+    Light,
+    Dark,
+    Contrast,
+    Aero
+}
+
+
+#[post("/set-theme")]
+pub async fn set_theme(session: Session, theme_type: Json<String>) -> impl Responder{
+    use Themes::*;
+    let value = match theme_type.into_inner().as_str() {
+        "Light" => Light,
+        "Dark" => Dark,
+        "Contrast" => Contrast,
+        "Aero" => Aero,
+        _ => {return RainError::for_js("Invalid theme type!")}
+    };
+
+    if let Err(e) = session.insert("theme", value) { return RainError::for_js(e) };
+
+    HttpResponse::Ok().finish()
+}
+
+#[post("/get-theme")]
+pub async fn get_theme(session: Session) -> impl Responder{
+
+    //if we do a std get request -> this is the proper way to do it supposedly
+    //req: HttpRequest
+    // if let Some(ua) = req.headers().get("User-Agent"){
+    //     if let Ok(ua) = ua.to_str(){
+    //         todo!("{ua}");
+    //     }
+    // }
+
+    use Themes::*;
+    let value: Themes = match session.get("theme"){
+        Ok(Some(v)) => v,
+        Ok(None) => Light,
+        Err(e) => return RainError::for_js(e),
+    };
+
+    HttpResponse::Ok().json(value)
 }

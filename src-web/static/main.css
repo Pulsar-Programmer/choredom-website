@@ -8,6 +8,19 @@ html, body {
   flex-direction: column;
 }
 
+.stdh{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stdf{
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+}
+
 .stdh nav a,
 .stdh nav button {
   color: #ffffff;

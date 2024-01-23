@@ -8,19 +8,12 @@ html, body {
 .stdh {
     background-color: rgba(11, 184, 171, 255);
     padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .stdf {
     background-image: url(/src-web/assets/aerofooter.png);
     background-repeat: no-repeat;
     background-size: cover;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px;
-    margin-top: auto;
 }
 
 .stdh .stda {

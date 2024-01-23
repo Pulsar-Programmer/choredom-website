@@ -148,3 +148,22 @@ function delete_form() {
     .then(_ => redirect("/"))
     .catch(notify);
 };
+
+
+
+
+
+
+
+function set_theme(chosen_theme){
+    fetch("/set-theme", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chosen_theme),
+    })
+    .then(handle)
+    .then(_ => redirect("/success"))
+    .catch(notify);
+}

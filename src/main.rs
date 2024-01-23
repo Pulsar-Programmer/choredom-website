@@ -102,7 +102,8 @@ async fn main() -> std::io::Result<()> {
             chats_access,
             policy, success, //last time check of #143
             my_jobs, my_jobs_get,
-            delete_post, edit_post
+            delete_post, edit_post,
+            set_theme, get_theme
             // , updates
             // ,test
         )
