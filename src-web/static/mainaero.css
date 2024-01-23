@@ -25,6 +25,7 @@ html, body {
     color: #ffffff;
     text-decoration: none;
     transition: background-color 0.2s ease, color 0.2s ease;
+    /* Round the corners of the links */
 }
 
 .stdh .stda:hover {
@@ -33,6 +34,12 @@ html, body {
     color: #08867c;
     /* Change the text color when hovering */
 }
+
+.stdc .homepage {
+    background-color: #1dbf73;
+    color: #ffffff;
+}
+  
 
 /* .stdh .signoutb {
     display: inline-block;

@@ -60,8 +60,6 @@ nav {
 
 .stdc .homepage {
   display: inline-block;
-  background-color: #1dbf73;
-  color: #ffffff;
   padding: 10px 20px;
   text-decoration: none;
   border-radius: 5px;
@@ -194,22 +192,11 @@ input[type="file"] {
   padding: 10px 20px;
   /* Add space inside the links */
   border-radius: 5px;
-  /* Round the corners of the links */
-  background-color: #1dbf73;
-  /* Fill the links with color */
-  color: #ffffff;
   /* Change the text color */
   text-decoration: none;
   /* Remove the underline */
   transition: background-color 0.2s ease, color 0.2s ease;
   /* Add a smooth transition when hovering */
-}
-
-.stdh .stda:hover {
-  background-color: #ffffff;
-  /* Change the background color when hovering */
-  color: #1dbf73;
-  /* Change the text color when hovering */
 }
 
 .stda {
