@@ -1,4 +1,4 @@
-/* HOMEPAGE: */
+/* HOMEPAGE.CSS */
 body {
     background-image: url(/src-web/assets/aerobackground.png);
     background-repeat:no-repeat;
@@ -20,7 +20,7 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-  }
+}
 /* LOGIN.CSS */
 body {
     font-family: Arial, sans-serif;
