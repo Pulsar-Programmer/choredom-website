@@ -807,7 +807,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
 
 
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub enum Themes{
     Light,
     Dark,
@@ -818,6 +818,9 @@ pub enum Themes{
 
 #[post("/set-theme")]
 pub async fn set_theme(session: Session, theme_type: Json<String>) -> impl Responder{
+
+    // println!("{}", theme_type.0);
+
     use Themes::*;
     let value = match theme_type.into_inner().as_str() {
         "Light" => Light,
@@ -826,6 +829,8 @@ pub async fn set_theme(session: Session, theme_type: Json<String>) -> impl Respo
         "Aero" => Aero,
         _ => {return RainError::for_js("Invalid theme type!")}
     };
+
+    // println!("Inserting: {value:?}");
 
     if let Err(e) = session.insert("theme", value) { return RainError::for_js(e) };
 
@@ -849,6 +854,8 @@ pub async fn get_theme(session: Session) -> impl Responder{
         Ok(None) => Light,
         Err(e) => return RainError::for_js(e),
     };
+
+    // println!("You must have theme: {value:?}");
 
     HttpResponse::Ok().json(value)
 }
