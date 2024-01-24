@@ -8,7 +8,7 @@ function add_job(job){
 // black outline
 function generateJobHTML(job) {
     return `
-    <div class = "stdc">
+    <div class = "stdc stdd">
         <div class="job" id="${job.id.id.String}">
             <h3 class="job_title">${job.data.title}</h3>
             <p class="job_body">${job.data.body}</p>
