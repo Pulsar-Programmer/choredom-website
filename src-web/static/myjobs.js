@@ -5,18 +5,20 @@ function add_job(job){
 }
 
 
-
+// black outline
 function generateJobHTML(job) {
     return `
+    <div class = "stdc">
         <div class="job" id="${job.id.id.String}">
             <h3 class="job_title">${job.data.title}</h3>
             <p class="job_body">${job.data.body}</p>
             <p class="job_time">Date of Task: ${job.data.time}</p>
             <p class="job_price">Price: $${job.data.price / 100.0}</p>
             <p class="job_location">Location: ${job.data.location}</p>
-            <a id="job_id" href="/jobs/${job.id.id.String}">Visit Job Post</a>
-            <button onclick="delete_job('${job.id.id.String}')">Delete Job</button>
-            <button onclick="initiate_edit('${job.id.id.String}')">Edit Job Post</button>
+            <a class = "stda" id="job_id" href="/jobs/${job.id.id.String}">Visit Job Post</a>
+            <button class = "stdaz" onclick="delete_job('${job.id.id.String}')">Delete Job</button>
+            <button class = "stdaz" onclick="initiate_edit('${job.id.id.String}')">Edit Job Post</button>
+        </div>
         </div>
     `;
 }
