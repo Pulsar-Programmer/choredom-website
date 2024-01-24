@@ -8,8 +8,13 @@ window.addEventListener("load", function() {
     })
     .then(handle)
     .then(data => {
-        console.log(data);
-        data.forEach(part => add_to_html(part.room_name));
+        // console.log(data);
+        let dat = Array.from(data);
+        if(dat.length == 0) {
+            let links_div = document.getElementById("chatList");
+            links_div.innerHTML = `<label>You have no chats as of now!</label>`;
+        }
+        dat.forEach(part => add_to_html(part.room_name));
     })
     .catch(notify);
 
