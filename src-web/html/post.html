@@ -30,20 +30,24 @@
     <div class="stdc">
       <h2>Post a Job</h2>
       <div id="jobForm">
+        <label>Title</label><br>
         <input id="title" name="title" type="text" placeholder="Title of your job" pattern="^[a-zA-Z0-9 ]*$" required>
+        <label>Description of Job</label><br>
         <input id="body" name="body" type="text" placeholder="Body of your job description" pattern="^[a-zA-Z0-9 ]*$"required>
+        <label>Location of Job</label><br>
         <div id="dropdown" class="dropdown">
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
           <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
           <script src="/src-web/static/us-cities.js"></script>
-          <label for="city">Filter Towns...</label>
           <select required name="location" id="city" style="width: 300px;">
           </select>
         </div>
-        <input id="time" name="time" type="date" placeholder="Date of your job"required>
-        <input id="price" name="price" type="number" placeholder="Price you are willing to pay"required>
-        <button onclick="submit_post()">Submit Job Post</button>
+        <label>Date of Job</label><br>
+        <input id="time" name="time" type="date" placeholder="Date of your job"required><br>
+        <label>Price of Job</label><br>
+        <input id="price" name="price" type="number" placeholder="Price you can pay"required>
+        <button class = "stdaz" onclick="submit_post()">Submit Job Post</button>
       </div>
     </div>
   </main>
