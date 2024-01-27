@@ -38,8 +38,12 @@ function prefill_profile(data){
         pics.innerHTML += `<img src="${url}">`;
     });
 
+    let reviews = Array.from(data.reviews);
+    if(reviews.length == 0){
+        document.getElementById("reviews").innerHTML = `<p id="initial"> This user has no reviews.</p>`;
+    }
     //display rater data
-    data.reviews.forEach(review => {
+    reviews.forEach(review => {
         displayRatingHTML(review.stars, review.rater, review.body);
     });
 }
@@ -77,6 +81,7 @@ function submitReviewForm(){
     })
     .then(handle)
     .then(data => {
+        document.getElementById("initial").outerHTML = ``; //this should work shatmaster
         displayRatingHTML(data.stars, data.rater, data.body);
     })
     .catch(notify);
