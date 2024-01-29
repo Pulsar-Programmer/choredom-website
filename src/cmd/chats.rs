@@ -27,7 +27,7 @@ pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity
     let mut db = app_data.db.lock().await;
     let Ok(Some(a)) = query_once_option::<super::signup::AccountState>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
     match a {
-        crate::AccountState::Verified => {},
+        super::signup::AccountState::Verified => {},
         _ => {return RainError::for_html(super::sites::NOVER)}
     }
 
