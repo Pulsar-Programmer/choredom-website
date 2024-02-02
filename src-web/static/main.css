@@ -402,3 +402,219 @@ select::-ms-expand {
   color: #1dbf73;
   /* Change the text color when hovering */
 }
+
+
+
+#search {
+  display: block;
+  width: 180px;
+  height: 35px;
+  /* position: fixed;
+  top: 23px;
+  right: 1400px; */
+  -webkit-transition: width ease 0.2s, opacity ease 0.4s;
+  -moz-transition: width ease 0.2s, opacity ease 0.4s;
+  -webkit-border-radius: 32px;
+  -moz-border-radius: 32px;
+  -webkit-box-shadow: inset 0px 0px 3px rgba(0, 0, 0, 0.25), inset 0px 1px 3px rgba(0, 0, 0, 0.7), 0px 1px 0px rgba(255, 255, 255, 0.03);
+  -moz-box-shadow: inset 0px 0px 3px rgba(0, 0, 0, 0.25), inset 0px 1px 3px rgba(0, 0, 0, 0.7), 0px 1px 0px rgba(255, 255, 255, 0.03);
+  -webkit-font-smoothing: antialiased;
+  text-align: left;
+  font: 13px "Helvetica Neue", Arial, sans-serif;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  margin-bottom: 0;
+  outline: none;
+  color:rgb(88, 66, 66);
+  caret-color:#ffffff;
+  cursor: url(/src-web/assets/lightsearch.png),auto;
+  margin-right: 340px;
+  margin-top: 8px;
+}
+
+#search::placeholder {
+  color: #888;
+  opacity: 1;
+}
+
+.stdc .closep{
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.stdc .bigp{
+  font-size: 20px;
+}
+
+
+.stdc .GOHOME{
+  -webkit-font-smoothing: antialiased;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  line-height: 1.6;
+  outline: none;
+  text-decoration: none;
+  text-align: center;
+  background:#1dbf73;
+  color:white;
+  border-radius: 3px;
+}
+
+.stdc .plaina{
+  text-decoration: none;
+  text-align: center;
+  color:#333;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.search_dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.search_dropdown_content {
+  display: none;
+  position: absolute;
+  min-width: 230px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  z-index: 1;
+  padding: 20px;
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.search_dropdown_content div {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.search_dropdown_content div:hover {background-color: #ddd;}
+
+
+.search_dropdown_content div {
+  display: block;
+}
+
+
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+
+::selection{
+  color: #fff;
+  background: #4285f4;
+}
+.wrapper{
+  width: 370px;
+  margin: 85px auto 0;
+}
+.select-btn, li{
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.select-btn{
+  height: 65px;
+  padding: 0 20px;
+  font-size: 22px;
+  background: #fff;
+  border-radius: 7px;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.select-btn i{
+  font-size: 31px;
+  transition: transform 0.3s linear;
+}
+.wrapper.active .select-btn i{
+  transform: rotate(-180deg);
+}
+.content{
+  display: none;
+  padding: 20px;
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.wrapper.active .content{
+  display: block;
+}
+.content .search{
+  position: relative;
+}
+.search i{
+  top: 50%;
+  left: 15px;
+  color: #999;
+  font-size: 20px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  position: absolute;
+}
+.search input{
+  height: 50px;
+  width: 100%;
+  outline: none;
+  font-size: 17px;
+  border-radius: 5px;
+  padding: 0 20px 0 43px;
+  border: 1px solid #B3B3B3;
+}
+.search input:focus{
+  padding-left: 42px;
+  border: 2px solid #4285f4;
+}
+.search input::placeholder{
+  color: #bfbfbf;
+}
+.content .options{
+  margin-top: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 7px;
+}
+.options::-webkit-scrollbar{
+  width: 7px;
+}
+.options::-webkit-scrollbar-track{
+  background: #f1f1f1;
+  border-radius: 25px;
+}
+.options::-webkit-scrollbar-thumb{
+  background: #ccc;
+  border-radius: 25px;
+}
+.options::-webkit-scrollbar-thumb:hover{
+  background: #b3b3b3;
+}
+.options li{
+  height: 50px;
+  padding: 0 13px;
+  font-size: 21px;
+}
+.options li:hover, li.selected{
+  border-radius: 5px;
+  background: #f2f2f2;
+} */
