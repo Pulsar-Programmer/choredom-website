@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <script src="/src-web/static/theme.js"></script>
 </head>
 
 <body>
@@ -16,10 +17,11 @@
     <a href="/">
       <img id="needs_logo" src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
-      <input id="search" type="text" placeholder="Search" autocomplete="off" spellcheck="false" list="search">
-      <!-- <datalist list="search">
-        <option value="Home"><a href="/">Home</a></option>
-      </datalist> -->
+    <nav>
+      <input id="search" type="text" placeholder="Search" autocomplete="off" spellcheck="false" list="search_">
+      <datalist id="search_">
+        <option value="Home"><p>This Will Send You To Choredom's Homepage.</p></option>
+      </datalist>
       <a class="stda" href="/">Home</a>
       <a class="stda" href="/chat" id="chat-button">Chat</a>
       <a class="stda" href="/tasks">Tasks in your Area</a>
@@ -49,7 +51,6 @@
   </footer>
   <script src="/src-web/static/error.js"></script>
   <script src="/src-web/static/signout.js"></script>
-  <script src="/src-web/static/theme.js"></script>
 </body>
 
 </html>
