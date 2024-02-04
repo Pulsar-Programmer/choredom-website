@@ -231,7 +231,7 @@ pub struct SettingsData{
 }
 impl SettingsData{
     fn is_valid(&self) -> bool{
-        satisfies_displayname(&self.displayname) && satisfies_username(&self.username)
+        satisfies_displayname(&self.displayname) && satisfies_username(&self.username) && !self.location.is_empty()
     }
 }
 

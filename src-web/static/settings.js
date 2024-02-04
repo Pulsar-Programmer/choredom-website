@@ -17,6 +17,11 @@ function settings_post(){
     // }
     //WUT ^^ how old is this?
 
+    if(String(location).trim() === ""){
+        alert("Please fill in the location field.");
+        return;
+    }
+
     let data = {
         username: username, 
         // password: password,

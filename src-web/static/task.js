@@ -24,6 +24,37 @@ $(function() {
     });
 });
 
+document.addEventListener("DOMContentLoaded", function (event) {
+    event.stopPropagation();
+    // event.stopImmediatePropagation();
+    // event.preventDefault();
+    console.log("YUHH!")
+    fetch('/settings/present_data', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(handle)
+    .then(data => {
+        prefill_tia(data.location)
+    })
+    .catch(notify);
+    // prefill_tia(get_settings_location())
+});
+
+function prefill_tia(location){
+    var selectElement = document.getElementById('city');
+    var selectize = selectElement.selectize;
+    selectize.addOption({
+        text: location,
+        value: location
+    });
+    selectize.setValue(location, true);
+    get_location_data();
+    // console.log(location, selectize, selectElement)
+}
+
 
 
 // Function to generate the HTML for each job
@@ -151,7 +182,7 @@ function searchPosts() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ location: searchQuery }),
+        body: JSON.stringify({ searchQuery }),
     })
     .then(handle)
     .then(jobsData => {

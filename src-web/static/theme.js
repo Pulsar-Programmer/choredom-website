@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     event.stopPropagation();
     // event.stopImmediatePropagation();
     // event.preventDefault();
-    console.log("YUHH!")
+    // console.log("YUHH!")
     determine_theme();
 });
 

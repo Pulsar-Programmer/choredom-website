@@ -116,6 +116,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     let true = satisfies_username(&username) else { return r::for_js_user("Invalid username!")};
     let true = satisfies_email(&to_email) else { return r::for_js_user("Invalid email!")};
     let true = satisifies_password(&password) else { return r::for_js_user("Invalid password!")};
+    let false = location.is_empty() else { return r::for_js_user("Please enter a location!")};
     //how much let is too much let? when does pattern matching become TOO op?
 
     let to_email = to_email.trim();

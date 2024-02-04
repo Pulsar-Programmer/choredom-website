@@ -24,6 +24,10 @@ impl JobData{
             return Err(RainError::for_js_user("Title is empty!"));
         }
 
+        if location.is_empty(){
+            return Err(RainError::for_js_user("Please enter a location for the job."))
+        }
+
         //https://github.com/kelvins/US-Cities-Database
         //its all cool if the location doesn't exist; people just won't see the job ¯\_(ツ)_/¯
         let mut iter = time.split('-');
@@ -89,7 +93,7 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     let Ok(Some(a)) = query_once_option::<super::signup::AccountState>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &username)).await else { return RainError::for_html(NOUSER)};
     match a {
         super::signup::AccountState::Verified => {},
-        _ => {return RainError::for_html(super::sites::NOVER)}
+        _ => {return RainError::for_js_user("You must be verified to post a job!")}
     }
 
     if let Err(e) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
@@ -126,10 +130,10 @@ pub async fn jobs_data(data: Data<AppData>, path: web::Json<String>) -> impl Res
 
 
 
-#[derive(serde::Serialize, serde::Deserialize)]
-struct Address{
-    location: String,
-}
+// #[derive(serde::Serialize, serde::Deserialize)]
+// struct Address{
+//     location: String,
+// }
 
 #[actix_web::get("/tasks")]
 pub async fn tasks(identity: Option<Identity>) -> impl Responder{

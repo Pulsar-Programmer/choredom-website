@@ -21,7 +21,7 @@ function login_request(){
         // Select the button
         var btn = document.getElementById("vrbtn");
         // Disable the button
-        btn.disabled = true;
+        // btn.disabled = true;
         // Remove the onclick event
         btn.onclick = null;
 

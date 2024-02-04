@@ -10,6 +10,11 @@ function submit_post(){
         return;
     }
 
+    if(String(location).trim() === "") {
+        alert("Please fill in the `location` field.");
+        return;
+    }
+
     let jobdata = {title: title, body: body, location: location, time: time, price: price};
 
     fetch("/post-job-2", {
@@ -24,4 +29,34 @@ function submit_post(){
         redirect("/success");
     })
     .catch(notify);
+}
+
+document.addEventListener("DOMContentLoaded", function (event) {
+    event.stopPropagation();
+    // event.stopImmediatePropagation();
+    // event.preventDefault();
+    console.log("YUHH!")
+    fetch('/settings/present_data', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(handle)
+    .then(data => {
+        prefill_jp(data.location)
+    })
+    .catch(notify);
+    // prefill_tia(get_settings_location())
+});
+
+function prefill_jp(location){
+    var selectElement = document.getElementById('city');
+    var selectize = selectElement.selectize;
+    selectize.addOption({
+        text: location,
+        value: location
+    });
+    selectize.setValue(location);
+    // console.log(location, selectize, selectElement)
 }
