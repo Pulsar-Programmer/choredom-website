@@ -18,7 +18,7 @@
       <img id="needs_logo" src="/src-web/assets/logo.png" alt="Choredom Logo">
     </a>
     <nav>
-      <input id="search" type="text" placeholder="Search" autocomplete="off" spellcheck="false" list="search_">
+      <input id="search" type="text" placeholder="Search" autocomplete="off" spellcheck="false" list="search_" onkeydown="handleSearchKeyDown">
       <datalist id="search_">
         <option value="Home"><p>This Will Send You To Choredom's Homepage.</p></option>
       </datalist>
@@ -51,6 +51,7 @@
   </footer>
   <script src="/src-web/static/error.js"></script>
   <script src="/src-web/static/signout.js"></script>
+  <script src="/src-web/static/search.js"></script>
 </body>
 
 </html>

@@ -16,6 +16,10 @@
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
     </a>
     <nav>
+      <input id="search" type="text" placeholder="Search" autocomplete="off" onkeydown="handleSearchKeyDown" list="search_">
+      <datalist id="search_">
+        <option value="Home"><p>This Will Send You To Choredom's Homepage.</p></option>
+      </datalist>
       <a class="stda" href="/">Home</a>
       <a class="stda" href="/chat" id="chat-button">Chat</a>
       <a class="stda" href="/tasks">Tasks in your Area</a>
@@ -29,6 +33,7 @@
   <main>
     <div id="verify_replacable" class="stdc stdd">
       <!-- We don't need the Regex requirements here since it matches against the DB. -->
+      <h1>Welcome back</h1>
       <input type="email" name="email" placeholder="Email" id="email">
       <input type="password" id="password" placeholder="Password">
       <button id="vrbtn" onclick="login_request()">Log In</button>
@@ -39,6 +44,7 @@
 <script src="/src-web/static/error.js"></script>
 <script src="/src-web/static/verify.js"></script>
 <script src="/src-web/static/signout.js"></script>
+<script src="/src-web/static/search.js"></script>
 <footer class="stdf">
   <p>&copy; 2024 Choredom</p>
 </footer>
