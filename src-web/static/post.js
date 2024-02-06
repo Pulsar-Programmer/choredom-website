@@ -25,3 +25,55 @@ function submit_post(){
     })
     .catch(notify);
 }
+
+
+
+
+
+// const textarea = document.getElementById("description-area");
+    
+
+// function autoResize() {
+//   this.style.height = "auto";
+//   this.style.height = `${this.scrollHeight}px`;
+// }
+
+// textarea.addEventListener("input", autoResize);
+
+
+
+// document.addEventListener('DOMContentLoaded', function() {
+//     const textarea = document.getElementById("description-area");
+  
+//     if (textarea) {
+//       function autoResize() {
+//         this.style.height = "auto";
+//         this.style.height = `${this.scrollHeight}px`;
+//       }
+  
+//       // Event listener for input event
+//       textarea.addEventListener("input", autoResize);
+//     } else {
+//       console.error('Element with ID "description-area" not found');
+//     }
+//   });
+  
+
+
+
+//   document.addEventListener('DOMContentLoaded', function() {
+//     const textarea = document.getElementById("description-area");
+  
+//     if (textarea) {
+//       function autoResize() {
+//         this.style.height = "auto";
+//         this.style.height = `${this.scrollHeight}px`;
+//       }
+  
+//       // Event listener for input event
+//       textarea.addEventListener("input", autoResize);
+//     } else {
+//       console.error('Element with ID "description-area" not found');
+//     }
+//   });
+  
