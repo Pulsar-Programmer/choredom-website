@@ -144,6 +144,17 @@ pub async fn tasks(identity: Option<Identity>) -> impl Responder{
     HttpResponse::Ok().body(TASK)
 }
 
+struct FilterJobsJSON{
+    location: String,
+    similar_locations: bool,
+    title_body: String,
+    status: String,
+    time: String,
+    min_price: String,
+    max_price: String,
+}
+
+
 // #[actix_web::route("/job-handling", method="GET", method="POST")]
 #[actix_web::post("/job-handling")]
 pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> impl Responder{
@@ -155,6 +166,29 @@ pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> im
         a
     }).collect();
     HttpResponse::Ok().content_type("application/json").json(result)
+}
+
+struct FilterJobs{
+    location: String,
+    title_body: String,
+    status: String,
+    time: DateTime<Utc>,
+    min_price: u32,
+    max_price: u32,
+}
+
+fn tasks_build_query(filter: FilterJobsJSON) -> (String, FilterJobs){
+    let mut str = String::new();
+    let FilterJobsJSON{ location, title_body, status, time, min_price, max_price, similar_locations } = filter;
+    // if similar_locations {
+    //     str.push_str("WHERE data.location = $location");
+    // }
+    // else {
+    //     str.push_str("WHERE data.location CONTAINS $location");
+    // }
+    str.push(';');
+    let f = todo!();
+    (str, f)
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
