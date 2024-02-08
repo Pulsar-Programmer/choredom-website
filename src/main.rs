@@ -103,7 +103,8 @@ async fn main() -> std::io::Result<()> {
             policy, success, //last time check of #143
             my_jobs, my_jobs_get,
             delete_post, edit_post,
-            set_theme, get_theme
+            set_theme, get_theme,
+            report
             // , updates
             // ,test
         )

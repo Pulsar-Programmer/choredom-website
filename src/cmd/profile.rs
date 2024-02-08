@@ -7,6 +7,7 @@ use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::{get, post, web::{Data, Form, self, Json}, HttpRequest, HttpResponse, Responder};
 use rust_decimal::prelude::ToPrimitive;
+use serde::{Deserialize, Serialize};
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
 #[get("/users/{username}")]
@@ -794,7 +795,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
 
     let surrealql = r#"
     BEGIN TRANSACTION;
-    LET $email = (SELECT email FROM accounts WHERE username = "username")[0].email;
+        LET $email = (SELECT email FROM accounts WHERE username = "username")[0].email;
         LET $id = (SELECT id FROM accounts WHERE username=$username)[0].id;
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
@@ -858,4 +859,33 @@ pub async fn get_theme(session: Session) -> impl Responder{
     // println!("You must have theme: {value:?}");
 
     HttpResponse::Ok().json(value)
+}
+#[derive(Deserialize)]
+struct UserReportJSON{
+    name: String,
+    msg: String,
+}
+#[derive(Serialize)]
+struct UserReport{
+    reportee: String,
+    reporter: String,
+    msg: String,
+}
+
+#[post("/report")]
+pub async fn report(name: Json<UserReportJSON>, identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
+    let identity = match unwrap_identity(identity){
+        Ok(i) => i,
+        Err(e) => return RainError::for_js_user("Please log in first to report.")
+    };
+    let UserReportJSON { name, msg } = name.into_inner();
+    if name == identity {
+        return RainError::for_js_user("You may not report yourself!");
+    }
+    let u = UserReport{ reportee: name, reporter: identity, msg };
+
+    let mut db = data.db.lock().await;
+
+    if let Err(e) = sole_query(&mut db, "CREATE reports SET reportee = $reportee, reporter = $reporter, msg = $msg;", u).await {return RainError::for_js(e)}
+    HttpResponse::Ok().finish()
 }

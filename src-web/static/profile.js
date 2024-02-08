@@ -115,3 +115,50 @@ function delete_rating(){
     })
     .catch(notify);
 }
+
+
+function report_user(){
+    if (!confirm("Are you sure you want to report this user?")){
+        return;
+    }
+    let btn = document.getElementById("rpbutton");
+    btn.innerHTML = "Submit Report";
+    btn.onclick = submit_report;
+    var textbox = document.createElement('input');
+    textbox.type = "text";
+    textbox.id = "reportbox";
+    textbox.placeholder = "Enter Report Body...";
+    btn.insertAdjacentElement('afterend', textbox);
+}
+
+function submit_report(){
+    let path = window.location.pathname;
+    let pathParts = path.split('/');
+    let name = pathParts[pathParts.indexOf('users') + 1];
+    let reportbox = document.getElementById("reportbox");
+    let msg = reportbox.value;
+    //soft check 
+    // if(String(msg).trim() === ""){
+    //     return alert("Please enter ")
+    // }
+    let data = {
+        name: name,
+        msg: msg,
+    };
+    fetch('/report', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(handle)
+    .then(_ => {
+        // reportbox.outerHTML = "";
+        // document.getElementById("rpbutton").outerHTML = "";
+        // alert("Report successful!");
+        redirect("/success")
+    })
+    .catch(notify);
+
+}
