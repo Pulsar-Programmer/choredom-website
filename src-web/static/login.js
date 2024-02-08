@@ -1,6 +1,14 @@
 
+// document.querySelector('#vrbtn').addEventListener('click', async function() {
+//     this.disabled = true;
+//     console.log(this.disabled)
+//     await login_request();
+//     this.disabled = false;
+//     console.log(this.disabled)
+// });
+
 function login_request(){
-    
+
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
 
@@ -18,13 +26,6 @@ function login_request(){
     })
     .then(handle)
     .then(_ => {
-        // Select the button
-        var btn = document.getElementById("vrbtn");
-        // Disable the button
-        // btn.disabled = true;
-        // Remove the onclick event
-        btn.onclick = null;
-
         initiate_verification("/ve_log");
     }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
     .catch(notify);
