@@ -1,11 +1,10 @@
 use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::SUCCESS};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, PROFILE, CONTACT, NOLOG};
-use actix_files::{NamedFile, Directory};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
-use actix_web::{get, post, web::{Data, Form, self, Json}, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, web::{Data, Form, self, Json}, HttpResponse, Responder};
 use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
@@ -561,8 +560,8 @@ async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: O
     let transferdata = TransferData{credits, self_username, to_username};
 
     let surrealql = "
-    UPDATE accounts SET balance -= $credits WHERE username = $self_username;
-    UPDATE accounts SET balance += $credits WHERE username = $to_username;
+    UPDATE accounts SET balance -= $credits, page.level += $credits WHERE username = $self_username;
+    UPDATE accounts SET balance += $credits, page.level += $credits WHERE username = $to_username;
     ";
     if let Err(e) = sole_query(&mut db, surrealql, transferdata).await { return RainError::for_js(e) };
 

@@ -75,6 +75,7 @@ pub struct AccountPage{
     pub reviews: Vec<super::profile::PageRatingData>,
     pub bio: String,
     pub bio_images: [String; 3],
+    pub level: u64 // total amount of chorebits spent and received
 }
 impl AccountPage{
     fn new() -> Self{
@@ -86,6 +87,7 @@ impl AccountPage{
             avg_rating: rust_decimal::Decimal::ZERO, reviews: Vec::new(),
             bio: String::new(),
             bio_images: Default::default(),
+            level: 0,
         }
     }
 }
