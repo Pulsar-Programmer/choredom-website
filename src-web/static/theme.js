@@ -30,7 +30,7 @@ async function determine_theme() {
     // console.log(customizer)
 
     needs_logo.outerHTML = `<img src="/src-web/assets/${customizer}logo.png" id="needs_logo" alt="Choredom Logo">`;
-    needs_style.outerHTML = `<link id="needs_style" rel="stylesheet" href="/src-web/static/main${customizer === "" ? "light" : customizer}.css">`;
+    needs_style.outerHTML = `<link id="needs_style" rel="stylesheet" href="/src-web/static/main_${customizer === "" ? "light" : customizer}.css">`;
     needs_favicon.outerHTML = `<link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/${customizer}favicon.ico">`;
 }
 

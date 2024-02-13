@@ -86,7 +86,7 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
         LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
         CREATE jobs SET data = $job, user = type::thing("accounts", $id);
     COMMIT TRANSACTION;"#;
-    //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNA<E
+    //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNAME
     let mut db = data.db.lock().await;
 
     //check for verification

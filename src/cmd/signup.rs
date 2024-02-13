@@ -217,6 +217,7 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
     // let smtp_key: &str = "Brokies129gg";
     let smtp_key = "lwpcpxpvncogqaxz"; //app password
     let from_email: &str = "aaron.sachan.bang@gmail.com";
+    //Please change to reflect your email.
     let host: &str = "smtp.gmail.com";
 
     let email: Message = Message::builder()
@@ -232,8 +233,6 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
         .credentials(creds)
         .build();
 
-
-    //check for invalid email ^feh
 
     // Send the email
     mailer.send(&email).map_err(|err|err.into())
