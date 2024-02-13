@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
+<head>
+  <title>Choredom: Upload</title>
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <script src="/src-web/static/theme.js"></script>
+  <script defer src="/src-web/static/upload.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+  <meta charset="UTF-8">
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -12,31 +26,26 @@
       <a class="stda" href="/post-job" id="post-button">Post</a>
       <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
       <a class="stda" href="/contacts">Contact Us</a>
-      <button id="signout-button"class="signoutb">Sign Out</button>
+      <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<head>  
-    <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-    <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-    <script src="/src-web/static/theme.js"></script>
-    <link rel="stylesheet" href="/src-web/static/main.css">
-<meta charset="UTF-8">
-<title>Image Upload</title>
-</head>
-<body>
-  <div class = "stdc stdd">
-<h1>Upload valid gov ID of yourself (If you aren't a minor), or upload valid gov ID of a parent or legal guardian that gives you permission to work</h1>
-<h2>This will be reviewed for validity<h2>
-<div class="stdd">
-    <input type="file" accept=".jpg, .jpeg, .png" id="file_upload">
-    <button onclick="upload()">Upload Gov. ID</button>
-</div>
-</div>
-<script defer src="/src-web/static/upload.js"></script>
-<script src="/src-web/static/error.js"></script>
-<script src="/src-web/static/signout.js"></script>
+
+
+  <div class="stdc stdd">
+    <h1>Upload valid gov ID of yourself (If you aren't a minor), or upload valid gov ID of a parent or legal guardian
+      that gives you permission to work</h1>
+    <h2>This will be reviewed for validity<h2>
+        <div class="stdd">
+          <input type="file" accept=".jpg, .jpeg, .png" id="file_upload">
+          <button onclick="upload()">Upload Gov. ID</button>
+        </div>
+  </div>
+
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
+
 </body>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
+
 </html>

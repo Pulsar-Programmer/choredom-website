@@ -92,7 +92,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
         let Ok(result) = query_once::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return RainError::for_js("Querying check error.")};
-        let Some(res) = result.get(0) else { return RainError::for_js_user("Ensure to work with the one who is to be rated before rating!")};
+        let Some(res) = result.first() else { return RainError::for_js_user("Ensure to work with the one who is to be rated before rating!")};
         let mut not_contains_first = true;
         let mut not_contains_second = true;
         for i in &res.messages{
@@ -605,7 +605,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, a
     let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
     let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Wahoo!")};
-    let Some(q2) = q1.get(0) else { return RainError::for_js("No account!")};
+    let Some(q2) = q1.first() else { return RainError::for_js("No account!")};
     if q2.email != current_email_input{
         return RainError::for_js_user("Emails do not match!");
     }

@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <title>Choredom: Sign-Up</title>
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/src-web/static/error.js"></script>
+  <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/verify.js"></script>
+  <script src="/src-web/static/signup.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+  <script defer src="/src-web/static/us-cities.js"></script>
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -12,47 +28,47 @@
       <a class="stda" href="/post-job" id="post-button">Post</a>
       <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
       <a class="stda" href="/contacts">Contact Us</a>
-      <button id="signout-button"class="signoutb">Sign Out</button>
+      <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<head>
-  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-  <script src="/src-web/static/theme.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/src-web/static/main.css">
-</head>
-<body>
-<div id="verify_replacable" class="stdd">
-  <label class="stdl">Email</label><br>
-  <input id="email" type="email" class="email-input" placeholder="Email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Ensure it is a valid email.">
-  <label class="stdl">Password</label><br>
-  <input id="password" name="password" type="password" class="password-input" placeholder="Password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters, and at least one special character" required>
-  <label class="stdl">Confirm Password</label><br>
-  <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters and at least one special character" required>
-  <label class="stdl">Username</label><br>
-  <input id="username" type="text" class="username-input" placeholder="Username" pattern="^[A-Za-z0-9]+$" title="Username should only contain letters and numbers." required>
-  <label class="stdl">Display Name</label><br>
-  <input id="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="^[A-Za-z0-9 ]+$" title="Display Name should only contain letters, numbers, and spaces." required>
-  <div id="dropdown">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-    <script src="/src-web/static/us-cities.js"></script>
-    <label>Location </label><br>
-    <select required name="location" id="city" style="width: 300px;">
-    </select>
+
+  <div id="verify_replacable" class="stdd">
+    <label class="stdl">Email</label><br>
+    <input id="email" type="email" class="email-input" placeholder="Email" required
+      pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Ensure it is a valid email.">
+    <label class="stdl">Password</label><br>
+    <input id="password" name="password" type="password" class="password-input" placeholder="Password"
+      pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
+      title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters, and at least one special character"
+      required>
+    <label class="stdl">Confirm Password</label><br>
+    <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password"
+      pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
+      title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters and at least one special character"
+      required>
+    <label class="stdl">Username</label><br>
+    <input id="username" type="text" class="username-input" placeholder="Username" pattern="^[A-Za-z0-9]+$"
+      title="Username should only contain letters and numbers." required>
+    <label class="stdl">Display Name</label><br>
+    <input id="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="^[A-Za-z0-9 ]+$"
+      title="Display Name should only contain letters, numbers, and spaces." required>
+    <div id="dropdown">
+      <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+      <script src="/src-web/static/us-cities.js"></script>
+      <label>Location </label><br>
+      <select required name="location" id="city" style="width: 300px;">
+      </select>
+    </div>
+    <button id="vrbtn" onclick="signup_request()">Create Account</button>
   </div>
-  <button id="vrbtn" onclick="signup_request()">Create Account</button>
-</div>
-<body>
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
+
 </body>
-<script src="/src-web/static/error.js"></script>
-<script src="/src-web/static/verify.js"></script>
-<script src="/src-web/static/signup.js"></script>
-<script src="/src-web/static/signout.js"></script>
-<script defer src="/src-web/static/us-cities.js"></script>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
+
 </html>

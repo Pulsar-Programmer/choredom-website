@@ -3,11 +3,15 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Log In</title>
+  <title>Choredom: Log-In</title>
   <link rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
   <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/login.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script src="/src-web/static/verify.js"></script>
+  <script src="/src-web/static/signout.js"></script>
 </head>
 
 <body>
@@ -26,6 +30,7 @@
       <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
+
   <main>
     <div id="verify_replacable" class="stdc stdd">
       <!-- We don't need the Regex requirements here since it matches against the DB. -->
@@ -34,13 +39,11 @@
       <button id="vrbtn" onclick="login_request()">Log In</button>
     </div>
   </main>
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
+
 </body>
-<script src="/src-web/static/login.js"></script>
-<script src="/src-web/static/error.js"></script>
-<script src="/src-web/static/verify.js"></script>
-<script src="/src-web/static/signout.js"></script>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
 
 </html>

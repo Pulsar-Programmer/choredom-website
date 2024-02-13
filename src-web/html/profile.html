@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <html>
+  
+<head>
+  <title>Choredom: User</title>
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <link rel="stylesheet" href="/src-web/static/profile.css">
+  <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script defer src="/src-web/static/profile.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -15,15 +29,9 @@
       <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<head>
-  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-  <script src="/src-web/static/theme.js"></script>
-  <title>Profile Page</title>
-  <link rel="stylesheet" href="/src-web/static/main.css">
-</head>
 
-<body>
+
+
   <div class="profile stdd">
     <img src="" id="profile_pic" height="500" width="500">
     <h1 id="displayName">Name: {}</h1>
@@ -63,13 +71,13 @@
     </div>
 
   </div>
-  <script src="/src-web/static/error.js"></script>
-  <script defer src="/src-web/static/profile.js"></script>
-  <link rel="stylesheet" href="/src-web/static/profile.css">
-  <script src="/src-web/static/signout.js"></script>
+
+  <div id="reviews"></div>
+  
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
+  
 </body>
-<div id="reviews"></div>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
+
 </html>

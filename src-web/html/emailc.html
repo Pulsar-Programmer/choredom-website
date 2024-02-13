@@ -1,5 +1,20 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Choredom: Settings</title>
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/emailc.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script src="/src-web/static/verify.js"></script>
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -15,34 +30,26 @@
       <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<head>
-    <title>Change Email</title>
-    <link rel="stylesheet" href="/src-web/static/main.css">
-    <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-    <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-    <script src="/src-web/static/theme.js"></script>
-</head>
-<body>
 
-    <div id="verify_replacable" class="stdc stdd">
-      <h2>Change Email</h2>
-        <label for="currentemail">Current email:</label><br>
-        <input type="email" id="currentemail" name="e_old" required><br>
+  <div id="verify_replacable" class="stdc stdd">
+    <h2>Change Email</h2>
+    <label for="currentemail">Current email:</label><br>
+    <input type="email" id="currentemail" name="e_old" required><br>
 
-        <label for="newEmail">New email:</label><br>
-        <input id="newEmail" name="e_new" type="email"pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Should only contain valid characters only"required><br>
+    <label for="newEmail">New email:</label><br>
+    <input id="newEmail" name="e_new" type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$"
+      title="Should only contain valid characters only" required><br>
 
-        <label for="currentPassword">Current Password:</label><br>
-        <input id="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"> 
+    <label for="currentPassword">Current Password:</label><br>
+    <input id="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$">
 
-        <button id="vrbtn" onclick="emailc_request()">Change Email</button>
-    </div>
+    <button id="vrbtn" onclick="emailc_request()">Change Email</button>
+  </div>
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
+
 </body>
-<script src="/src-web/static/emailc.js"></script>
-<script src="/src-web/static/error.js"></script>
-<script src="/src-web/static/verify.js"></script>
-<script src="/src-web/static/signout.js"></script>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
+
 </html>

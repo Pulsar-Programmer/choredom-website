@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Choredom: Settings</title>
+    <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+    <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+    <link rel="stylesheet" href="/src-web/static/main.css">
+    <script src="/src-web/static/theme.js"></script>
+    <script src="/src-web/static/error.js"></script>
+    <script src="/src-web/static/transfer.js"></script>
+    <script src="/src-web/static/signout.js"></script>
+</head>
+
+<body>
     <header class="stdh">
         <a href="/">
             <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -15,43 +27,7 @@
           <button id="signout-button"class="signoutb">Sign Out</button>
         </nav>
       </header>
-<head>
-    <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-    <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-    <script src="/src-web/static/theme.js"></script>
-    <title>Transfer Credits</title>
-    <link rel="stylesheet" href="/src-web/static/main.css">
-    <!-- <script>
-        function validateForm() {
-            var recipientUsername = document.getElementById("recipientUsername").value;
-            var amount = document.getElementById("amount").value;
-            var password = document.getElementById("password").value;
-
-            // Check if recipient username is not empty
-            if (recipientUsername === "") {
-                alert("Please enter the username of the recipient");
-                return false;
-            }
-
-            // Check if amount is a positive number
-            if (amount <= 0) {
-                alert("Please enter a positive amount of credits to transfer");
-                return false;
-            }
-
-            // Check if password is not empty
-            if (password === "") {
-                alert("Please enter your password to confirm the transfer");
-                return false;
-            }
-
-            // Additional validation checks can be added here
-
-            return true;
-        }
-    </script> -->
-</head>
-<body>
+      
     <h2>Transfer Credits</h2>
 
     <div class="stdd">
@@ -66,11 +42,10 @@
 
         <button onclick="send_request()">Submit</button>
     </div>
-    <script src="/src-web/static/error.js"></script>
-    <script src="/src-web/static/transfer.js"></script>
-    <script src="/src-web/static/signout.js"></script>
+
+    <footer class="stdf">
+        <p>&copy; 2024 Choredom</p>
+      </footer>
 </body>
-<footer class="stdf">
-    <p>&copy; 2024 Choredom</p>
-  </footer>
+
 </html>

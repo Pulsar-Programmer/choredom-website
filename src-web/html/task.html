@@ -1,5 +1,23 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script defer src="/src-web/static/task.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+  <title>Choredom: Tasks</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -12,61 +30,50 @@
       <a class="stda" href="/post-job" id="post-button">Post</a>
       <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
       <a class="stda" href="/contacts">Contact Us</a>
-      <button id="signout-button"class="signoutb">Sign Out</button>
+      <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-<head>
-  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-  <script src="/src-web/static/theme.js"></script>
-  <title>Choredom: View Tasks</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/src-web/static/main.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <div class = "stdc">
-  <div id="jobs_add" class="stdc">
-    <div id="dropdown" class="dropdown">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-      <!-- <script async src="/src-web/static/us-cities.js"></script> -->
-      <label for="city">Filter Towns (required)</label>
-      <select name="location" id="city" style="width: 300px;">
-      </select>
+
+  <div class="stdc">
+    <div id="jobs_add" class="stdc">
+      <div id="dropdown" class="dropdown">
+        <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+        <!-- <script async src="/src-web/static/us-cities.js"></script> -->
+        <label for="city">Filter Towns (required)</label>
+        <select name="location" id="city" style="width: 300px;">
+        </select>
+      </div>
     </div>
+
+    <main>
+      <div id="filters" class="stdc stdd">
+        <label>Manual Search</label>
+        <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
+        <label>Verification of Poster</label>
+        <select id="statusFilter">
+          <option value="">No preference</option>
+          <option value="Verified">Verified</option>
+          <option value="Non-verified">Non-verified</option>
+        </select><br>
+        <label>Time of Jobs</label><br>
+        <input type="date" id="timeFilter" placeholder="Filter by time"><br>
+        <label>Price</label><br>
+        <input type="number" id="minPriceFilter" placeholder="Minimum price">
+        <input type="number" id="maxPriceFilter" placeholder="Maximum price"><br>
+        <button class="stdaz" onclick="filterJobs()">Apply Filters</button>
+      </div>
   </div>
-  <main>
-    <div id="filters" class="stdc stdd">
-      <label>Manual Search</label>
-      <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
-      <label>Verification of Poster</label>
-      <select id="statusFilter">
-        <option value="">No preference</option>
-        <option value="Verified">Verified</option>
-        <option value="Non-verified">Non-verified</option>
-      </select><br>
-      <label>Time of Jobs</label><br>
-      <input type="date" id="timeFilter" placeholder="Filter by time"><br>
-      <label>Price</label><br>
-      <input type="number" id="minPriceFilter" placeholder="Minimum price">
-      <input type="number" id="maxPriceFilter" placeholder="Maximum price"><br>
-      <button class = "stdaz" onclick="filterJobs()">Apply Filters</button>
-    </div>
+  <div id="job-container">
+    <!-- Jobs will be added here -->
   </div>
-    <div id="job-container">
-      <!-- Jobs will be added here -->
-    </div>
   </main>
-  <script src="/src-web/static/error.js"></script>
-  <script defer src="/src-web/static/task.js"></script>
-  <script src="/src-web/static/signout.js"></script>
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
 </body>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
+
 </html>

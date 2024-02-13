@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
+  <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
+  <link rel="stylesheet" href="/src-web/static/main.css">
+  <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -12,72 +24,21 @@
       <a class="stda" href="/post-job" id="post-button">Post</a>
       <a class="stda" href="/my-jobs" id="my-jobs">My Jobs</a>
       <a class="stda" href="/contacts">Contact Us</a>
-      <button id="signout-button"class="signoutb">Sign Out</button>
+      <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-  <head>
-    <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
-    <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
-    <script src="/src-web/static/theme.js"></script>
-    <script src="/src-web/static/error.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/src-web/static/main.css">
-  </head>
-  <body>
-    <!-- Input field for the number of credits -->
-    <label for="credits">Enter number of credits:</label>
-    <input type="number" id="credits" name="credits" min="100">
-    <br>
-    <!-- Set up a container element for the button -->
-    <div id="paypal-button-container"></div>
-    <!-- <script>
-      paypal.Buttons({
-        createOrder() {
-          // Get the number of credits from the input field
-          const credits = document.getElementById("credits").value;
-          return fetch("/my-server/create-paypal-order", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              cart: [
-                {
-                  sku: "CREDITS",
-                  quantity: credits,
-                },
-              ],
-              payee: {
-                email_address: "aaron.sachan.bang@gmail.com"
-              }
-            }),
-          })
-          .then((response) => response.json())
-          .then((order) => order.id);
-        },
-        onApprove(data) {
-          return fetch("/my-server/capture-paypal-order", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              orderID: data.orderID
-            })
-          })
-          .then((response) => response.json())
-          .then((orderData) => {
-            // Successful capture! For dev/demo purposes:
-            console.log('Capture result', orderData, JSON.stringify(orderData, null, 2));
-            const transaction = orderData.purchase_units[0].payments.captures[0];
-            alert(`Transaction ${transaction.status}: ${transaction.id}\n\nSee console for all available details`);
-          });
-        }
-      }).render('#paypal-button-container');
-    </script> -->
-  </body>
-  <script src="/src-web/static/signout.js"></script>
+
+  <!-- Input field for the number of credits -->
+  <label for="credits">Enter number of credits:</label>
+  <input type="number" id="credits" name="credits" min="100">
+  <br>
+  <!-- Set up a container element for the button -->
+  <div id="paypal-button-container"></div>
+
   <footer class="stdf">
     <p>&copy; 2024 Choredom</p>
   </footer>
+
+</body>
+
 </html>

@@ -2,10 +2,19 @@
 <html>
 
 <head>
+  <meta charset="UTF-8">
+  <title class="stdt">Choredom: Chats</title>
   <link rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
   <script src="/src-web/static/theme.js"></script>
+  <script src="/src-web/static/error.js"></script>
+  <script defer src="/src-web/static/chat-nav.js"></script>
+  <script src="/src-web/static/signout.js"></script>
+  <script defer src="/src-web/static/chat.js"></script>
+</head>
+
+<body>
   <header class="stdh">
     <a href="/">
       <img src="/src-web/assets/logo.png" id="needs_logo" alt="Choredom Logo">
@@ -21,32 +30,31 @@
       <button id="signout-button" class="signoutb">Sign Out</button>
     </nav>
   </header>
-  <title class="stdt">Chat</title>
-  <h2>Don't respond to people you don't trust</h2>
-  <script defer src="/src-web/static/chat.js"></script>
-</head>
 
-<body>
-  <div class="stdc stdd">
-    <label class="stdl" for="chatsPics">Send images...:</label><br>
-    <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
-    <button class="stdb" onclick="upload_chats()">Submit Chat Pictures</button>
-  </div>
-  <div id="message-input-div" class="stdc stdd">
-    <input type="text" id="message-input" placeholder="Type a message">
-    <button class="stdb" onclick="send_chat()">Send</button>
-  </div>
+  <h1>Welcome to Chats!</h1>
+  <!-- <h2>Responding to a user's chats allows them to rate you.</h2> -->
+  <h2>Please don't respond to people you don't know.</h2>
+
   <div id="chat_box"></div>
 
   <div id="chatList" class="stdc stdd">
     <!-- Chat boxes will be added here by JavaScript -->
   </div>
-  <script src="/src-web/static/error.js"></script>
-  <script defer src="/src-web/static/chat-nav.js"></script>
-  <script src="/src-web/static/signout.js"></script>
+
+  <div class="stdc stdd">
+    <label class="stdl" for="chatsPics">Send images...:</label><br>
+    <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
+    <button class="stdb" onclick="upload_chats()">Submit Chat Pictures</button>
+  </div>
+
+  <div id="message-input-div" class="stdc stdd">
+    <input type="text" id="message-input" placeholder="Type a message">
+    <button class="stdb" onclick="send_chat()">Send</button>
+  </div>
+
+  <footer class="stdf">
+    <p>&copy; 2024 Choredom</p>
+  </footer>
 </body>
-<footer class="stdf">
-  <p>&copy; 2024 Choredom</p>
-</footer>
 
 </html>
