@@ -272,7 +272,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     let email = email.trim();
     let mut db = data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_js("Account query issue.")};
-    let Some(account) = result.get(0) else { return r::for_js_user("Account not found. Ensure to create the account, first!")};
+    let Some(account) = result.first() else { return r::for_js_user("Account not found. Ensure to create the account, first!")};
 
     let Ok(passwords_match) = verify_password(&password, &account.password, &account.password_salt) else { return r::for_js("Password verification error.")};
 

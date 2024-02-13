@@ -38,7 +38,7 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return RainError::for_js("Issue with DB Queries.");
     };
-    let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.get(0) else{
+    let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.first() else{
         return RainError::for_js("Account does not exist.");
     };
     let Some(avg_rating) = page.avg_rating.to_f64() else { return RainError::for_js("Error parsing average rating.")};
@@ -117,7 +117,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
 
     let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Internal rating query error.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA < ???
-    let Some(res) = result.get(0) else { return RainError::for_js_user("The ratee does not exist!")};
+    let Some(res) = result.first() else { return RainError::for_js_user("The ratee does not exist!")};
     let div = res.len() + 1;
     for PageRatingData{stars: star, rater: monkie, body: _} in res{
         if monkie==&rater
@@ -165,7 +165,7 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     let mut sum = 0;
     let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA <<< ??? what does this mean monkie???
-    let Some(res) = result.get(0) else { return RainError::for_js("Rater data not found."); };
+    let Some(res) = result.first() else { return RainError::for_js("Rater data not found."); };
     if res.is_empty(){
         return RainError::for_js_user("The requested rating to delete could not be found.");
     }
@@ -273,7 +273,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
     let mut db = app_data.db.lock().await;
     let Ok(identity)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
-    let Some(curry_2) = q1.get(0) else { return RainError::for_js("No curry for you!")};
+    let Some(curry_2) = q1.first() else { return RainError::for_js("No curry for you!")};
     let Account { displayname, username, location, page: super::signup::AccountPage { pfp_url:pfplink, reviews:_, bio, .. }, ..} = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio, pfplink};
     //YESSS SO COOOLLL
@@ -389,7 +389,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>,
 
     let mut db = data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_js("Error querying account in passcode.")};
-    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_js("Fail to destructure account.") };
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.first() else { return RainError::for_js("Fail to destructure account.") };
 
     if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)) { return RainError::for_js(e)};
 
@@ -421,7 +421,7 @@ pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmatio
     let mut db = data.db.lock().await;
     
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_js("Error querying account in delete.")};
-    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.get(0) else { return RainError::for_js("Account does not exist pas.")};
+    let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.first() else { return RainError::for_js("Account does not exist pas.")};
 
     let Ok(passwords_match) = verify_password(&password_entered, password_db, salt) else { return RainError::for_js("Password verification error.")};
 
@@ -477,7 +477,7 @@ async fn deposit(form: Json<FundData>, data: web::Data<AppData>, identity: Optio
     
     let surrealql = "SELECT * FROM accounts WHERE username=$username;";
     let res = query_once::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
-    let Some(res) = res.get(0) else { return RainError::for_html_stderr()};
+    let Some(res) = res.first() else { return RainError::for_html_stderr()};
 
     if !verify_password(&password, &res.password, &res.password_salt).unwrap(){
         return todo!();
@@ -875,7 +875,7 @@ struct UserReport{
 pub async fn report(name: Json<UserReportJSON>, identity: Option<Identity>, data: Data<AppData>) -> impl Responder{
     let identity = match unwrap_identity(identity){
         Ok(i) => i,
-        Err(e) => return RainError::for_js_user("Please log in first to report.")
+        Err(..) => return RainError::for_js_user("Please log in first to report.")
     };
     let UserReportJSON { name, msg } = name.into_inner();
     if name == identity {

@@ -74,7 +74,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     // we must first redeem them as all read, since you are entering
     let Ok(_) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else {return r::for_js("Error updating.")};
     let Ok(result) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return r::for_js("Error getting chats.")};
-    let Some(result) = result.get(0) else {
+    let Some(result) = result.first() else {
         let room = Room{room_id, messages: Vec::new()};
         let Ok(_) = sole_query(&mut db, "CREATE chats SET room_id=$room_id, messages=$messages;", room).await else { return r::for_js("Error creating new chat room.")};
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
@@ -203,7 +203,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let mut db = data.db.lock().await;
     // println!("{useful_data:?}");
     let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
-    let Some(dbgiven) = res.get(0) else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
+    let Some(dbgiven) = res.first() else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
     let chats_vec = &dbgiven.messages;
     //mark as read right before
     let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};

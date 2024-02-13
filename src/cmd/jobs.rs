@@ -17,7 +17,7 @@ pub struct JobData{
 }
 impl JobData{
 
-    fn to_job(self) -> Result<Job, HttpResponse>{
+    fn into_job(self) -> Result<Job, HttpResponse>{
         let Self { title, body, time, price, location } = self;
 
         if title.trim().is_empty(){
@@ -75,7 +75,7 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     // let username = user.unwrap().id().unwrap();
     let Ok(username) = super::signup::unwrap_identity(identity) else { return RainError::for_js("Illegal identity travel.")};
     
-    let job = match form.into_inner().to_job(){
+    let job = match form.into_inner().into_job(){
         Ok(j) => j,
         Err(e) => return e,
     };
@@ -256,7 +256,7 @@ pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Js
     //job_id should be given by the frontend
     //we must check that username matches the valid job_id
 
-    let jobified_change = match change.to_job(){
+    let jobified_change = match change.into_job(){
         Ok(J) => J,
         Err(E) => return E,
     };

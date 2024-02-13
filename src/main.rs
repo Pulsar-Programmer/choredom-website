@@ -9,7 +9,7 @@ use cmd::{homepage, policy, success};
 use cmd::signup::*;
 use cmd::jobs::*;
 use cmd::profile::*;
-use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats, updates, chats_access};
+use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pics_chats, chats_access};
 mod db;
 use cmd::sites::NOUSER;
 use db::setup_db;
