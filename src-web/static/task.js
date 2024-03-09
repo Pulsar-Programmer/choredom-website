@@ -124,7 +124,6 @@ function filterJobs() {
         console.log("Matches:" + matchesSearchCriteria);
         jobDiv.style.display = matchesSearchCriteria ? 'block' : 'none';
     });
-    // I finished Mr. Shatmaster
 }
 
 function formatDate(date) {

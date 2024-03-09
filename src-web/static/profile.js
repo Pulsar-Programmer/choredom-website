@@ -81,7 +81,7 @@ function submitReviewForm(){
     })
     .then(handle)
     .then(data => {
-        document.getElementById("initial").outerHTML = ``; //this should work shatmaster
+        document.getElementById("initial").outerHTML = ``;
         displayRatingHTML(data.stars, data.rater, data.body);
     })
     .catch(notify);

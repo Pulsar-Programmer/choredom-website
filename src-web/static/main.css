@@ -65,13 +65,8 @@ nav {
 }
 
 .stdc .contact_us {
-  /* display: inline-block; */
-  /* background-color: #1dbf73; */
   color: #1dbf73;
-  /* padding: 10px 20px; */
   text-decoration: none;
-  /* border-radius: 5px; */
-  /* margin-top: 20px; */
 }
 
 .policyc .contact_us {
@@ -168,15 +163,6 @@ nav {
 input[type="file"] {
   border: none;
   margin-bottom: 20px;
-}
-
-.stdh .stda {
-  display: inline-block;
-  margin: 10px;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .stda {
@@ -290,12 +276,12 @@ select {
 }
 
 #dropdown select {
-  -webkit-appearance: none;
   /* For WebKit browsers */
-  -moz-appearance: none;
+  -webkit-appearance: none;
   /* For Mozilla Firefox browsers */
-  appearance: none;
+  -moz-appearance: none;
   /* For modern browsers */
+  appearance: none;
 
   display: block;
   width: 100%;

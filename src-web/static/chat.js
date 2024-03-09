@@ -1,5 +1,4 @@
 //Fix this to make this chat-compatible (not job)
-//Speak w/ Aaron regarding method in which to preform this with HTML
 //As in, how does he want the HTML structured?
 
 
