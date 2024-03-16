@@ -8,6 +8,16 @@ html, body {
   flex-direction: column;
 }
 
+nav {
+  display: flex;
+  gap: 10px;
+}
+
+input[type="file"] {
+  border: none;
+  margin-bottom: 20px;
+}
+
 .stdh{
   display: flex;
   justify-content: space-between;
@@ -41,19 +51,21 @@ html, body {
   color: #1dbf73;
 }
 
-.stdh a img {
-  border: 0;
-}
-
-
 .stdh img {
   height: 50px;
   border: none;
 }
 
-nav {
-  display: flex;
-  gap: 10px;
+.stdh a img {
+  border: 0;
+}
+
+.stdc {
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
 .stdc .homepage {
@@ -69,25 +81,21 @@ nav {
   text-decoration: none;
 }
 
-.policyc .contact_us {
-  color: #1dbf73;
-  text-decoration: none;
-}
-
-.stdc {
-  max-width: 360px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
 .policyc {
   max-width: 580px;
   margin: 0 auto;
   padding: 20px;
   background-color: #ffffff;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.policyc .contact_us {
+  color: #1dbf73;
+  text-decoration: none;
+}
+
+.policyc h1 {
+  font-size: 25px;
 }
 
 #verify_replacable {
@@ -145,6 +153,7 @@ nav {
   background-color: #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
+  margin: 40px auto;
 }
 
 .stdl {
@@ -158,11 +167,6 @@ nav {
   height: auto;
   display: block;
   margin-bottom: 10px;
-}
-
-input[type="file"] {
-  border: none;
-  margin-bottom: 20px;
 }
 
 .stda {
@@ -179,15 +183,6 @@ input[type="file"] {
 .stda:hover {
   background-color: #ffffff;
   color: #1dbf73;
-}
-
-.stdd {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
 }
 
 .nologd {
@@ -271,10 +266,6 @@ select {
   padding: 10px
 }
 
-.policyc h1 {
-  font-size: 25px;
-}
-
 #dropdown select {
   /* For WebKit browsers */
   -webkit-appearance: none;
@@ -299,22 +290,6 @@ select {
 
 #dropdown option {
   padding: 10px;
-}
-
-.stdaz {
-  display: inline-block;
-  margin: 10px;
-  padding: 10px 20px;
-  border-radius: 5px;
-  background-color: #1dbf73;
-  color: #ffffff;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.stdaz:hover {
-  background-color: #ffffff;
-  color: #1dbf73;
 }
 
 /* In profile: */

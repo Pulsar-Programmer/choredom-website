@@ -16,10 +16,10 @@ function generateJobHTML(job) {
             <p class="job_price">Price: $${job.data.price / 100.0}</p>
             <p class="job_location">Location: ${job.data.location}</p>
             <a class = "stda" id="job_id" href="/jobs/${job.id.id.String}">Visit Job Post</a>
-            <button class = "stdaz" onclick="delete_job('${job.id.id.String}')">Delete Job</button>
-            <button class = "stdaz" onclick="initiate_edit('${job.id.id.String}')">Edit Job Post</button>
+            <button class = "stda" onclick="delete_job('${job.id.id.String}')">Delete Job</button>
+            <button class = "stda" onclick="initiate_edit('${job.id.id.String}')">Edit Job Post</button>
         </div>
-        </div>
+    </div>
     `;
 }
 
