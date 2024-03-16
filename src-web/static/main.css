@@ -1,3 +1,5 @@
+/* Generic Selectors */
+
 html, body {
   height: 100%;
   margin: 0;
@@ -13,10 +15,20 @@ nav {
   gap: 10px;
 }
 
-input[type="file"] {
-  border: none;
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="file"],
+textarea,
+select {
+  width: calc(100% - 40px);
+  padding: 15px;
   margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
+
+/* Standard Class Selectors */
 
 .stdh{
   display: flex;
@@ -24,11 +36,21 @@ input[type="file"] {
   align-items: center;
 }
 
-.stdf{
-  color: #ffffff;
-  text-align: center;
-  padding: 20px;
-  margin-top: auto;
+.stdh .signoutb {
+  display: inline-block;
+  background-color: #1dbf73;
+  color: white;
+  border: white 1px solid;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.stdh .signoutb:hover {
+  background-color: white;
+  color: #1dbf73;
 }
 
 .stdh nav a,
@@ -60,6 +82,13 @@ input[type="file"] {
   border: 0;
 }
 
+.stdf{
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+}
+
 .stdc {
   max-width: 360px;
   margin: 0 auto;
@@ -81,70 +110,6 @@ input[type="file"] {
   text-decoration: none;
 }
 
-.policyc {
-  max-width: 580px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.policyc .contact_us {
-  color: #1dbf73;
-  text-decoration: none;
-}
-
-.policyc h1 {
-  font-size: 25px;
-}
-
-#verify_replacable {
-  display: flex;
-  flex-direction: column;
-  max-width: 360px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 5px;
-  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
-}
-
-#verify_replacable input {
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#verify_replacable button {
-  background-color: #1dbf73;
-  color: white;
-  padding: 14px;
-  margin: 15px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  width: 100%;
-}
-
-#verify_replacable button:hover {
-  background-color: #16a45f;
-}
-
-#dropdown {
-  margin-bottom: 15px;
-}
-
-#dropdown select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
 
 .stdd {
   max-width: 800px;
@@ -185,34 +150,12 @@ input[type="file"] {
   color: #1dbf73;
 }
 
-.nologd {
-  max-width: 560px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
-
 .stdl {
   display: block;
   margin-bottom: 15px;
   font-weight: bold;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="file"],
-textarea,
-select {
-  width: calc(100% - 40px);
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 .stdb {
@@ -232,21 +175,23 @@ select {
   color: #ffffff;
 }
 
-.stdh .signoutb {
-  display: inline-block;
-  background-color: #1dbf73;
-  color: white;
-  border: white 1px solid;
-  padding: 10px 20px;
-  margin: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+/* Other */
+
+.policyc {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.stdh .signoutb:hover {
-  background-color: white;
+.policyc .contact_us {
   color: #1dbf73;
+  text-decoration: none;
+}
+
+.policyc h1 {
+  font-size: 25px;
 }
 
 .banner-card {
@@ -264,6 +209,10 @@ select {
   right: 25px;
   position: absolute;
   padding: 10px
+}
+
+#dropdown {
+  margin-bottom: 15px;
 }
 
 #dropdown select {
@@ -292,7 +241,51 @@ select {
   padding: 10px;
 }
 
-/* In profile: */
+#verify_replacable {
+  display: flex;
+  flex-direction: column;
+  max-width: 360px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+#verify_replacable input {
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#verify_replacable button {
+  background-color: #1dbf73;
+  color: white;
+  padding: 14px;
+  margin: 15px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+
+#verify_replacable button:hover {
+  background-color: #16a45f;
+}
+
+.nologd {
+  max-width: 560px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
 .rating {
   direction: rtl;
   font-size: 30px;
