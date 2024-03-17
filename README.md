@@ -1,7 +1,7 @@
 # choredom-website
 Official Choredom Website
 
-To run, get Rust ready.
+To run, get the latest Rust ready.
 Get SurrealDB and Surrealist.
 Start SurrealDB with Surrealist or with Command Line.
 These details are necessary to connect to the database:\
