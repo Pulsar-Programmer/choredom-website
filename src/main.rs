@@ -151,7 +151,9 @@ impl RainError{
     // const function: fn(Self) = |x|{}; //< so weird
 
     pub fn from_message(message: impl ToString) -> Self{
-        Self { message: message.to_string(), for_user: false }
+        let message = message.to_string();
+        // println!("{message}");
+        Self { message, for_user: false }
     }
     pub fn for_user(mut self) -> Self{
         self.for_user = true;

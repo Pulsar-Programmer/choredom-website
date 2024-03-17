@@ -214,13 +214,11 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
 
-    // let smtp_key: &str = "Brokies129gg";
-    let smtp_key = "f85f9cd986a020"; //app password
-    let user: &str = "75b7a380c37176";
-    let from_email: &str = "75b7a380c37176@inbox.mailtrap.io";
+    let smtp_key = "shinwlhelwhkdhzi"; //app password
+    let from_email: &str = "choredomofficial@gmail.com";
     //Please change to reflect your email.
-    let host: &str = "sandbox.smtp.mailtrap.io";
-    let port = 2525;
+    let host: &str = "smtp.gmail.com";
+    let port = 587;
 
     let email: Message = Message::builder()
         .from(from_email.parse()?)
@@ -228,7 +226,7 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
         .subject(subject)
         .body(body)?;
 
-    let creds: Credentials = Credentials::new(user.to_string(), smtp_key.to_string());
+    let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
 
     // Open a remote connection to gmail
     let mailer: SmtpTransport = SmtpTransport::starttls_relay(host)?
