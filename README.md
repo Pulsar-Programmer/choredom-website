@@ -7,7 +7,7 @@ Start SurrealDB with Surrealist or with Command Line on localhost:8000.
 Next, run the program. 
 Go to http://localhost:8080 in your browser of choice and enjoy!
 These details are necessary to connect to the database:\
-Endpoint URL: `http://localhost:8080\`
+Endpoint URL: `http://localhost:8080`\
 Authentication Mode: Root Authentication\
 Namespace `choredom`\
 Database: `main`\
