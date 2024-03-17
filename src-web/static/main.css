@@ -2,6 +2,7 @@
 
 html, body {
   height: 100%;
+  width: 100%;
   margin: 0;
   color: #333;
   padding: 0;
@@ -14,6 +15,35 @@ nav {
   display: flex;
   gap: 10px;
 }
+
+.signoutb {
+  padding: 10px 20px;
+  margin: 10px;
+  transition: background-color 0.2s ease;
+}
+
+nav a,
+nav button {
+  background-color: #1dbf73;
+  color: white;
+  text-decoration: none;
+  border: 1px solid white;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+  margin: 0 5px;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+nav a:hover,
+nav button:hover {
+  background-color: #ffffff;
+  color: #1dbf73;
+}
+
+
 
 input[type="text"],
 input[type="password"],
@@ -36,49 +66,8 @@ select {
   align-items: center;
 }
 
-.stdh .signoutb {
-  display: inline-block;
-  background-color: #1dbf73;
-  color: white;
-  border: white 1px solid;
-  padding: 10px 20px;
-  margin: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.stdh .signoutb:hover {
-  background-color: white;
-  color: #1dbf73;
-}
-
-.stdh nav a,
-.stdh nav button {
-  color: #ffffff;
-  text-decoration: none;
-  border: 1px solid #ffffff;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-  display: inline-block;
-  margin: 0 5px;
-  background-color: transparent;
-  cursor: pointer;
-}
-
-.stdh nav a:hover,
-.stdh nav button:hover {
-  background-color: #ffffff;
-  color: #1dbf73;
-}
-
-.stdh img {
+#needs_logo {
   height: 50px;
-  border: none;
-}
-
-.stdh a img {
   border: 0;
 }
 
@@ -137,7 +126,7 @@ select {
 .stda {
   display: inline-block;
   margin: 10px;
-  padding: 10px 20px;
+  padding: 15px 20px;
   border-radius: 5px;
   background-color: #1dbf73;
   color: #ffffff;
@@ -192,23 +181,6 @@ select {
 
 .policyc h1 {
   font-size: 25px;
-}
-
-.banner-card {
-  position: absolute;
-}
-
-.banner-card img {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.banner-text {
-  top: 25%;
-  right: 25px;
-  position: absolute;
-  padding: 10px
 }
 
 #dropdown {
@@ -313,4 +285,32 @@ select {
   padding: 20px;
   margin-top: 20px;
   border-radius: 5px;
+}
+
+#room-title {
+  text-align: center;
+}
+
+#chat_box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  height: 60vh;
+  overflow-y: auto;
+}
+
+.message {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+#message-input-div {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
 }
