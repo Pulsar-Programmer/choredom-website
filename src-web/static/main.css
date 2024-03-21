@@ -11,15 +11,64 @@ html, body {
   flex-direction: column;
 }
 
+.stdheader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1dbf73;
+}
+
+.stdfooter{
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+}
+
 nav {
   display: flex;
   gap: 10px;
 }
 
-.signoutb {
-  padding: 10px 20px;
+
+
+
+
+
+
+.btna {
+  display: inline-block;
   margin: 10px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  background-color: #1dbf73;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btna:hover {
+  background-color: #ffffff;
+  color: #1dbf73;
+}
+
+.btnb {
+  background-color: #1dbf73;
+  color: white;
+  padding: 10px 20px;
+  /* padding: 15px 20px; */
+  margin: 10px;
+  /* margin: 20px 0; */
+  cursor: pointer;
+  border: 0;
+  border-radius: 4px;
   transition: background-color 0.2s ease;
+  font-weight: bold;
+}
+
+.btnb:hover {
+  background-color: #16a45f;
+  color: #ffffff;
 }
 
 nav a,
@@ -27,20 +76,23 @@ nav button {
   background-color: #1dbf73;
   color: white;
   text-decoration: none;
-  border: 1px solid white;
+  border: 2px solid white;
   padding: 10px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
   display: inline-block;
-  margin: 0 5px;
-  background-color: transparent;
   cursor: pointer;
 }
 
-nav a:hover,
-nav button:hover {
-  background-color: #ffffff;
-  color: #1dbf73;
+
+
+
+.homepage {
+  display: inline-block;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 5px;
+  margin-top: 20px;
 }
 
 
@@ -58,25 +110,12 @@ select {
   border-radius: 4px;
 }
 
-/* Standard Class Selectors */
-
-.stdh{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 #needs_logo {
   height: 50px;
   border: 0;
 }
 
-.stdf{
-  color: #ffffff;
-  text-align: center;
-  padding: 20px;
-  margin-top: auto;
-}
+
 
 .stdc {
   max-width: 360px;
@@ -86,13 +125,7 @@ select {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.stdc .homepage {
-  display: inline-block;
-  padding: 10px 20px;
-  text-decoration: none;
-  border-radius: 5px;
-  margin-top: 20px;
-}
+
 
 .stdc .contact_us {
   color: #1dbf73;
@@ -112,8 +145,11 @@ select {
 
 .stdl {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
+  /* margin-bottom: 5px; */
   font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
 }
 
 .stdi {
@@ -123,46 +159,7 @@ select {
   margin-bottom: 10px;
 }
 
-.stda {
-  display: inline-block;
-  margin: 10px;
-  padding: 15px 20px;
-  border-radius: 5px;
-  background-color: #1dbf73;
-  color: #ffffff;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
 
-.stda:hover {
-  background-color: #ffffff;
-  color: #1dbf73;
-}
-
-.stdl {
-  display: block;
-  margin-bottom: 15px;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
-}
-
-.stdb {
-  background-color: #1dbf73;
-  color: white;
-  padding: 15px 20px;
-  margin: 20px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-weight: bold;
-}
-
-.stdb:hover {
-  background-color: #16a45f;
-  color: #ffffff;
-}
 
 /* Other */
 
