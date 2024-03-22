@@ -18,11 +18,10 @@ html, body {
   background-color: #1dbf73;
 }
 
-.stdfooter{
-  color: #ffffff;
-  text-align: center;
-  padding: 20px;
-  margin-top: auto;
+#needs_logo {
+  padding-left: 15px;
+  height: 50px;
+  border: 0;
 }
 
 nav {
@@ -30,40 +29,54 @@ nav {
   gap: 10px;
 }
 
-
-
-
-
-
-
+.stdfooter{
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+}
+/* Standard "button" for anchor tags. */
 .btna {
   display: inline-block;
   margin: 10px;
-  padding: 15px 20px;
-  border-radius: 5px;
+  padding: 10px 20px;
+  
   background-color: #1dbf73;
-  color: #ffffff;
+  color: white;
+
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.4s ease, border-color 0.2s ease;
+  cursor: pointer;
+
+  border: 2px solid white;
+  border-radius: 5px;
 }
 
 .btna:hover {
   background-color: #ffffff;
   color: #1dbf73;
+
+  border-color: #16a45f;
+  border-width: 2px;
 }
 
+/* Standard button for button tags. */
 .btnb {
-  background-color: #1dbf73;
   color: white;
+  background-color: #1dbf73;
+
+  display: inline-block;
   padding: 10px 20px;
-  /* padding: 15px 20px; */
   margin: 10px;
-  /* margin: 20px 0; */
+  
+  border: 2px solid white;
+  border-radius: 5px;
+
   cursor: pointer;
-  border: 0;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  font-weight: bold;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  font-size: 12pt;
+  text-decoration: none;
 }
 
 .btnb:hover {
@@ -71,29 +84,19 @@ nav {
   color: #ffffff;
 }
 
-nav a,
-nav button {
-  background-color: #1dbf73;
-  color: white;
-  text-decoration: none;
-  border: 2px solid white;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-  display: inline-block;
-  cursor: pointer;
-}
-
-
-
-
 .homepage {
-  display: inline-block;
   padding: 10px 20px;
-  text-decoration: none;
-  border-radius: 5px;
-  margin-top: 20px;
+
+  border-color: #333;
+  border-width: 2px;
 }
+
+
+
+
+
+
+
 
 
 
@@ -110,10 +113,7 @@ select {
   border-radius: 4px;
 }
 
-#needs_logo {
-  height: 50px;
-  border: 0;
-}
+
 
 
 
