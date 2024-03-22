@@ -5,18 +5,17 @@ html, body {
     background-color: #08867c;
 }
 
-.stdh {
+.stdheader {
     background-color: rgba(11, 184, 171, 255);
-    padding: 20px;
 }
 
-.stdf {
+.stdfooter {
     background-image: url(/src-web/assets/aerofooter.png);
     background-repeat: no-repeat;
     background-size: cover;
 }
 
-.stdh .stda {
+.stdheader .btna {
     display: inline-block;
     margin: 10px;
     padding: 10px 20px;
@@ -28,12 +27,15 @@ html, body {
     /* Round the corners of the links */
 }
 
-.stdh .stda:hover {
+.stdheader .btna:hover {
     background-color: #ffffff;
     /* Change the background color when hovering */
     color: #08867c;
     /* Change the text color when hovering */
 }
+
+
+
 
 .stdc .homepage {
     background-color: #1dbf73;

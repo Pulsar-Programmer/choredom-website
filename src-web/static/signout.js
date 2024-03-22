@@ -1,4 +1,4 @@
-document.getElementById("signout-button").addEventListener("click", function() {
+function signout(){
     fetch('/signout', {
         method: 'POST',
         headers: {
@@ -8,4 +8,4 @@ document.getElementById("signout-button").addEventListener("click", function() {
     .then(handle)
     .then(_ => redirect("/success"))
     .catch(notify);
-});
+}

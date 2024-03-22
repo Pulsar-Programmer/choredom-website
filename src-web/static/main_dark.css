@@ -2,21 +2,20 @@ html, body {
     background-color: #393d41;
 }
 
-.stdh {
-    background-color: #282b2e;
-    padding: 20px;
-}
-
-.stdf {
+.stdheader {
     background-color: #282b2e;
 }
 
-.stdh .stda {
+.stdfooter {
+    background-color: #282b2e;
+}
+
+.stdheader .btna {
     color: #1dbf73;
     background-color: #393d41;
 }
 
-.stdh .stda:hover {
+.stdheader .btna:hover {
     background-color: #1dbf73;
     color: #393d41;
     /* Change the background color when hovering /
