@@ -103,6 +103,23 @@ nav {
   border-radius: 10px;
 }
 
+.stdelem{
+  max-width: 500px;
+  padding: 20px;
+
+  background-color: #ffffff;
+
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+}
+
+/* .stdc {
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+} */
 
 
 
@@ -122,23 +139,6 @@ select {
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-.stdc {
-  max-width: 360px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.stdd {
-  max-width: 800px;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  margin: 40px auto;
 }
 
 
