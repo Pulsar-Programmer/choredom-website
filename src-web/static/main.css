@@ -103,33 +103,34 @@ nav {
   border-radius: 10px;
 }
 
-.stdset{
-  min-width: 100px;
-  max-width: 500px;
-  margin: 40px auto;
-  padding: 5px 15px;
-
-  background-color: #ffffff;
-
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
-}
-
-.stdelem{
-  max-width: 500px;
-  padding: 2px;
-  margin: 0px auto;
-
-  background-color: #ffffff;
-
-  border-radius: 10px;
-}
-
 .stdtitle{
-  font-size: 25pt;
-  /* font-style: bold; */
-  /* text-decoration: bold; */
+  font-size: 20pt;
   font-weight: bold;
+}
+
+
+.chat_list{
+  margin-top: 50px;
+  margin-left: 20px;
+  width: fit-content;
+  padding: 0px 30px 10px 10px;
+
+  background-color: #1dbf73;
+
+  border-color: #333;
+  border-radius: 10px;
+  border: solid 3px;
+}
+.chat_list_elem{
+  background-color: #1dbf73;
+  border-width: 10px;
+  border-radius: 20px;
+  padding: 10px;
+  width: fit-content;
+  font-size: 15pt;
+}
+.chat_list_elem:hover{
+  background-color: #16a45f;
 }
 
 
