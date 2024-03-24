@@ -133,7 +133,9 @@ nav {
   background-color: #16a45f;
 }
 
-
+.center{
+  margin: 50px auto;
+}
 
 
 
@@ -172,13 +174,6 @@ select {
   font-weight: bold;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
-}
-
-.stdi {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin-bottom: 10px;
 }
 
 
