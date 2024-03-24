@@ -32,38 +32,40 @@
     </nav>
   </header>
 
-  <div id="verify_replacable" class="stdbox">
-    <label class="stdl">Email</label><br>
-    <input id="email" type="email" class="email-input" placeholder="Email" required
-      pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Ensure it is a valid email.">
-    <label class="stdl">Password</label><br>
-    <input id="password" name="password" type="password" class="password-input" placeholder="Password"
-      pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
-      title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters, and at least one special character"
-      required>
-    <label class="stdl">Confirm Password</label><br>
-    <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password"
-      pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
-      title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters and at least one special character"
-      required>
-    <label class="stdl">Username</label><br>
-    <input id="username" type="text" class="username-input" placeholder="Username" pattern="^[A-Za-z0-9]+$"
-      title="Username should only contain letters and numbers." required>
-    <label class="stdl">Display Name</label><br>
-    <input id="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="^[A-Za-z0-9 ]+$"
-      title="Display Name should only contain letters, numbers, and spaces." required>
-    <div id="dropdown">
-      <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-      <script src="/src-web/static/us-cities.js"></script>
-      <label>Location </label><br>
-      <select required name="location" id="city" style="width: 300px;">
-      </select>
+  <main>
+    <div id="verify_replacable" class="stdbox">
+      <label class="stdl">Email</label><br>
+      <input id="email" type="email" class="email-input" placeholder="Email" required
+        pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Ensure it is a valid email.">
+      <label class="stdl">Password</label><br>
+      <input id="password" name="password" type="password" class="password-input" placeholder="Password"
+        pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
+        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters, and at least one special character"
+        required>
+      <label class="stdl">Confirm Password</label><br>
+      <input id="password2" name="password2" type="password" class="confirmPW-input" placeholder="Confirm Password"
+        pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$"
+        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters and at least one special character"
+        required>
+      <label class="stdl">Username</label><br>
+      <input id="username" type="text" class="username-input" placeholder="Username" pattern="^[A-Za-z0-9]+$"
+        title="Username should only contain letters and numbers." required>
+      <label class="stdl">Display Name</label><br>
+      <input id="displayname" type="text" class="displayname-input" placeholder="Display Name" pattern="^[A-Za-z0-9 ]+$"
+        title="Display Name should only contain letters, numbers, and spaces." required>
+      <div id="dropdown">
+        <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+        <script src="/src-web/static/us-cities.js"></script>
+        <label>Location </label><br>
+        <select required name="location" id="city" style="width: 300px;">
+        </select>
+      </div>
+      <button id="vrbtn" onclick="signup_request()">Create Account</button>
     </div>
-    <button id="vrbtn" onclick="signup_request()">Create Account</button>
-  </div>
+  </main>
 
   <footer class="stdfooter">
     <p>&copy; 2024 Choredom</p>

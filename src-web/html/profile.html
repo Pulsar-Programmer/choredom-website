@@ -30,49 +30,49 @@
     </nav>
   </header>
 
-
-
-  <div class="profile stdbox">
-    <img src="" id="profile_pic" height="500" width="500">
-    <h1 id="displayName">Name: {}</h1>
-    <h2 id="username">Username: {}</h2>
-    <h3 id="AvgRating">Rating: {}</h3>
-    <h4 id="CreationDate">Joined: {}</h4>
-    <h5 id="state">{}</h5>
-    <p id="bio">{}</p>
-    <div id="pics"></div>
-  </div>
-  <div class="ratings stdbox">
-
-  </div>
-  <div class="profile stdbox">
-    <div class="rating stdbox">
-      <input id="star5" type="radio" name="rating" value="5">
-      <label for="star5">5★</label>
-      <input id="star4" type="radio" name="rating" value="4">
-      <label for="star4">4★</label>
-      <input id="star3" type="radio" name="rating" value="3">
-      <label for="star3">3★</label>
-      <input id="star2" type="radio" name="rating" value="2">
-      <label for="star2">2★</label>
-      <input id="star1" type="radio" name="rating" value="1">
-      <label for="star1">1★</label>
+  <main>
+    <div class="profile stdbox">
+      <img src="" id="profile_pic" height="500" width="500">
+      <h1 id="displayName">Name: {}</h1>
+      <h2 id="username">Username: {}</h2>
+      <h3 id="AvgRating">Rating: {}</h3>
+      <h4 id="CreationDate">Joined: {}</h4>
+      <h5 id="state">{}</h5>
+      <p id="bio">{}</p>
+      <div id="pics"></div>
     </div>
-
-    <textarea id="body" placeholder="Enter your review here..."></textarea>
-    <button onclick="submitReviewForm()">Submit rating</button>
-    <button id="rpbutton" onclick="report_user()">Report User</button>
-
-
-    <button onclick="delete_rating()">Delete rating</button>
-    <div class="reviews stdbox">
-      <label></label>
-      <!-- Reviews will be added here -->
+    <div class="ratings stdbox">
+  
     </div>
-
-  </div>
-
-  <div id="reviews"></div>
+    <div class="profile stdbox">
+      <div class="rating stdbox">
+        <input id="star5" type="radio" name="rating" value="5">
+        <label for="star5">5★</label>
+        <input id="star4" type="radio" name="rating" value="4">
+        <label for="star4">4★</label>
+        <input id="star3" type="radio" name="rating" value="3">
+        <label for="star3">3★</label>
+        <input id="star2" type="radio" name="rating" value="2">
+        <label for="star2">2★</label>
+        <input id="star1" type="radio" name="rating" value="1">
+        <label for="star1">1★</label>
+      </div>
+  
+      <textarea id="body" placeholder="Enter your review here..."></textarea>
+      <button onclick="submitReviewForm()">Submit rating</button>
+      <button id="rpbutton" onclick="report_user()">Report User</button>
+  
+  
+      <button onclick="delete_rating()">Delete rating</button>
+      <div class="reviews stdbox">
+        <label></label>
+        <!-- Reviews will be added here -->
+      </div>
+  
+    </div>
+  
+    <div id="reviews"></div>
+  </main>
   
   <footer class="stdfooter">
     <p>&copy; 2024 Choredom</p>

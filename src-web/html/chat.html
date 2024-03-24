@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title class="stdt">Choredom: Chats</title>
+  <title>Choredom: Chats</title>
   <link rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_style" rel="stylesheet" href="/src-web/static/main.css">
   <link id="needs_favicon" rel="icon" type="image/ico" href="/src-web/assets/favicon.ico">
@@ -31,26 +31,31 @@
     </nav>
   </header>
 
-  <h1>Welcome to Chats!</h1>
-  <!-- <h2>Responding to a user's chats allows them to rate you.</h2> -->
-  <h2>Please don't respond to people you don't know.</h2>
-
-  <div id="chat_box"></div>
-
-  <div id="chatList" class="stdc stdbox">
+  <div id="chatList" class="chat_list">
+    <p class="stdtitle">Current Chats:</p>
     <!-- Chat boxes will be added here by JavaScript -->
   </div>
 
-  <div class="stdc stdbox">
-    <label class="stdl" for="chatsPics">Send images...:</label><br>
-    <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
-    <button class="stdb" onclick="upload_chats()">Submit Chat Pictures</button>
-  </div>
+  <main>
+    <h1>Welcome to Chats!</h1>
+    <!-- <h2>Responding to a user's chats allows them to rate you.</h2> -->
+    <h2>Please don't respond to people you don't know.</h2>
 
-  <div id="message-input-div" class="stdc stdbox">
-    <input type="text" id="message-input" placeholder="Type a message">
-    <button class="stdb" onclick="send_chat()">Send</button>
-  </div>
+    <div id="chat_box"></div>
+
+    <div class="stdbox">
+      <label class="stdl" for="chatsPics">Send images...:</label><br>
+      <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats"><br>
+      <button class="stdb" onclick="upload_chats()">Submit Chat Pictures</button>
+    </div>
+  
+    <div id="message-input-div" class="stdbox">
+      <input type="text" id="message-input" placeholder="Type a message">
+      <button class="stdb" onclick="send_chat()">Send</button>
+    </div>
+
+
+  </main>
 
   <footer class="stdfooter">
     <p>&copy; 2024 Choredom</p>

@@ -34,41 +34,46 @@
     </nav>
   </header>
 
-  <div class="stdc">
-    <div id="jobs_add" class="stdc">
-      <div id="dropdown" class="dropdown">
-        <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-        <!-- <script async src="/src-web/static/us-cities.js"></script> -->
-        <label for="city">Filter Towns (required)</label>
-        <select name="location" id="city" style="width: 300px;">
-        </select>
+  <main>
+    <div class="stdc">
+      <div id="jobs_add" class="stdc">
+        <div id="dropdown" class="dropdown">
+          <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+          <!-- <script async src="/src-web/static/us-cities.js"></script> -->
+          <label for="city">Filter Towns (required)</label>
+          <select name="location" id="city" style="width: 300px;">
+          </select>
+        </div>
       </div>
     </div>
 
-    <main>
-      <div id="filters" class="stdc stdbox">
-        <label>Manual Search</label>
-        <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
-        <label>Verification of Poster</label>
-        <select id="statusFilter">
-          <option value="">No preference</option>
-          <option value="Verified">Verified</option>
-          <option value="Non-verified">Non-verified</option>
-        </select><br>
-        <label>Time of Jobs</label><br>
-        <input type="date" id="timeFilter" placeholder="Filter by time"><br>
-        <label>Price</label><br>
-        <input type="number" id="minPriceFilter" placeholder="Minimum price">
-        <input type="number" id="maxPriceFilter" placeholder="Maximum price"><br>
-        <button class="stda" onclick="filterJobs()">Apply Filters</button>
-      </div>
-  </div>
-  <div id="job-container">
-    <!-- Jobs will be added here -->
-  </div>
+
+
+
+
+
+    <div id="filters" class="stdc stdbox">
+      <label>Manual Search</label>
+      <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
+      <label>Verification of Poster</label>
+      <select id="statusFilter">
+        <option value="">No preference</option>
+        <option value="Verified">Verified</option>
+        <option value="Non-verified">Non-verified</option>
+      </select><br>
+      <label>Time of Jobs</label><br>
+      <input type="date" id="timeFilter" placeholder="Filter by time"><br>
+      <label>Price</label><br>
+      <input type="number" id="minPriceFilter" placeholder="Minimum price">
+      <input type="number" id="maxPriceFilter" placeholder="Maximum price"><br>
+      <button class="stda" onclick="filterJobs()">Apply Filters</button>
+    </div>
+    <div id="job-container">
+      <!-- Jobs will be added here -->
+    </div>
   </main>
 
   <footer class="stdfooter">

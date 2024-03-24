@@ -28,20 +28,21 @@
         </nav>
       </header>
       
-    <h2>Transfer Credits</h2>
+    <main>
+      <h2>Transfer Credits</h2>
+      <div class="stdbox">
+          <label for="recipientUsername">Recipient Username:</label><br>
+          <input type="text" id="recipientUsername" name="to_username" required><br>
 
-    <div class="stdbox">
-        <label for="recipientUsername">Recipient Username:</label><br>
-        <input type="text" id="recipientUsername" name="to_username" required><br>
+          <label for="amount">Amount of Credits:</label><br>
+          <input type="number" id="amount" name="credits" min="1" required><br>
 
-        <label for="amount">Amount of Credits:</label><br>
-        <input type="number" id="amount" name="credits" min="1" required><br>
+          <label for="password">Your Password:</label><br>
+          <input type="password" id="password" name="self_password" required><br>
 
-        <label for="password">Your Password:</label><br>
-        <input type="password" id="password" name="self_password" required><br>
-
-        <button onclick="send_request()">Submit</button>
-    </div>
+          <button onclick="send_request()">Submit</button>
+      </div>
+    </main>
 
     <footer class="stdfooter">
       <p>&copy; 2024 Choredom</p>
