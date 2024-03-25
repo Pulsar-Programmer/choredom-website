@@ -312,6 +312,15 @@ select {
   height: 60vh;
   overflow-y: auto;
 }
+.chat_enter {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
+}
+
 
 .message {
   border: 1px solid #ccc;
@@ -320,11 +329,3 @@ select {
   border-radius: 5px;
 }
 
-#message-input-div {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: #fff;
-  padding: 10px;
-  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
-}
