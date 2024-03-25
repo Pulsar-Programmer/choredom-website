@@ -32,11 +32,11 @@
   <main>
     <div class="stdbox">
 
-      <label class="stdl" for="username">Username:</label><br>
+      <label class="stdlabel" for="username">Username:</label><br>
       <input type="text" id="username" name="username" pattern="^[A-Za-z0-9]+$"
         title="Should only contain letters and numbers" required><br>
   
-      <label class="stdl" for="displayname">Display Name:</label><br>
+      <label class="stdlabel" for="displayname">Display Name:</label><br>
       <input type="text" id="displayname" name="displayname" pattern="^[A-Za-z0-9 ]+$"
         title="Should only contain letters, spaces, and numbers" required><br>
   
@@ -51,7 +51,7 @@
         </select>
       </div>
   
-      <label class="stdl" for="themeToggleBtn">Choose Your Theme</label><br>
+      <label class="stdlabel" for="themeToggleBtn">Choose Your Theme</label><br>
       <!-- <button id="themeToggleBtn" class="stdb">Toggle Theme</button> -->
       <img id="themeToggleBtn" src="/src-web/assets/favicon.ico" alt="Toggle Theme" onclick="set_theme('Light')"
         width="100px" height="100px">
@@ -61,32 +61,32 @@
         width="100px" height="100px">
       <!-- <img id="themeToggleBtn" src="/src-web/assets/contrastfavicon.ico" alt="Toggle Theme" onclick="set_theme('Contrast')" width="100px" height="100px"> -->
   
-      <label class="stdl" for="bio">Bio:</label><br>
+      <label class="stdlabel" for="bio">Bio:</label><br>
       <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea><br>
       <!-- <input type="submit" value="Submit"> -->
       <button class="stdb" onclick="settings_post()">Submit</button>
   
-      <label class="stdl">Current Profile Picture:</label>
+      <label class="stdlabel">Current Profile Picture:</label>
       <img src="" id="pfp" width="500" height="500">
   
-      <label class="stdl">Upload a New Profile Picture</label>
+      <label class="stdlabel">Upload a New Profile Picture</label>
       <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp"><br>
       <button class="stdb" onclick="upload_pfp()">Submit Profile Picture</button><br>
   
-      <label class="stdl">Bio Picture(s):</label>
+      <label class="stdlabel">Bio Picture(s):</label>
       <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_bio"><br>
       <button class="stdb" onclick="upload_bio()">Submit Profile Picture</button><br>
   
-      <label class="stdl">Privacy</label>
+      <label class="stdlabel">Privacy</label>
       <a class="stda" href="/settings/email">Change email</a>
       <a class="stda" href="/settings/password">Change Password</a>
   
-      <label class="stdl">View Your Profile!</label>
+      <label class="stdlabel">View Your Profile!</label>
       <a class="stda" id="gritty" href="/users/"> View Profile</a>
-      <label class="stdl">Get Verified:</label>
+      <label class="stdlabel">Get Verified:</label>
       <a class="stda" href="/settings/upload">Upload a Gov ID</a><br>
   
-      <label class="stdl">Delete Account:</label>
+      <label class="stdlabel">Delete Account:</label>
       <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"
         pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
         title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"

@@ -85,7 +85,7 @@ nav {
   color: #ffffff;
 }
 
-.homepage {
+.embedb {
   padding: 10px 20px;
 
   border-color: #333;
@@ -137,8 +137,24 @@ nav {
   margin: 50px auto;
 }
 
+.label_region{
+  padding-bottom: 50px;
+}
 
+.stdlabel {
+  display: block;
+  margin-bottom: 15px;
+  /* margin-bottom: 5px; */
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+}
 
+.stdtextarea{
+  resize: none;
+  height: 300px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
 
 
 
@@ -167,14 +183,7 @@ select {
   text-decoration: none;
 }
 
-.stdl {
-  display: block;
-  margin-bottom: 15px;
-  /* margin-bottom: 5px; */
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
-}
+
 
 
 
@@ -328,4 +337,5 @@ select {
   margin-bottom: 10px;
   border-radius: 5px;
 }
+
 
