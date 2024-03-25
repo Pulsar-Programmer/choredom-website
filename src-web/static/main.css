@@ -92,9 +92,6 @@ nav {
  
 
 .stdbox{
-  display: flex;
-  flex-direction: column;
-  
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
@@ -103,6 +100,9 @@ nav {
 
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   border-radius: 10px;
+}
+.stdsmallbox{
+  max-width: 360px;
 }
 
 .stdtitle{
@@ -140,7 +140,7 @@ nav {
 }
 
 .label_region{
-  padding-bottom: 50px;
+  padding-bottom: 10px;
 }
 
 .stdlabel {
@@ -158,11 +158,9 @@ nav {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
-#verify_replacable {
-  max-width: 360px;
-}
-
-#verify_replacable input {
+input,
+textarea,
+select {
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -171,33 +169,10 @@ nav {
   box-sizing: border-box;
 }
 
-
-
-
-
-
-
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="file"],
-textarea,
-select {
-  width: calc(100% - 40px);
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-
-
-.stdc .contact_us {
+.contact_us {
   color: #1dbf73;
   text-decoration: none;
 }
-
 
 
 
@@ -249,15 +224,6 @@ select {
 
 #dropdown option {
   padding: 10px;
-}
-
-.nologd {
-  max-width: 560px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
 }
 
 .rating {

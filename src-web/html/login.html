@@ -32,11 +32,18 @@
   </header>
 
   <main>
-    <div id="verify_replacable" class="stdc stdbox">
+    <div id="verify_replacable" class="stdbox stdsmallbox">
       <!-- We don't need the Regex requirements here since it matches against the DB. -->
-      <input type="email" name="email" placeholder="Email" id="email">
-      <input type="password" id="password" placeholder="Password">
-      <button id="vrbtn" onclick="login_request()">Log In</button>
+      <div class="label_region">
+        <label class="stdlabel" for="email">Email:</label>
+        <input type="email" name="email" placeholder="Email" id="email">
+      </div>
+      <div class="label_region">
+        <label class="stdlabel" for="password">Password:</label>
+        <input type="password" id="password" placeholder="Password">
+      </div>
+      
+      <button id="vrbtn" onclick="login_request()" class="btnb embedb">Log In</button>
     </div>
   </main>
 
