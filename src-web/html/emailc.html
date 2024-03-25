@@ -32,19 +32,25 @@
   </header>
 
   <main>
-    <div id="verify_replacable" class="stdc stdbox">
+    <div id="verify_replacable" class="stdbox">
       <h2>Change Email</h2>
-      <label for="currentemail">Current email:</label><br>
-      <input type="email" id="currentemail" name="e_old" required><br>
+      
+      <div class="label_region">
+        <label class="stdlabel" for="currentemail">Current Email:</label>
+        <input type="email" id="currentemail" name="e_old" required>
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel" for="newEmail">New Email:</label>
+        <input id="newEmail" name="e_new" type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$" title="Should only contain valid characters only" required>
+      </div>
   
-      <label for="newEmail">New email:</label><br>
-      <input id="newEmail" name="e_new" type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$"
-        title="Should only contain valid characters only" required><br>
-  
-      <label for="currentPassword">Current Password:</label><br>
-      <input id="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$">
-  
-      <button id="vrbtn" onclick="emailc_request()">Change Email</button>
+      <div class="label_region">
+        <label class="stdlabel" for="currentPassword">Current Password:</label>
+        <input id="password" type="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$">
+      </div>
+      
+      <button class="embedb btnb" id="vrbtn" onclick="emailc_request()">Change Email</button>
     </div>
   </main>
 
