@@ -159,8 +159,7 @@ nav {
 }
 
 input,
-textarea,
-select {
+textarea {
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -174,57 +173,22 @@ select {
   text-decoration: none;
 }
 
-
-
-
 /* Other */
 
-.policyc {
+.hanger {
   max-width: 580px;
-  margin: 0 auto;
+  margin: auto;
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
-.policyc .contact_us {
-  color: #1dbf73;
-  text-decoration: none;
-}
 
-.policyc h1 {
-  font-size: 25px;
-}
 
-#dropdown {
-  margin-bottom: 15px;
-}
 
-#dropdown select {
-  /* For WebKit browsers */
-  -webkit-appearance: none;
-  /* For Mozilla Firefox browsers */
-  -moz-appearance: none;
-  /* For modern browsers */
-  appearance: none;
 
-  display: block;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-#dropdown select:focus {
-  outline: none;
-  border-color: #1dbf73;
-}
-
-#dropdown option {
-  padding: 10px;
-}
 
 .rating {
   direction: rtl;
@@ -282,5 +246,3 @@ select {
   margin-bottom: 10px;
   border-radius: 5px;
 }
-
-

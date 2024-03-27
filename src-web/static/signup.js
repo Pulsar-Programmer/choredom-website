@@ -13,19 +13,16 @@ function signup_request(){
         return;
     }
 
-    // // Select the button
-    // var btn = document.getElementById("vrbtn");
-    // // Disable the button
-    // btn.disabled = true;
-
 
     let data = {
-        email: email,
+        email,
         password: password1,
-        username: username,
-        displayname: displayname,
-        location: location,
+        username,
+        displayname,
+        location,
     }
+
+    lock_btn();
 
     fetch("/verify-email", {
         method: 'POST', 
@@ -38,7 +35,7 @@ function signup_request(){
     .then(_ => {
         initiate_verification("/ve");
     }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
-    .catch(notify);
+    .catch(unlock_notify);
 }
 
 // window.addEventListener("load", function() {

@@ -17,6 +17,8 @@ function login_request(){
         password: password,
     }
 
+    lock_btn();
+
     fetch("/signin", {
         method: 'POST', 
         headers: {
@@ -28,5 +30,5 @@ function login_request(){
     .then(_ => {
         initiate_verification("/ve_log");
     }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
-    .catch(notify);
+    .catch(unlock_notify);
 }

@@ -11,6 +11,8 @@ function emailc_request(){
         password: password,
     }
 
+    lock_btn();
+
     fetch("/settings/email/form", {
         method: 'POST', 
         headers: {
@@ -20,14 +22,7 @@ function emailc_request(){
     })
     .then(handle)
     .then(_ => {
-        // Select the button
-        var btn = document.getElementById("vrbtn");
-        // Disable the button
-        btn.disabled = true;
-        // Remove the onclick event
-        btn.onclick = null;
-
         initiate_verification("/ve_set");
     }) //For some reason this causes an error upon HttpResponse::Ok().finish(). Why? I FIXED IT.
-    .catch(notify);
+    .catch(unlock_notify);
 }
