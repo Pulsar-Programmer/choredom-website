@@ -22,7 +22,7 @@ window.addEventListener("load", function() {
 
 function add_to_html(yapper){
     let url = `/chats/${yapper}`;
-    let html = `<div class="chat_list_elem"><a href=${url}>${yapper}</a></div>`;
+    let html = `<a class="chat_list_elem" href=${url}>${yapper}</a>`;
     let links_div = document.getElementById("chatList");
     links_div.innerHTML += html;
 }
