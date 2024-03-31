@@ -41,7 +41,7 @@ impl Account{
             password, 
             balance: 0, // divide by 10 to account for u64 and not float
             page: AccountPage::new(),
-            state: AccountState::NonVerified,
+            state: AccountState::Verified, //switch back in a real app
             location,
             password_salt,
         }
