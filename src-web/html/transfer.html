@@ -29,18 +29,25 @@
       </header>
       
     <main>
-      <h2>Transfer Credits</h2>
       <div class="stdbox">
-          <label for="recipientUsername">Recipient Username:</label>
+        <h2>Transfer Credits</h2>
+        
+        <div class="label_region">
+          <label class="stdlabel" for="recipientUsername">Recipient Username:</label>
           <input type="text" id="recipientUsername" name="to_username" required>
+        </div>
 
-          <label for="amount">Amount of Credits:</label>
+        <div class="label_region">
+          <label class="stdlabel" for="amount">Amount of Credits:</label>
           <input type="number" id="amount" name="credits" min="1" required>
+        </div>
 
-          <label for="password">Your Password:</label>
+        <div class="label_region">
+          <label class="stdlabel" for="password">Your Password:</label>
           <input type="password" id="password" name="self_password" required>
-
-          <button onclick="send_request()">Submit</button>
+        </div>
+        
+        <button class="btnb embedb" onclick="send_request()">Submit</button>
       </div>
     </main>
 
