@@ -156,6 +156,24 @@ nav {
   padding-bottom: 10px;
 }
 
+.dangerzone{
+  color: red;
+}
+.dangerzone input:focus{
+  border:3px solid red;
+}
+/* .dangerzone .btnb, .dangerzone .btna{
+  
+  color: red;
+  background-color: black;
+} */
+.dangerzone .btna:hover, .dangerzone .btnb:hover{
+  color:white;
+  font-weight: bold;
+  border: 2px solid red;
+  background-color: darkred;
+}
+
 .stdtextarea{
   resize: none;
   height: 300px;

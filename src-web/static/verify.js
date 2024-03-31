@@ -11,10 +11,11 @@ function initiate_verification(url){
 
 function code_html(url){
     return `
-    <h1>Enter your 6-digit email verification code</h1>
     <div>
+        <label class="stdlabel" for="code">Enter Your 6-Digit Email Verification Code</label>
         <input type="text" name="code" id="code" placeholder="6-digit code" required maxlength="6" minlength="6">
-        <button onclick="submit_code('${url}')">Verify</button>
+
+        <button class="btnb embedb" onclick="submit_code('${url}')">Verify</button>
     </div>`;
 }
 

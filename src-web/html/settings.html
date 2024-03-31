@@ -31,68 +31,91 @@
 
   <main>
     <div class="stdbox">
+      <div class="label_region">
+        <label class="stdlabel" for="themeToggleBtn">Choose Your Theme:</label>
+        <!-- <button id="themeToggleBtn" class="stdb">Toggle Theme</button> -->
+        <img id="themeToggleBtn" src="/src-web/assets/favicon.ico" alt="Toggle Theme" onclick="set_theme('Light')"
+          width="100px" height="100px">
+        <img id="themeToggleBtn" src="/src-web/assets/darkfavicon.ico" alt="Toggle Theme" onclick="set_theme('Dark')"
+          width="100px" height="100px">
+        <img id="themeToggleBtn" src="/src-web/assets/aerofavicon.ico" alt="Toggle Theme" onclick="set_theme('Aero')"
+          width="100px" height="100px">
+        <!-- <img id="themeToggleBtn" src="/src-web/assets/contrastfavicon.ico" alt="Toggle Theme" onclick="set_theme('Contrast')" width="100px" height="100px"> -->
+      </div>
 
-      <label class="stdlabel" for="username">Username:</label>
-      <input type="text" id="username" name="username" pattern="^[A-Za-z0-9]+$"
+      <div class="label_region">
+        <label class="stdlabel" for="username">Username:</label>
+        <input type="text" id="username" name="username" pattern="^[A-Za-z0-9]+$"
         title="Should only contain letters and numbers" required>
-  
-      <label class="stdlabel" for="displayname">Display Name:</label>
-      <input type="text" id="displayname" name="displayname" pattern="^[A-Za-z0-9 ]+$"
-        title="Should only contain letters, spaces, and numbers" required>
-  
-      <div id="dropdown" class="dropdown">
-        <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-        <script src="/src-web/static/us-cities.js"></script>
-        <label for="city">Filter Towns...</label>
-        <select required name="location" id="city" style="width: 300px;">
-        </select>
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel" for="displayname">Display Name:</label>
+        <input type="text" id="displayname" name="displayname" pattern="^[A-Za-z0-9 ]+$"
+          title="Should only contain letters, spaces, and numbers" required>
       </div>
   
-      <label class="stdlabel" for="themeToggleBtn">Choose Your Theme</label>
-      <!-- <button id="themeToggleBtn" class="stdb">Toggle Theme</button> -->
-      <img id="themeToggleBtn" src="/src-web/assets/favicon.ico" alt="Toggle Theme" onclick="set_theme('Light')"
-        width="100px" height="100px">
-      <img id="themeToggleBtn" src="/src-web/assets/darkfavicon.ico" alt="Toggle Theme" onclick="set_theme('Dark')"
-        width="100px" height="100px">
-      <img id="themeToggleBtn" src="/src-web/assets/aerofavicon.ico" alt="Toggle Theme" onclick="set_theme('Aero')"
-        width="100px" height="100px">
-      <!-- <img id="themeToggleBtn" src="/src-web/assets/contrastfavicon.ico" alt="Toggle Theme" onclick="set_theme('Contrast')" width="100px" height="100px"> -->
+      <div class="label_region">
+        <label class="stdlabel" for="city">Location:</label>
+        <div id="dropdown" class="dropdown">
+          <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
+          <script src="/src-web/static/us-cities.js"></script>
+          <select required name="location" id="city" style="width: 300px;">
+          </select>
+        </div>
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel" for="bio">Bio:</label>
+        <textarea class="stdtextarea" id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea>
+        <!-- <input type="submit" value="Submit"> -->
+        <button class="btnb embedb" onclick="settings_post()">Submit</button>
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel">Current Profile Picture:</label>
+        <img src="" id="pfp" width="500" height="500">
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel">Upload a New Profile Picture</label>
+        <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp">
+        <button class="btnb embedb" onclick="upload_pfp()">Submit Profile Picture</button>
+      </div>
   
-      <label class="stdlabel" for="bio">Bio:</label>
-      <textarea id="bio" name="bio" title="Should only contain letters, spaces and numbers"></textarea>
-      <!-- <input type="submit" value="Submit"> -->
-      <button class="stdb" onclick="settings_post()">Submit</button>
-  
-      <label class="stdlabel">Current Profile Picture:</label>
-      <img src="" id="pfp" width="500" height="500">
-  
-      <label class="stdlabel">Upload a New Profile Picture</label>
-      <input type="file" accept=".jpg, .jpeg, .png" id="file_upload_pfp">
-      <button class="stdb" onclick="upload_pfp()">Submit Profile Picture</button>
-  
-      <label class="stdlabel">Bio Picture(s):</label>
-      <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_bio">
-      <button class="stdb" onclick="upload_bio()">Submit Profile Picture</button>
-  
-      <label class="stdlabel">Privacy</label>
-      <a class="stda" href="/settings/email">Change email</a>
-      <a class="stda" href="/settings/password">Change Password</a>
-  
-      <label class="stdlabel">View Your Profile!</label>
-      <a class="stda" id="gritty" href="/users/"> View Profile</a>
-      <label class="stdlabel">Get Verified:</label>
-      <a class="stda" href="/settings/upload">Upload a Gov ID</a>
-  
-      <label class="stdlabel">Delete Account:</label>
-      <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"
-        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
-        required>
-      <button class="stdb" onclick="delete_form()">Delete Account</button>
-  
+      <div class="label_region">
+        <label class="stdlabel">Bio Picture(s):</label>
+        <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_bio">
+        <button class="btnb embedb" onclick="upload_bio()">Submit Profile Picture</button>
+      </div>
+      
+      <div class="label_region">
+        <label class="stdlabel">View Your Profile:</label>
+        <a class="btna embedb" id="gritty" href="/users/"> View Profile</a>
+      </div>
+
+      <div class="label_region">
+        <label class="stdlabel">Get Verified:</label>
+        <a class="btna embedb" href="/settings/upload">Upload a Gov ID</a>
+      </div>
+
+      <div class="label_region dangerzone">
+        <label class="stdlabel">Change Login:</label>
+        <a class="btna embedb" href="/settings/email">Change Email</a>
+        <a class="btna embedb" href="/settings/password">Change Password</a>
+      </div>
+
+      <div class="label_region dangerzone">
+        <label class="stdlabel">Delete Account:</label>
+        <input type="password" id="password-confirmation" placeholder="Confirm with your password" name="password"
+          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+          title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+          required>
+        <button class="btnb embedb" onclick="delete_form()">Delete Account</button>
+      </div>
     </div>
   </main>
   
