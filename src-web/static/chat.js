@@ -71,7 +71,7 @@ function displayChats(chatsData) {
 function send_chat(){
     const msg = document.getElementById('message-input').value;
 
-    const room_title = document.getElementById('room-title').innerHTML;
+    const room_title = opposite;
     console.log("Chat sending..")
     fetch('/chat/send', {
         method: 'POST',
