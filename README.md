@@ -14,4 +14,5 @@ Password: `root`\
 Next, run the program. 
 Go to http://localhost:8080 in your browser of choice and enjoy!
 Images and media uploaded will be saved on disk.\
-Where verification is required, change the account state property on the account to "Verified". (I have automatically done this for you.)
+Where verification is required, change the account state property on the account to "Verified". (I have automatically done this for you.)\
+To open a chat, in the URL you can type in `/chats/$username` where `$username` is the **username** of the user to open a chat with. This user must exist.
