@@ -5,6 +5,7 @@ use actix_identity::Identity;
 use actix_web::web::Json;
 use actix_web::{HttpMessage, HttpRequest, Responder, HttpResponse, get, web, post};
 use chrono::{Utc, Duration};
+use lettre::message::{Attachment, Body, MultiPart, SinglePart};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
 use rand::Rng;
@@ -201,10 +202,59 @@ pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web:
 
 
 
-
+fn embed_in_email_html(embed: String) -> String{
+    // @font-face {{
+    //     font-family: 'Ubuntu';
+    //     font-style: normal;
+    //     font-weight: 400;
+    //     src: url(cid:ubuntu) format('truetype');
+    // }}
+    format!("
+    <html>
+        <head>
+        <style>
+            .email_container{{
+                border: #16a45f 2px solid;
+                border-radius: 20px;
+                background-color: #1dbf73;
+                height: fit-content;
+            }}
+            html, body {{
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                font-family: 'Arial';
+                display: flex;
+                flex-direction: column;
+            }}
+            p{{
+                margin-top: 40px;
+                margin-left: 40px;
+                margin-right: 40px;
+                font-size: 20px;
+            }}
+            img{{
+                height: 100px;
+                border: 0;
+            }}     
+        </style>
+        </head>
+        <body>
+            <div class=\"email_container\">
+                <div class=\"img\">
+                    <img src=\"cid:logo\" alt=\"Choredom Logo\">
+                </div>
+                <p>{}</p>
+            </div>
+        </body>
+    </html>
+    ", embed)
+}
 
 fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response>{
-    let body = format!("Welcome to Choredom, {}. Your verification code is {}.", displayname, code);
+    let body = format!("Welcome to Choredom, {}. Your verification code is {}. If you don't recognize this activity, ignore this email.", displayname, code);
+    let body = embed_in_email_html(body);
     email_user(to_email, "Welcome to Choredom!", body)
 }
 
@@ -220,11 +270,33 @@ pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result
     let host: &str = "smtp.gmail.com";
     let port = 587;
 
+    let logo = std::fs::read("./src-web/assets/logo.png")?;
+    let image_body = Body::new(logo);
+
+    // let font_file = std::fs::read("./src-web/assets/Ubuntu/Ubuntu-Regular.ttf")?;
+    // let font_body = Body::new(font_file);
+
     let email: Message = Message::builder()
         .from(from_email.parse()?)
         .to(to_email.parse()?)
         .subject(subject)
-        .body(body)?;
+        .multipart(
+            MultiPart::mixed()
+            .multipart(
+                MultiPart::alternative()
+                    .multipart(
+                        MultiPart::related()
+                            .singlepart(SinglePart::html(body))
+                            // .singlepart(
+                            //     Attachment::new("ubuntu.ttf".into())
+                            //         .body(font_body, "application/font-sfnt".parse().unwrap()))
+                            .singlepart(
+                                Attachment::new_inline(String::from("logo"))
+                                    .body(image_body, "image/png".parse().unwrap()),
+                            ),
+                    ),
+            )
+        )?;
 
     let creds: Credentials = Credentials::new(from_email.to_string(), smtp_key.to_string());
 

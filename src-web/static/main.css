@@ -1,4 +1,9 @@
-/* Generic Selectors */
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/src-web/assets/Ubuntu/Ubuntu-Regular.ttf) format('truetype');
+}
 
 html, body {
   height: 100%;
@@ -6,10 +11,12 @@ html, body {
   margin: 0;
   color: #333;
   padding: 0;
-  font-family: Arial, sans-serif;
+  /* font-family: Arial, sans-serif; */
+  font-family: 'Ubuntu';
   display: flex;
   flex-direction: column;
 }
+
 
 .stdheader{
   display: flex;
@@ -153,11 +160,11 @@ textarea {
   padding: 12px;
   width: 100%;
   box-sizing: border-box;
+  font-family: 'Ubuntu';
 }
 .stdtextarea{
   resize: none;
   height: 300px;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .green_link {
@@ -273,8 +280,6 @@ textarea {
 .timestamp{
   margin-left: auto;
 }
-
-
 /* Other */
 
 
@@ -311,4 +316,3 @@ textarea {
   margin-top: 20px;
   border-radius: 5px;
 }
- 

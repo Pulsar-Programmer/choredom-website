@@ -37,7 +37,7 @@ window.onload = function() {
         let jobs = Array.from(jobsData);
         if(jobs.length == 0){
             let add_jobs_div = document.getElementById("add_jobs");
-            add_jobs_div.innerHTML = `<div class="hanger small_region">You have no Jobs! Click <a href="/post-job" class="contact_us">here</a> to post a job and get started!</div>`;
+            add_jobs_div.innerHTML = `<div class="hanger small_region">You have no Jobs! Click <a href="/post-job" class="green_link">here</a> to post a job and get started!</div>`;
         }
         jobsData.forEach(job => {
             add_job(job);
