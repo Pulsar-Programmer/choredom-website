@@ -90,7 +90,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
     let vec : Vec<ChatFrontDataPFP> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         let sender = room_id[sender.to_owned()].to_owned();
-        let data = ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender };
+        let data = ChatFrontData { timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender };
         ChatFrontDataPFP { data, pfpurl: pfps.remove(0)}
     }).collect();
 
@@ -170,7 +170,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     
     let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &named_sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
     
-    let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y").to_string(), msg, sender: named_sender };
+    let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg, sender: named_sender };
 
     let plus_pfp = ChatFrontDataPFP{ data: to_frontend, pfpurl };
     // println!("Chat bounceback: {to_frontend:?}");
@@ -209,7 +209,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
 
     //query accounts for pfp
@@ -409,49 +409,49 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
 
 
 
-use actix_web_lab::sse;
-use tokio::sync::mpsc;
-use std::time::Duration;
+// use actix_web_lab::sse;
+// use tokio::sync::mpsc;
+// use std::time::Duration;
 
-#[get("/chat-updates/{opposite}")]
-pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
-    let (tx, rx) = mpsc::channel(10);
-    //maybe make a timer that disables after a certain time bcs this could be intensive?
-    println!("I think I see you!!!!!");
-    let self_ = match unwrap_identity(self_){
-        Ok(i) => i,
-        Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
-    };
-    let opposite = opposite.into_inner();
-    // let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
-    let room_id = RoomID::create([opposite, self_]);
-    let mut db = data.db.lock().await;
-    let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await{
-        Ok(Some(o)) => o,
-        Ok(None) => panic!("SSE None Error."),
-        Err(e) => {
-            panic!("SSE Error:{e}");
-        }
-    };
-    drop(db);
+// #[get("/chat-updates/{opposite}")]
+// pub async fn updates(data: Data<AppData>, opposite: Path<String>, self_: Option<Identity>) -> impl Responder {
+//     let (tx, rx) = mpsc::channel(10);
+//     //maybe make a timer that disables after a certain time bcs this could be intensive?
+//     println!("I think I see you!!!!!");
+//     let self_ = match unwrap_identity(self_){
+//         Ok(i) => i,
+//         Err(e) => {println!("IDENTITY ERROR {e}"); return sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10));},
+//     };
+//     let opposite = opposite.into_inner();
+//     // let query = "SELECT chats[was_read=false] FROM chats WHERE room_id=$room_id;";
+//     let room_id = RoomID::create([opposite, self_]);
+//     let mut db = data.db.lock().await;
+//     let id = match query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await{
+//         Ok(Some(o)) => o,
+//         Ok(None) => panic!("SSE None Error."),
+//         Err(e) => {
+//             panic!("SSE Error:{e}");
+//         }
+//     };
+//     drop(db);
 
-    actix_web::rt::spawn(async move {
-        let db = data.db.lock().await;
-        // Listen to updates on a specific record
-        let mut stream = db.select(("chats", id)).live().await.unwrap();
-        // The returned stream implements `futures::Stream` so we can
-        // use it with `futures::StreamExt`, for example.
-        while let Some(result) = stream.next().await {
-            let result: surrealdb::Notification<Room> = result.unwrap();
-            if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
-                println!("CLIENT DISCONNECT ERROR");
-                break;
-            }
-        }
-    });
+//     actix_web::rt::spawn(async move {
+//         let db = data.db.lock().await;
+//         // Listen to updates on a specific record
+//         let mut stream = db.select(("chats", id)).live().await.unwrap();
+//         // The returned stream implements `futures::Stream` so we can
+//         // use it with `futures::StreamExt`, for example.
+//         while let Some(result) = stream.next().await {
+//             let result: surrealdb::Notification<Room> = result.unwrap();
+//             if tx.send(sse::Event::Data(sse::Data::new("UPDATE"))).await.is_err(){
+//                 println!("CLIENT DISCONNECT ERROR");
+//                 break;
+//             }
+//         }
+//     });
 
-    sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
-}
+//     sse::Sse::from_infallible_receiver(rx).with_retry_duration(Duration::from_secs(10))
+// }
 
 
 // use actix::prelude::*;

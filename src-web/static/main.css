@@ -169,33 +169,30 @@ textarea {
   font-size: 20pt;
   font-weight: bold;
 }
+
 .chat_list{
-  margin-top: -120px;
+  margin-top: 20px;
   margin-left: 20px;
+  margin-bottom: auto;
+  min-width: 200px;
   width: fit-content;
   padding: 0px 30px 20px 20px;
   flex-direction: column;
 
   background-color: #1dbf73;
 
-  border-color: #333;
   border-radius: 10px;
-  border: solid 3px;
+  border: solid 3px #333;
 }
 .chat_center{
   margin: 50px auto;
-}
-.chat_side{
-  margin-right: 20px;
-  max-width: 330px;
 }
 .chat_list_elem{
   background-color: #1dbf73;
   border-width: 10px;
   border-radius: 20px;
   padding: 10px;
-  /* width: fit-content; */
-  width: 100%;
+  width: fit-content;
   font-size: 15pt;
   text-decoration: none;
   color:#333;
@@ -209,16 +206,37 @@ textarea {
   box-shadow: 0 0 3px black inset;
 }
 
+.chat_side{
+  max-width: 330px;
+  margin-right: 20px;
+  margin-bottom: auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.chat_pair{
+  margin-left: 20px;
+  margin-right: 20px;
+}
+.chat_flex_side{
+  display: flex;
+  flex: auto;
+  flex-direction: row;
+}
+
 #chat_box{
-  margin: -150px auto;
-  max-width: 600px;
+  margin: 10px auto;
+  max-width: 800px;
   max-height: 400px;
   min-height: 200px;
   padding: 10px;
-  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); */
   overflow-y: scroll;
 }
 .message{
+  width: 770px;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
@@ -227,12 +245,16 @@ textarea {
 .message img{
   max-width: 200px;
 }
+.message_text{
+  margin-left: 20px;
+  max-width: 540px;
+}
 .pfp{
-  width: fit-content;
+  width: 740px;
   height: fit-content;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 .pfp a{
   font-weight: bold;
@@ -248,16 +270,9 @@ textarea {
   border-radius: 50%;
   margin: 10px;
 }
-.chat_enter {
-  /* position: fixed; */
-  /* bottom: 0; */
-  margin: 160px auto;
-  /* left: 50%; */
-  /* transform: translate(-50%, 0%); */
-  flex-direction: row;
-  display: flex;
+.timestamp{
+  margin-left: auto;
 }
-
 
 
 /* Other */
@@ -296,4 +311,4 @@ textarea {
   margin-top: 20px;
   border-radius: 5px;
 }
-
+ 

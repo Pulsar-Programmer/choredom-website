@@ -32,39 +32,62 @@
   </header>
 
   <main>
-    <div class="hanger chat_side">
-      <h1>Welcome to Chats!</h1>
-      <strong>Please don't respond to people you don't know.</strong>
-      <strong>Responding to a user's chats allows them to rate you.</strong>
-      <h3 id="room-title"></h3>
-    </div>
-
-    <div id="chatList" class="chat_list">
-      <p class="stdtitle">Current Chats:</p>
-      <!-- Chat boxes will be added here by JavaScript -->
-    </div>
-    
-    <div id="chat_box">
-      
+    <div class="chat_flex_side">
+      <div id="chatList" class="chat_list">
+        <p class="stdtitle">Current Chats:</p>
+        <!-- Chat boxes will be added here by JavaScript -->
+      </div>
 
 
 
 
-    </div>
+
+      <div class="chat_pair">
+        <div id="chat_box">
+          
+        </div>
   
-    <div id="message-input-div" class="stdbox chat_enter">
-      <div class="label_region">
-        <label class="stdlabel">Enter a Message:</label>
-        <input type="text" id="message-input" placeholder="Type a message">
-        <button class="btnb embedb" onclick="send_chat()">Send</button>
+        <div id="message-input-div" class="stdbox chat_flex_side">
+          <div class="label_region">
+            <label class="stdlabel">Enter a Message:</label>
+            <input type="text" id="message-input" placeholder="Type a message">
+            <button class="btnb embedb" onclick="send_chat()">Send</button>
+          </div>
+    
+          <div class="label_region">
+            <label class="stdlabel" for="chatsPics">Attach an Image:</label>
+            <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats">
+            <button class="btnb embedb" onclick="upload_chats()">Submit Chat Pictures</button>
+          </div>
+        </div>
       </div>
 
-      <div class="label_region">
-        <label class="stdlabel" for="chatsPics">Attach an Image:</label>
-        <input type="file" accept=".jpg, .jpeg, .png" multiple id="file_upload_chats">
-        <button class="btnb embedb" onclick="upload_chats()">Submit Chat Pictures</button>
+
+
+
+
+      <div class="chat_side">
+        <h1>Welcome to Chats!</h1>
+        <strong>Please don't respond to people you don't know.</strong>
+        <strong>Responding to a user's chats allows them to rate you.</strong>
+        <h3 id="room-title">Test</h3>
       </div>
     </div>
+
+
+
+
+
+
+
+
+    
+
+    
+    
+    
+  
+    
 
 
   </main>

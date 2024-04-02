@@ -35,11 +35,13 @@ function generateChatHTML(chat, pfpurl) {
     return `
     <div class="message">
         <div class="pfp">
-            <p>${chat.timestamp}<p>
             <img src="${pfpurl}">
             <a href="/users/${chat.sender}">${chat.sender}</a>
+            <p class="timestamp">${chat.timestamp}</p>
         </div>
-        <p>${expandImages(chat.msg)}</p>
+        <div class="message_text">
+            <p>${expandImages(chat.msg)}</p>
+        </div>
     </div>`;
 }
 
@@ -62,6 +64,7 @@ function displayChats(chatsData) {
         const chatHTML = generateChatHTML(chat, chatsData.pfpurl);
         console.log(chatHTML);
         chatContainer.innerHTML += chatHTML;
+        chatContainer.scrollIntoView({ block: 'end' });
     });
 }
 
