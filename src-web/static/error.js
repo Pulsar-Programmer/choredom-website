@@ -35,3 +35,17 @@ function direct(url){
     window.location.replace(url);
     // window.location.reload();
 }
+
+// function alert_user(message) {
+//     // Create a new div element
+//     const errorDiv = document.createElement('div');
+//     // Set the error message
+//     errorDiv.textContent = message;
+//     // Style the div
+//     errorDiv.style.color = 'red';
+//     errorDiv.style.fontSize = '14px';
+//     errorDiv.style.marginTop = '5px';
+//     // Append the div to the body or a specific container
+//     document.body.appendChild(errorDiv);
+// }
+   
