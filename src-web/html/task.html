@@ -36,14 +36,14 @@
 
   <main>
     <div class="stdbox">
-      <div id="jobs_add" class="stdsmallbox">
+      <div class="label_region">
+        <label class="stdlabel" for="city">Filter Towns</label>
         <div id="dropdown" class="dropdown">
           <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
           <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
           <!-- <script async src="/src-web/static/us-cities.js"></script> -->
-          <label for="city">Filter Towns (required)</label>
           <select name="location" id="city" style="width: 300px;">
           </select>
         </div>
@@ -56,20 +56,29 @@
 
 
     <div id="filters" class="stdbox">
-      <label>Manual Search</label>
-      <input type="text" id="titleBodyFilter" placeholder="Filter by title or body">
-      <label>Verification of Poster</label>
-      <select id="statusFilter">
-        <option value="">No preference</option>
-        <option value="Verified">Verified</option>
-        <option value="Non-verified">Non-verified</option>
-      </select>
-      <label>Time of Jobs</label>
-      <input type="date" id="timeFilter" placeholder="Filter by time">
-      <label>Price</label>
-      <input type="number" id="minPriceFilter" placeholder="Minimum price">
-      <input type="number" id="maxPriceFilter" placeholder="Maximum price">
-      <button class="stda" onclick="filterJobs()">Apply Filters</button>
+      <div class="label_region">
+        <label class="stdlabel">Manual Search</label>
+        <input type="text" id="titleBodyFilter" placeholder="Filter by Title or Body">
+      </div>
+      <div class="label_region">
+        <label class="stdlabel">Verification of Poster</label>
+        <select id="statusFilter">
+          <option value="">No preference</option>
+          <option value="Verified">Verified</option>
+          <option value="Non-verified">Non-verified</option>
+        </select>
+      </div>
+      <div class="label_region">
+        <label class="stdlabel">Time of Jobs</label>
+        <input type="date" id="timeFilter" placeholder="Filter by Time">
+      </div>
+      <div class="label_region">
+        <label class="stdlabel">Price</label>
+        <input type="number" id="minPriceFilter" placeholder="Minimum Price">
+        <input type="number" id="maxPriceFilter" placeholder="Maximum Price">
+      </div>
+    
+      <button class="btnb embedb" onclick="filterJobs()">Apply Filters</button>
     </div>
     <div id="job-container">
       <!-- Jobs will be added here -->

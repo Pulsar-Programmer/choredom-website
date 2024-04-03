@@ -41,11 +41,9 @@
       <p id="bio">{}</p>
       <div id="pics"></div>
     </div>
-    <div class="ratings stdbox">
-  
-    </div>
+
     <div class="profile stdbox">
-      <div class="rating stdbox">
+      <div class="rating">
         <input id="star5" type="radio" name="rating" value="5">
         <label for="star5">5★</label>
         <input id="star4" type="radio" name="rating" value="4">
@@ -58,20 +56,17 @@
         <label for="star1">1★</label>
       </div>
   
-      <textarea id="body" placeholder="Enter your review here..."></textarea>
-      <button onclick="submitReviewForm()">Submit rating</button>
-      <button id="rpbutton" onclick="report_user()">Report User</button>
-  
-  
-      <button onclick="delete_rating()">Delete rating</button>
-      <div class="reviews stdbox">
-        <label></label>
-        <!-- Reviews will be added here -->
-      </div>
+      <textarea class="stdtextarea" id="body" placeholder="Enter your review here..."></textarea>
+      <button class="btnb embedb" onclick="submitReviewForm()">Submit Rating</button>
+
+      <button id="rpbutton" class="btnb embedb" onclick="report_user()">Report User</button>
+      <button class="btnb embedb dangerzonebtn" onclick="delete_rating()">Delete Rating</button>
   
     </div>
-  
-    <div id="reviews"></div>
+
+    <div id="reviews" class="stdbox">
+
+    </div>
   </main>
   
   <footer class="stdfooter">

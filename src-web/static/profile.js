@@ -51,8 +51,8 @@ function prefill_profile(data){
 
 function displayRatingHTML(stars, rater, body){
     let html = `<div id="review">
-        <h1 class="rating">Rating: ${stars}</h1>
-        <h2 class="rater">Poster Username: ${rater}</h2>
+        <h1>Rating: ${stars}</h1>
+        <h2>Poster Username: ${rater}</h2>
         <p>${body}</p>
     </div>`;
     document.getElementById("reviews").innerHTML += html;
