@@ -17,14 +17,13 @@ window.addEventListener("load", function() {
         prefill_profile(data);
     })
     .catch(notify);
-    // yuh cuh fella
 });
 
 
 function prefill_profile(data){
     //display user data:
     document.getElementById("profile_pic").src = data.pfp_url;
-    document.getElementById("displayName").innerHTML = "Name: " + data.displayname;
+    document.getElementById("displayname").innerHTML = "Name: " + data.displayname;
     document.getElementById("username").innerHTML = "Username: " + data.username;
     document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
     document.getElementById("CreationDate").innerHTML = "Joined: " + data.creation_date;
@@ -35,7 +34,7 @@ function prefill_profile(data){
         if(url === null || url === undefined || url === ""){
             return;
         }
-        pics.innerHTML += `<img src="${url}">`;
+        pics.innerHTML += `<img class="limitedpic" src="${url}">`;
     });
 
     let reviews = Array.from(data.reviews);
@@ -98,20 +97,21 @@ function delete_rating(){
         },
     })
     .then(handle)
-    .then(data => {
+    .then(_data => {
+        redirect("/success")
         // let str = String(data);
         // console.log(data);
-        document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
+        // document.getElementById("AvgRating").innerHTML = "Rating: " + (data.avg_rating === 0 ? "No Rating" : String(data.avg_rating));
 
-        // let str = data.rater;
-        let reviewsNode = document.getElementById('reviews');
-        let reviews = Array.from(reviewsNode.children);
-        reviews.forEach(review => {
-            let posterUsername = review.querySelector('.rater').textContent;
-            if(posterUsername === `Poster Username: ${data.rater}`) {
-                review.parentNode.removeChild(review);
-            }
-        });
+        // // let str = data.rater;
+        // let reviewsNode = document.getElementById('reviews');
+        // let reviews = Array.from(reviewsNode.children);
+        // reviews.forEach(review => {
+        //     let posterUsername = review.querySelector('.rater').textContent;
+        //     if(posterUsername === `Poster Username: ${data.rater}`) {
+        //         review.parentNode.removeChild(review);
+        //     }
+        // });
     })
     .catch(notify);
 }

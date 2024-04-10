@@ -281,21 +281,6 @@ textarea {
   margin-left: auto;
 }
 
-
-
-/* Other */
-
-
-
-
-.review {
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  padding: 20px;
-  margin-top: 20px;
-  border-radius: 5px;
-}
-
 .rating {
   direction: rtl;
   font-size: 30px;
@@ -312,8 +297,21 @@ textarea {
   margin-right: 10px;
 }
 
-.rating label:hover,
+
 .rating input:checked ~ label {
   color: #1dbf73;
 }
+
+.rating label:hover,
+.rating input:hover ~ label {
+  color: #22e68b;
+}
+
+.limitedpic{
+  max-width: 750px;
+}
+
+
+
+
 
