@@ -8,6 +8,10 @@ html, body {
 
 .stdfooter {
     background-color: #282b2e;
+    color: #1dbf73;
+}
+.stdfooter a {
+    color: #1dbf73
 }
 
 .stdheader .btna {
@@ -18,14 +22,16 @@ html, body {
 .stdheader .btna:hover {
     background-color: #1dbf73;
     color: #393d41;
-    /* Change the background color when hovering /
-    / Change the text color when hovering */
 }
 
-.stdc .homepage {
-    /* display: inline-block; */
-    background-color: #393d41;
+.stdheader .btnb{
     color: #1dbf73;
+    background-color: #393d41;
+}
+
+.stdheader .btnb:hover{
+    background-color: #1dbf73;
+    color: #393d41;
 }
 
 .stdbox {
@@ -33,3 +39,12 @@ html, body {
     background-color: #282b2e;
 }
 
+.embedb {
+    border-color: #a0a0a0;
+}
+
+input,
+textarea {
+    background-color: #393d41;
+    color: rgb(211, 211, 211);
+}

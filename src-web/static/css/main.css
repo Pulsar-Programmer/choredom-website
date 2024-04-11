@@ -37,7 +37,6 @@ nav {
 }
 
 .stdfooter{
-  color: #333;
   text-align: center;
   padding: 20px;
   margin-top: auto;
@@ -95,8 +94,6 @@ nav {
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
-
-  background-color: #ffffff;
 
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   border-radius: 10px;

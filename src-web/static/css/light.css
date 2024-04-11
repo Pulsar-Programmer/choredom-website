@@ -8,6 +8,7 @@ html, body {
 }
 .stdfooter {
     background-color: #1dbf73;
+    color: #333;
 }
 
 .stdheader .btna {
@@ -24,8 +25,7 @@ html, body {
     /* Change the text color when hovering */
 }
 
-.stdc .homepage {
-    background-color: #1dbf73;
-    color: #ffffff;
+.stdbox{
+    background-color: #ffffff;
 }
   

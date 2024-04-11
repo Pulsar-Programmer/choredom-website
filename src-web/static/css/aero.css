@@ -34,12 +34,11 @@ html, body {
     /* Change the text color when hovering */
 }
 
-
-
-
-.stdc .homepage {
-    background-color: #1dbf73;
-    color: #ffffff;
+.stdfooter{
+    color: #333;
+}
+.stdbox{
+    background-color: #ffffff;
 }
   
 
