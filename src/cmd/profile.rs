@@ -166,9 +166,6 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA <<< ??? what does this mean monkie???
     let Some(res) = result.first() else { return RainError::for_js("Rater data not found."); };
-    if res.is_empty(){
-        return RainError::for_js_user("The requested rating to delete could not be found.");
-    }
     let div = res.len();
     let mut found = false;
     for PageRatingData{stars: star, rater: monkie, body: _} in res{
@@ -185,8 +182,8 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
 
     let query = "
     UPDATE accounts SET
-    page.reviews -= (SELECT page.reviews FROM accounts WHERE username = $username AND page.reviews.rater CONTAINS $rater).page.reviews[0],
-    page.avg_rating = $new_avg 
+    page.reviews -= (SELECT * FROM ((SELECT page.reviews FROM accounts WHERE username = $username).page.reviews[0]) WHERE rater = $rater),
+    page.avg_rating = $new_avg
     WHERE username = $username;";
 
     let Ok(..) = sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await else { return RainError::for_js("Error updating rating.")};

@@ -1,5 +1,6 @@
 html, body {
     background-color: #393d41;
+    /* color: #a0a0a0 */
 }
 
 .stdheader {
@@ -47,4 +48,11 @@ input,
 textarea {
     background-color: #393d41;
     color: rgb(211, 211, 211);
+}
+
+.message, .pfp{
+    color: white;
+}
+.pfp a{
+    color: rgb(192, 192, 192);
 }

@@ -15,23 +15,20 @@ html, body {
     background-size: cover;
 }
 
-.stdheader .btna {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    border-radius: 5px;
+.stdheader .btna, .stdheader .btnb {
     background-color: #08867c;
-    color: #ffffff;
-    text-decoration: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
     /* Round the corners of the links */
 }
 
-.stdheader .btna:hover {
+.stdheader .btna:hover, .stdheader .btnb:hover {
     background-color: #ffffff;
     /* Change the background color when hovering */
     color: #08867c;
     /* Change the text color when hovering */
+}
+
+.embedb{
+    background-color: #08867c;
 }
 
 .stdfooter{
@@ -39,6 +36,10 @@ html, body {
 }
 .stdbox{
     background-color: #ffffff;
+}
+
+.green_link{
+    color: #08867c;
 }
   
 

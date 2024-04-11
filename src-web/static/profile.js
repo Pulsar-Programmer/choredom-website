@@ -80,6 +80,7 @@ function submitReviewForm(){
     })
     .then(handle)
     .then(data => {
+        // redirect("/success")
         document.getElementById("initial").outerHTML = ``;
         displayRatingHTML(data.stars, data.rater, data.body);
     })
