@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     event.stopPropagation();
     // event.stopImmediatePropagation();
     // event.preventDefault();
-    console.log("YUHH!")
+    // console.log("YUHH!")
     fetch('/settings/present_data', {
         method: 'POST', 
         headers: {
@@ -62,15 +62,17 @@ function generateJobHTML(job) {
     // console.log(job.id.id.String);
     let verification_status = job.user.state === "Verified" ? "V" : "Unv";
     return `
-        <div class="job">
-        <h3>${job.data.title}</h3>
-        <img src="${job.user.page.pfp_url}" height="500" width="500">
-        <h4><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) (${verification_status}erified User)</h4>
-        <p>${job.data.body}</p>
-        <p>Date of Task: ${job.data.time}</p>
-        <p>Price: $${job.data.price / 100.0}</p>
-        <a href="/jobs/${job.id.id.String}">Visit Job Post</a>
-        <a href="/chats/${job.user.username}">Open Chat</a>
+        <div class="stdbox job">
+            <div class="pfp">
+                <img src="${job.user.page.pfp_url}">
+                <span><a href="/users/${job.user.username}">${job.user.displayname}</a> (${job.user.username}) <span class="jobStatus">(${verification_status}erified User)</span></span>
+            </div>
+            <h3 class="jobTitle">${job.data.title}</h3>
+            <p class="jobBody">${job.data.body}</p>
+            <p class="jobTime">Date of Task: ${job.data.time}</p>
+            <p class="jobPrice">Price: $${job.data.price / 100.0}</p>
+            <a class="btna embedb" href="/jobs/${job.id.id.String}">Visit Job Post</a>
+            <a class="btna embedb" href="/chats/${job.user.username}">Open Chat</a>
         </div>
     `;
 }
@@ -106,11 +108,11 @@ function filterJobs() {
     // Filter job divs
     jobDivs.forEach((jobDiv) => {
         // Extract job data from the job div
-        let jobTitle = jobDiv.getElementsByTagName('h3')[0].innerText.toLowerCase();
-        let jobBody = jobDiv.getElementsByTagName('p')[0].innerText.toLowerCase();
-        let jobStatus = jobDiv.getElementsByTagName('h4')[0].innerText.includes('V') ? 'Verified' : 'Non-verified';
-        let jobTime = formatDate(new Date(jobDiv.getElementsByTagName('p')[1].innerText.replace('Date of Task: ', '')));
-        let jobPrice = parseFloat(jobDiv.getElementsByTagName('p')[2].innerText.replace('Price: $', ''));
+        let jobTitle = jobDiv.getElementsByClassName("jobTitle")[0].innerText.toLowerCase();
+        let jobBody = jobDiv.getElementsByClassName("jobBody")[0].innerText.toLowerCase();
+        let jobStatus = jobDiv.getElementsByClassName("jobStatus")[0].innerText.includes('V') ? 'Verified' : 'Non-verified';
+        let jobTime = formatDate(new Date(jobDiv.getElementsByClassName("jobTime")[0].innerText.replace('Date of Task: ', '')));
+        let jobPrice = parseFloat(jobDiv.getElementsByClassName("jobPrice")[0].innerText.replace('Price: $', ''));
 
         console.log(`jobTitle:${jobTitle} jobBody:${jobBody} jobStatus:${jobStatus} jobTime:${jobTime} jobPrice:${jobPrice}`);
 
