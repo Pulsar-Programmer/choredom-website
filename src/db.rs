@@ -25,9 +25,9 @@ async fn setup_tables(db: &mut Db) -> s::Result<()>{
     todo!()
 }
 
-pub async fn setup_db() -> s::Result<Db>{
+pub async fn setup_db(db_addr: String) -> s::Result<Db>{
     //Change this into the embedded version when ready for non-data persistence
-    let mut db = Surreal::new::<Ws>("localhost:8000").await?;
+    let mut db = Surreal::new::<Ws>(db_addr).await?;
 
     db.signin(Root {
         username: "root",

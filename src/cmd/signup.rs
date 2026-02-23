@@ -138,7 +138,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     println!("{code}");
     // transmission_transmit("signup", &session, code).unwrap();
     if let Err(e) = signup_transmission_transmit(&session, code.to_string()) { return r::for_js(e) };
-    if let Err(e) = confirmation_email(to_email, &displayname, code) { return r::for_js(e) };
+    if let Err(e) = confirmation_email(to_email, &displayname, code, &app_data.config.app_pwd) { return r::for_js(e) };
 
     let Ok((password, salt)) = password_hash_argon2(password) else { return r::for_js("Error hashing password.") };
 
@@ -252,19 +252,19 @@ fn embed_in_email_html(embed: String) -> String{
     ", embed)
 }
 
-fn confirmation_email(to_email: &str, displayname: &str, code: i64) -> anyhow::Result<Response>{
+fn confirmation_email(to_email: &str, displayname: &str, code: i64, app_pwd: &str) -> anyhow::Result<Response>{
     let body = format!("Welcome to Choredom, {}. Your verification code is {}. If you don't recognize this activity, ignore this email.", displayname, code);
     let body = embed_in_email_html(body);
-    email_user(to_email, "Welcome to Choredom!", body)
+    email_user(to_email, "Welcome to Choredom!", body, app_pwd)
 }
 
 
-pub fn email_user(to_email: &str, subject: &str, body: String) -> anyhow::Result<Response>{
+pub fn email_user(to_email: &str, subject: &str, body: String, app_pwd: &str) -> anyhow::Result<Response>{
     use lettre::transport::smtp::authentication::Credentials;
     use lettre::{SmtpTransport, Transport};
     use lettre::Message;
 
-    let smtp_key = "shinwlhelwhkdhzi"; //app password
+    let smtp_key: &str = app_pwd; //app password
     let from_email: &str = "choredomofficial@gmail.com";
     //Please change to reflect your email.
     let host: &str = "smtp.gmail.com";
@@ -354,7 +354,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     let code = rand::thread_rng().gen_range(100000..1000000);
     println!("{code}"); //delete me when done testing
     if let Err(e) = login_transmission_transmit(&session, code.to_string()) { return r::for_js(e)};
-    if let Err(e) = confirmation_email(&account.email, &account.displayname, code) { return r::for_js(e) };
+    if let Err(e) = confirmation_email(&account.email, &account.displayname, code, &data.config.app_pwd) { return r::for_js(e) };
     if let Err(e) = transmission_transmit("log", &session, account.username.clone()) { return r::for_js(e)};
     HttpResponse::Ok().finish()
     // HttpResponse::SeeOther().append_header((header::LOCATION, "/")).body(HOMEPAGE)

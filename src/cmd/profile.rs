@@ -388,7 +388,7 @@ pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>,
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_js("Error querying account in passcode.")};
     let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.first() else { return RainError::for_js("Fail to destructure account.") };
 
-    if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new)) { return RainError::for_js(e)};
+    if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new), &data.config.app_pwd) { return RainError::for_js(e)};
 
     let Ok(passwords_match) = verify_password(&p_old, p_old_2, salt) else { return RainError::for_js("Error verifying password.")};
 
@@ -616,15 +616,15 @@ pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, a
     use rand::Rng;
     let code = rand::thread_rng().gen_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
     if let Err(e) = settings_transmission_transmit(&session, code.to_string()) { return RainError::for_js(e)}
-    if let Err(e) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code) { return RainError::for_js(e)}
+    if let Err(e) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code, &app.config.app_pwd) { return RainError::for_js(e)}
     if let Err(e) = transmission_transmit("set", &session, new_email) { return RainError::for_js(e)}
 
     HttpResponse::Ok().finish()
 }
 
-fn settings_verification_email(email: &String, displayname: &String, new_email: &String, code: i32) -> anyhow::Result<lettre::transport::smtp::response::Response>{
+fn settings_verification_email(email: &String, displayname: &String, new_email: &String, code: i32, app_pwd: &str) -> anyhow::Result<lettre::transport::smtp::response::Response>{
     let body = format!("Dear {},\nYour account has been sent a request to change emails from {} to {}. Your verification code is {}.", displayname, email, new_email, code);
-    email_user(email, "Choredom - Request to Change Emails", body)
+    email_user(new_email, "Choredom - Request to Change Emails", body, app_pwd)
 }
 
 #[post("/ve_set")]

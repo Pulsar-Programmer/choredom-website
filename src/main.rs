@@ -50,10 +50,13 @@ macro_rules! wapp {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let config = EnvConfig::from_env();
+    let EnvConfig { web_addr, db_addr, web_port, .. } = config.clone();
     #[allow(clippy::expect_used)]
-    let db = setup_db().await.expect("Database connection error.");
+    let db = setup_db(db_addr).await.expect("Database connection error.");
     let app_state = web::Data::new(AppData {
         db: Arc::new(Mutex::new(db.clone())),
+        config
     });
 
     // key needs to be generated outside the closure or else each worker gonna get a diff key
@@ -110,7 +113,7 @@ async fn main() -> std::io::Result<()> {
         )
         .app_data(app_state.clone())
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind((web_addr.as_str(), web_port))?
     .run()
     .await
 }
@@ -136,6 +139,7 @@ use tokio::sync::Mutex;
 use crate::db::Db;
 pub struct AppData {
     pub db: Arc<Mutex<Db>>,
+    pub config: EnvConfig,
 }
 // impl AppData{
 //     async fn obtain_db(&mut self) -> tokio::sync::MutexGuard<'_, Db>{
@@ -186,6 +190,29 @@ impl RainError{
 //     }
 // }
 //must we do some FromResidual stuff here? If I want to take any error, convert it into a RainError, and then propogate that as an HttpResponse, what is preventing me from doing so? It is basically an intermediate conversion between Box<dyn std::error::Error> -> HttpResponse.
+
+
+#[derive(Clone)]
+pub struct EnvConfig{
+    app_pwd: String,
+    db_addr: String,
+    web_addr: String,
+    web_port: u16,
+}
+impl EnvConfig{
+    fn from_env() -> Self{
+        use std::env::var;
+        dotenvy::dotenv().ok();
+        
+        Self {
+            app_pwd: var("SMTP_PRIVATE_KEY").expect("Could not find SMTP_PRIVATE_KEY."),
+            db_addr: var("DB_ADDR").expect("Missing DB_ADDR"),
+            web_addr: var("WEB_ADDR").expect("Missing WEB_ADDR"),
+            web_port: var("WEB_PORT").expect("Missing WEB_PORT").parse().expect("WEB_PORT must be a u8"),
+        }
+    }
+}
+
 
 
 // pub enum ResponderError{
