@@ -5,8 +5,10 @@ use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::{get, post, web::{Data, Form, self, Json}, HttpResponse, Responder};
+use rand::RngExt;
 use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
+use surrealdb::types::SurrealValue;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
 
 #[get("/users/{username}")]
@@ -63,7 +65,7 @@ pub struct RatingData{
     body: String,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, SurrealValue)]
 pub struct PageRatingData{
     stars: usize,
     body: String,
@@ -458,7 +460,7 @@ struct FundData{
 }
 
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, SurrealValue)]
 struct ChangeFundData{
     changed_funds: u64,
     username: String,
@@ -518,7 +520,7 @@ struct CreditsData{
 }
 
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, SurrealValue)]
 pub struct TransferData{
     credits: u64,
     to_username: String,
@@ -614,7 +616,7 @@ pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, a
 
     //use current_email_input to email
     use rand::Rng;
-    let code = rand::thread_rng().gen_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
+    let code = rand::rng().random_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
     if let Err(e) = settings_transmission_transmit(&session, code.to_string()) { return RainError::for_js(e)}
     if let Err(e) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code, &app.config.app_pwd) { return RainError::for_js(e)}
     if let Err(e) = transmission_transmit("set", &session, new_email) { return RainError::for_js(e)}
@@ -694,7 +696,7 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 //     let path = format!("/tmp/bio/{username}/{num}"); //.png
 //     NamedFile::open(path).unwrap()
 // }
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, SurrealValue)]
 struct BioImgs{
     bio_imgs: [String; 3],
     username: String,
@@ -768,7 +770,7 @@ pub async fn dispute_management(identity: Option<Identity>) -> impl Responder{
     HttpResponse::Ok().body(CONTACT)
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, SurrealValue)]
 pub struct ContactsInfo{
     username: String,
     title: String,
@@ -861,7 +863,7 @@ struct UserReportJSON{
     name: String,
     msg: String,
 }
-#[derive(Serialize)]
+#[derive(Serialize, SurrealValue)]
 struct UserReport{
     reportee: String,
     reporter: String,

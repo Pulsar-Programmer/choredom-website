@@ -1,8 +1,10 @@
 use serde::Serialize;
 use serde_json::Value;
-use surrealdb as s;
+use surrealdb::method::IntoVariables;
+use surrealdb::types::SurrealValue;
+use surrealdb::{self as s, IndexedResults};
 use s::Surreal;
-use s::opt::auth::{Root, Scope};
+use s::opt::auth::Root;
 use s::engine::remote::ws::{Client, Ws};
 
 pub type Db = Surreal<Client>;
@@ -30,8 +32,8 @@ pub async fn setup_db(db_addr: String) -> s::Result<Db>{
     let mut db = Surreal::new::<Ws>(db_addr).await?;
 
     db.signin(Root {
-        username: "root",
-        password: "root",
+        username: "root".to_string(),
+        password: "root".to_string(),
     }).await?;
     
 
@@ -116,8 +118,8 @@ pub async fn query_value(db: &mut Db, surrealql: &str, parameters: impl Serializ
 }
 
 
-pub async fn query_all<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
-    let mut result = db.query(surrealql).bind(parameters).await?;
+pub async fn query_all<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
+    let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
         let result: Result<Vec<T>, _> = result.take(i);
@@ -129,13 +131,13 @@ pub async fn query_all<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mu
 
 //make this something used more frequently for querying without a wanted response.
 ///Querying without a processed response.
-pub async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<s::Response>{
-    db.query(surrealql).bind(parameters).await
+pub async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<IndexedResults>{
+    db.query(surrealql).bind(valuate(parameters)?).await
 }
 
 ///Only to get the first part of the result of the query.
-pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
-    let mut result = db.query(surrealql).bind(parameters).await?;
+pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
+    let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Vec<T>, _> = result.take(0);
     result
 }
@@ -158,8 +160,15 @@ pub fn extract_first<T>(mut vec: Vec<T>) -> Option<T>{
     Some(vec.remove(0))
 }
 
-pub async fn query_once_option<T: std::fmt::Debug + serde::de::DeserializeOwned>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
-    let mut result = db.query(surrealql).bind(parameters).await?;
+pub async fn query_once_option<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
+    let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Option<T>, _> = result.take(0);
     result
+}
+
+
+///Needed for the most recent API change. Turns the Serialize parameters into IntoVariables parameters.
+pub fn valuate(item: impl Serialize) -> s::Result<impl IntoVariables>{
+    serde_json::to_value(item)
+        .map_err(|e| s::Error::serialization(e.to_string(), None))
 }

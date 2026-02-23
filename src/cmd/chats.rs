@@ -3,14 +3,14 @@ use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
-use futures_util::StreamExt as _;
+use surrealdb_types::SurrealValue;
 use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
 use RainError as r;
 
 ///This represents a chat room with a bunch of chats.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, SurrealValue)]
 pub struct Room{
     room_id: RoomID,
     messages: Vec<ChatData>,
@@ -110,7 +110,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
 
 ///The chat data stored in the database.
-#[derive(serde::Serialize, Debug, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, Debug, serde::Deserialize, Clone, SurrealValue)]
 pub struct ChatData{
     pub timestamp: DateTime<Utc>,
     pub msg: String,
@@ -177,7 +177,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     HttpResponse::Ok().json(plus_pfp)
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, SurrealValue)]
 pub struct ChatDBGiven{
     pub messages: Vec<ChatData>,
 }
@@ -231,7 +231,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
 // we must figure out which one serves as the title by finding the one opposite of urself
 ///This keeps track of identifying the Room ID and who is in it.
 pub type RoomID = FixedStrictSetDuo2;
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, SurrealValue)]
 pub struct FixedStrictSetDuo2{
     inner: [String; 2],
 }

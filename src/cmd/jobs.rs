@@ -2,7 +2,9 @@ use crate::{db::{query_once, query_once_option, sole_query}, AppData, cmd::sites
 use actix_identity::Identity;
 use actix_web::{web::{Data, self, Json}, Responder, get, post, HttpResponse};
 use serde::Serialize;
-use surrealdb::sql::Thing;
+// use surrealdb::sql::Thing;
+use surrealdb_types::RecordId;
+use surrealdb_types::SurrealValue;
 use super::{sites::{POST, TASK}, signup::AccountPage};
 use chrono::{DateTime, Utc, TimeZone};
 use super::signup::AccountState;
@@ -191,9 +193,9 @@ fn tasks_build_query(filter: FilterJobsJSON) -> (String, FilterJobs){
     (str, f)
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, SurrealValue)]
 struct JobPost{
-    id: Thing,
+    id: RecordId,
     
     data: JobPostData,
 
@@ -207,7 +209,7 @@ impl JobPost{
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, SurrealValue)]
 struct JobPostData{
     title: String,
     body: String,
@@ -218,7 +220,7 @@ struct JobPostData{
 
 
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, SurrealValue)]
 struct JobRecordLink{
     displayname: String,
     username: String,

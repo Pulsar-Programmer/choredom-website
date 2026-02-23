@@ -8,15 +8,17 @@ use chrono::{Utc, Duration};
 use lettre::message::{Attachment, Body, MultiPart, SinglePart};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
-use rand::Rng;
+use password_hash::rand_core::OsRng;
+use rand::RngExt;
+use surrealdb::types::SurrealValue;
 use crate::RainError as r;
 
-#[derive(serde::Deserialize)]
-pub struct SignupTransmitter{
-    pub code: i64,
-}
+// #[derive(serde::Deserialize)]
+// pub struct SignupTransmitter{
+//     pub code: i64,
+// }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, SurrealValue)]
 pub struct Account{
     pub displayname: String,
     pub username: String,
@@ -48,7 +50,7 @@ impl Account{
         }
     }
 }
-#[derive(serde::Serialize, Debug, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, Debug, serde::Deserialize, Clone, SurrealValue)]
 pub enum AccountState{
     NonVerified,
     PendingVerification,
@@ -69,7 +71,7 @@ impl ToString for AccountState{
     }
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, SurrealValue)]
 pub struct AccountPage{
     pub pfp_url: String,
     pub avg_rating: rust_decimal::Decimal,
@@ -81,7 +83,7 @@ pub struct AccountPage{
 impl AccountPage{
     fn new() -> Self{
         let options = ["yellow", "blue", "red", "green", "pink"];
-        let u = rand::thread_rng().gen_range(0..5);
+        let u = rand::rng().random_range(0..5);
         let pfp_url = format!("/src-web/assets/stdpfps/{}.png", options[u]);
         Self{
             pfp_url,
@@ -134,7 +136,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     if len1 != len2{
         return r::for_js_user("That email is taken. Choose a different email.")
     }
-    let code = rand::thread_rng().gen_range(100000..1000000);
+    let code = rand::rng().random_range(100000..1000000);
     println!("{code}");
     // transmission_transmit("signup", &session, code).unwrap();
     if let Err(e) = signup_transmission_transmit(&session, code.to_string()) { return r::for_js(e) };
@@ -340,7 +342,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     // let true = satisifies_password(&password) else { return r::for_html("Invalid password!")};
     //we don't actually need this since we match agnst the databse
 
-    let email = email.trim();
+    let email = email.trim().to_string();
     let mut db = data.db.lock().await;
     let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_js("Account query issue.")};
     let Some(account) = result.first() else { return r::for_js_user("Account not found. Ensure to create the account, first!")};
@@ -351,7 +353,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
         return r::for_js_user("Passwords don't match!");
     }
     
-    let code = rand::thread_rng().gen_range(100000..1000000);
+    let code = rand::rng().random_range(100000..1000000);
     println!("{code}"); //delete me when done testing
     if let Err(e) = login_transmission_transmit(&session, code.to_string()) { return r::for_js(e)};
     if let Err(e) = confirmation_email(&account.email, &account.displayname, code, &data.config.app_pwd) { return r::for_js(e) };
@@ -412,7 +414,7 @@ use argon2::Argon2;
 pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltString)>{
     
     
-    let salt = SaltString::generate(&mut rand::thread_rng());
+    let salt = SaltString::generate(&mut OsRng);
 
     // Create an Argon2 password hasher
     let argon2 = Argon2::default();
