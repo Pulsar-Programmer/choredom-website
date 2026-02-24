@@ -1,6 +1,7 @@
 async function handle(response) {
     //The SeeOther functionality was scrapped to be specific for certain JS files.
     //They will be path-specific concepts.
+    console.log(response);
     if (!response.ok) {
         const answer = await response.json();
         throw {msg: answer.message, for_user: answer.for_user};

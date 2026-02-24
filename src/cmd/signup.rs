@@ -136,6 +136,7 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     if len1 != len2{
         return r::for_js_user("That email is taken. Choose a different email.")
     }
+    drop(db);
     let code = rand::rng().random_range(100000..1000000);
     println!("{code}");
     // transmission_transmit("signup", &session, code).unwrap();

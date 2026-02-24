@@ -50,6 +50,7 @@ macro_rules! wapp {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug")); //logger
     let config = EnvConfig::from_env();
     let EnvConfig { web_addr, db_addr, web_port, .. } = config.clone();
     #[allow(clippy::expect_used)]
@@ -65,6 +66,7 @@ async fn main() -> std::io::Result<()> {
         wapp!(
             App::new()
             .app_data(web::PayloadConfig::new(20 * 1024 * 1024)) // Set limit to 10MB
+            .wrap(actix_web::middleware::Logger::default()) //logger
             .wrap(IdentityMiddleware::builder()
                 .visit_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(30).to_std().unwrap()))
                 .login_deadline(#[allow(clippy::unwrap_used)] Some(Duration::days(365).to_std().unwrap()))
@@ -73,7 +75,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(SessionMiddleware::builder(
                 SurrealSessionStore::from_connection(db.clone(), "sessions"),
                 key.clone()
-            ).build()).wrap(
+            ).build())
+            .wrap(
                 actix_web::middleware::ErrorHandlers::new()
                 .handler(actix_web::http::StatusCode::NOT_FOUND, not_found)
             )
