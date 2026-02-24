@@ -13,10 +13,10 @@ use rand::RngExt;
 use surrealdb::types::SurrealValue;
 use crate::RainError as r;
 
-// #[derive(serde::Deserialize)]
-// pub struct SignupTransmitter{
-//     pub code: i64,
-// }
+#[derive(serde::Deserialize)]
+pub struct SignupTransmitter{
+    pub code: i64,
+}
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, SurrealValue)]
 pub struct Account{

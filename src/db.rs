@@ -17,14 +17,12 @@ async fn setup_users(db: &mut Db) -> s::Result<()> {
     // Ok(db)
 }
 
-
+///Basic way to setup tables to allow SELECT in the newer versions without errors.
 async fn setup_tables(db: &mut Db) -> s::Result<()>{
+    db.query("DEFINE TABLE accounts SCHEMALESS;").await?;
 
 
-    // let _ = query_value(db, surrealql, parameters);
-
-
-    todo!()
+    Ok(())
 }
 
 pub async fn setup_db(db_addr: String) -> s::Result<Db>{
@@ -42,7 +40,7 @@ pub async fn setup_db(db_addr: String) -> s::Result<Db>{
 
     // db.authenticate(jwt).await?;
 
-    setup_tables(&mut db);
+    setup_tables(&mut db).await?;
 
     Ok(db)
 }
@@ -118,7 +116,7 @@ pub async fn query_value(db: &mut Db, surrealql: &str, parameters: impl Serializ
 }
 
 
-pub async fn query_all<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
+pub async fn query_all<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
@@ -136,7 +134,7 @@ pub async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize
 }
 
 ///Only to get the first part of the result of the query.
-pub async fn query_once<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
+pub async fn query_once<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Vec<T>, _> = result.take(0);
     result
@@ -160,7 +158,7 @@ pub fn extract_first<T>(mut vec: Vec<T>) -> Option<T>{
     Some(vec.remove(0))
 }
 
-pub async fn query_once_option<T: std::fmt::Debug + serde::de::DeserializeOwned + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
+pub async fn query_once_option<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Option<T>, _> = result.take(0);
     result

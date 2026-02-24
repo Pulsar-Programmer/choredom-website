@@ -16,7 +16,7 @@ actix-rt = "2.9.0"
 # actix-cors = "0.6.4"
 actix-session = "0.11.0"
 actix-identity = "0.9.0"
-actix-session-surrealdb = { git = "https://github.com/Pulsar-Programmer/actix-session-surrealdb"}
+actix-session-surrealdb = { git = "https://github.com/Pulsar-Programmer/actix-session-surrealdb", branch = "serialization-fix"}
 actix-web-actors = "4.3.0"
 
 serde = { version = "1.0.228", features = ["derive"] }
