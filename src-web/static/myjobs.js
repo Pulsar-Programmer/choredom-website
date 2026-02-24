@@ -9,15 +9,15 @@ function add_job(job){
 function generateJobHTML(job) {
     return `
     <div class = "stdbox">
-        <div class="job" id="${job.id.id.String}">
+        <div class="job" id="${job.id.key.String}">
             <h2 id="job_title">${job.data.title}</h3>
             <p id="job_body">${job.data.body}</p>
             <p id="job_time">Date of Task: ${job.data.time}</p>
             <p id="job_price">Price: $${job.data.price / 100.0}</p>
             <p id="job_location">Location: ${job.data.location}</p>
-            <button class="btnb embedb" onclick="initiate_edit('${job.id.id.String}')">Edit Job Post</button>
-            <a class="btna embedb" id="job_id" href="/jobs/${job.id.id.String}">Visit Job Post</a>
-            <button class="dangerzonebtn btnb embedb" onclick="delete_job('${job.id.id.String}')">Delete Job</button>
+            <button class="btnb embedb" onclick="initiate_edit('${job.id.key.String}')">Edit Job Post</button>
+            <a class="btna embedb" id="job_id" href="/jobs/${job.id.key.String}">Visit Job Post</a>
+            <button class="dangerzonebtn btnb embedb" onclick="delete_job('${job.id.key.String}')">Delete Job</button>
         </div>
     </div>
     `;

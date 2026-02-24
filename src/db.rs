@@ -19,7 +19,7 @@ async fn setup_users(db: &mut Db) -> s::Result<()> {
 
 ///Basic way to setup tables to allow SELECT in the newer versions without errors.
 async fn setup_tables(db: &mut Db) -> s::Result<()>{
-    db.query("DEFINE TABLE accounts SCHEMALESS;").await?;
+    db.query("DEFINE TABLE accounts SCHEMALESS; DEFINE TABLE jobs SCHEMALESS; DEFINE TABLE chats SCHEMALESS;").await?;
 
 
     Ok(())

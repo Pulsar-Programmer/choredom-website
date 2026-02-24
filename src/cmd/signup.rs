@@ -22,13 +22,13 @@ pub struct SignupTransmitter{
 pub struct Account{
     pub displayname: String,
     pub username: String,
-    pub creation_date: chrono::DateTime<chrono::Utc>,
+    pub creation_date: String,
     // pub last_location: Location,
     pub location: String, //just a string for now
 
     pub email: String,
     pub page: AccountPage,
-    pub state: AccountState,
+    pub state: String,
 
     pub password: String,
     pub password_salt: String,
@@ -39,12 +39,12 @@ impl Account{
         Self { 
             displayname, 
             username, 
-            creation_date: chrono::Utc::now(), 
+            creation_date: surrealdb::types::Datetime::now().to_string(), 
             email, 
             password, 
             balance: 0, // divide by 10 to account for u64 and not float
             page: AccountPage::new(),
-            state: AccountState::Verified, //switch back in a real app
+            state: AccountState::Verified.to_string(), //switch back in a real app
             location,
             password_salt,
         }
@@ -64,6 +64,14 @@ impl AccountState{
             AccountState::Verified => "Verified",
         }
     }
+    pub fn from_str(from: &str) -> Self{
+        match from{
+            "NonVerified" => AccountState::NonVerified,
+            "PendingVerification" => AccountState::PendingVerification,
+            "Verified" => AccountState::Verified,
+            _ => AccountState::NonVerified
+        }
+    }
 }
 impl ToString for AccountState{
     fn to_string(&self) -> String {
@@ -74,7 +82,7 @@ impl ToString for AccountState{
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, SurrealValue)]
 pub struct AccountPage{
     pub pfp_url: String,
-    pub avg_rating: rust_decimal::Decimal,
+    pub avg_rating: String,
     pub reviews: Vec<super::profile::PageRatingData>,
     pub bio: String,
     pub bio_images: [String; 3],
@@ -87,7 +95,7 @@ impl AccountPage{
         let pfp_url = format!("/src-web/assets/stdpfps/{}.png", options[u]);
         Self{
             pfp_url,
-            avg_rating: rust_decimal::Decimal::ZERO, reviews: Vec::new(),
+            avg_rating: rust_decimal::Decimal::ZERO.to_string(), reviews: Vec::new(),
             bio: String::new(),
             bio_images: Default::default(),
             level: 0,
@@ -345,7 +353,10 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
 
     let email = email.trim().to_string();
     let mut db = data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await else { return r::for_js("Account query issue.")};
+    let result = match query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await {
+        Ok(result) => result,
+        Err(e) => return r::for_js(e),
+    };
     let Some(account) = result.first() else { return r::for_js_user("Account not found. Ensure to create the account, first!")};
 
     let Ok(passwords_match) = verify_password(&password, &account.password, &account.password_salt) else { return r::for_js("Password verification error.")};

@@ -71,7 +71,7 @@ function generateJobHTML(job) {
             <p class="jobBody">${job.data.body}</p>
             <p class="jobTime">Date of Task: ${job.data.time}</p>
             <p class="jobPrice">Price: $${job.data.price / 100.0}</p>
-            <a class="btna embedb" href="/jobs/${job.id.id.String}">Visit Job Post</a>
+            <a class="btna embedb" href="/jobs/${job.id.key.String}">Visit Job Post</a>
             <a class="btna embedb" href="/chats/${job.user.username}">Open Chat</a>
         </div>
     `;

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::SUCCESS};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, PROFILE, CONTACT, NOLOG};
@@ -6,7 +8,7 @@ use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::{get, post, web::{Data, Form, self, Json}, HttpResponse, Responder};
 use rand::RngExt;
-use rust_decimal::prelude::ToPrimitive;
+use rust_decimal::{Decimal, prelude::ToPrimitive};
 use serde::{Deserialize, Serialize};
 use surrealdb::types::SurrealValue;
 use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
@@ -43,11 +45,11 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.first() else{
         return RainError::for_js("Account does not exist.");
     };
-    let Some(avg_rating) = page.avg_rating.to_f64() else { return RainError::for_js("Error parsing average rating.")};
+    let Some(avg_rating) = Decimal::from_str(&page.avg_rating).expect("Error converting String to Decimal").to_f64() else { return RainError::for_js("Error parsing average rating.")};
     let bio_imgs = &page.bio_images;
     let data = UsersFrontData{ 
         displayname, pfp_url: &page.pfp_url, username, avg_rating, 
-        creation_date: creation_date.format("%m/%d/%Y").to_string(), 
+        creation_date: chrono::DateTime::<chrono::Utc>::from_str(creation_date).expect("Error parsing string.").format("%m/%d/%Y").to_string(), 
         state: state.as_str(), bio: &page.bio , bio_imgs,
         reviews: &page.reviews,
     };
@@ -795,7 +797,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
     BEGIN TRANSACTION;
         LET $email = (SELECT email FROM accounts WHERE username = "username")[0].email;
         LET $id = (SELECT id FROM accounts WHERE username=$username)[0].id;
-        CREATE disputes SET email = $email, title = $title, message = $message, user = type::thing("accounts", $id);
+        CREATE disputes SET email = $email, title = $title, message = $message, user = type::record("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
     let mut db = data.db.lock().await;

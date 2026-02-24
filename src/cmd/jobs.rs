@@ -1,9 +1,9 @@
-use crate::{db::{query_once, query_once_option, sole_query}, AppData, cmd::sites::{NOLOG, NOUSER}, RainError, unwrap_identity};
+use crate::{AppData, RainError, cmd::sites::{NOLOG, NOUSER}, db::{query_once, query_once_option, sole_query}, unwrap_identity};
 use actix_identity::Identity;
 use actix_web::{web::{Data, self, Json}, Responder, get, post, HttpResponse};
 use serde::Serialize;
 // use surrealdb::sql::Thing;
-use surrealdb_types::RecordId;
+use surrealdb_types::{Datetime, RecordId};
 use surrealdb_types::SurrealValue;
 use super::{sites::{POST, TASK}, signup::AccountPage};
 use chrono::{DateTime, Utc, TimeZone};
@@ -43,7 +43,7 @@ impl JobData{
             return Err(RainError::for_js_user("Enter a valid price!"))
         }
 
-        let job = Job::new(title, body, time, (price * 100.0) as u64, location);
+        let job = Job::new(title, body, time.into(), (price * 100.0) as u64, location);
         Ok(job)
     }
 }
@@ -53,13 +53,13 @@ impl JobData{
 pub struct Job{
     title: String,
     body: String,
-    time: DateTime<Utc>,
+    time: String,
     price: u64, 
     location: String,
 }
 impl Job{
-    pub fn new(title: String, body: String, time: DateTime<Utc>, price: u64, location: String) -> Job{
-        Job { title, body, time, price, location}
+    pub fn new(title: String, body: String, time: Datetime, price: u64, location: String) -> Job{
+        Job { title, body, time: time.to_string(), price, location}
     }
 }
 
@@ -82,21 +82,23 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
         Err(e) => return e,
     };
 
+    let mut db = data.db.lock().await;
+
+    //check for verification
+    let Ok(Some(a)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &username)).await else { return RainError::for_html(NOUSER)};
+    match AccountState::from_str(&a) {
+        super::signup::AccountState::Verified => {},
+        _ => {return RainError::for_js_user("You must be verified to post a job!")}
+    }
+    // return HttpResponse::Ok().finish(); //SHORT CIRCUIT TEST;
+
     let surrealql = 
     r#"
     BEGIN TRANSACTION;
         LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
-        CREATE jobs SET data = $job, user = type::thing("accounts", $id);
+        CREATE jobs SET data = $job, user = type::record("accounts", $id);
     COMMIT TRANSACTION;"#;
     //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNAME
-    let mut db = data.db.lock().await;
-
-    //check for verification
-    let Ok(Some(a)) = query_once_option::<super::signup::AccountState>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &username)).await else { return RainError::for_html(NOUSER)};
-    match a {
-        super::signup::AccountState::Verified => {},
-        _ => {return RainError::for_js_user("You must be verified to post a job!")}
-    }
 
     if let Err(e) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
 
@@ -114,7 +116,7 @@ struct JobUsername{
 
 #[get("/jobs/{id}")]
 pub async fn jobs(jobid: actix_web::web::Path<String>, data: Data<AppData>) -> impl Responder{
-    let Ok(res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::thing("jobs", $id) FETCH user.accounts;"#, ("id", jobid.into_inner())).await else { return RainError::for_html_stderr()};
+    let Ok(res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", jobid.into_inner())).await else { return RainError::for_html_stderr()};
     if res1.len() != 1{
         return HttpResponse::Ok().body(super::sites::NOUSER);
     }
@@ -123,7 +125,7 @@ pub async fn jobs(jobid: actix_web::web::Path<String>, data: Data<AppData>) -> i
 
 #[post("/jobs_attain")]
 pub async fn jobs_data(data: Data<AppData>, path: web::Json<String>) -> impl Responder{
-    let Ok(mut res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::thing("jobs", $id) FETCH user.accounts;"#, ("id", path)).await else { return RainError::for_js("Error querying jobs.")};
+    let Ok(mut res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", path)).await else { return RainError::for_js("Error querying jobs.")};
     let Some(job) = res1.get_mut(0) else { return RainError::for_js("Jobs retreival error.") };
     let Ok(..) = job.timestamp_converted() else { return RainError::for_js("Timestamp conversion error.")};
 
@@ -224,7 +226,7 @@ struct JobPostData{
 struct JobRecordLink{
     displayname: String,
     username: String,
-    state: AccountState,
+    state: String,
     page: AccountPage,
 }
 
@@ -265,7 +267,7 @@ pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Js
 
     let mut db = data.db.lock().await;
     let parameters = EditPostDataDB{ id, change: jobified_change, username };
-    if let Err(e) = sole_query(&mut db, r#"UPDATE type::thing("jobs", $id) SET data = $change WHERE user.username = $username;"#, parameters).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&mut db, r#"UPDATE type::record("jobs", $id) SET data = $change WHERE user.username = $username;"#, parameters).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
@@ -285,7 +287,7 @@ async fn delete_post(identity: Option<Identity>, data: Data<AppData>, job_id: Js
     let mut db = data.db.lock().await;
     
     let parameters = IdUsername{ id: job_id, username };
-    if let Err(e) = sole_query(&mut db, r#"DELETE type::thing("jobs", $id) WHERE user.username=$username;"#, parameters).await { return RainError::for_js(e) };
+    if let Err(e) = sole_query(&mut db, r#"DELETE type::record("jobs", $id) WHERE user.username=$username;"#, parameters).await { return RainError::for_js(e) };
 
     //job_id should be given by the frontend DONE
     //we must check that username matches the valid job_id DONE
@@ -308,7 +310,10 @@ async fn my_jobs_get(identity: Option<Identity>, data: Data<AppData>) -> impl Re
 
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Cave island!")};
 
-    let Ok(mut jobs_vec) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE user.username = $username FETCH user;"#, ("username", username)).await else { return RainError::for_js("Error querying jobs.")};
+    let mut jobs_vec = match query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE user.username = $username FETCH user;"#, ("username", username)).await {
+        Ok(jobs_vec) => jobs_vec,
+        Err(e) => return RainError::for_js(e),
+    };
 
     for job in jobs_vec.iter_mut(){
         if let Err(e) = job.timestamp_converted() { return RainError::for_js(e)};

@@ -1,10 +1,12 @@
+use std::str::FromStr;
+
 use actix_files::NamedFile;
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
 use surrealdb_types::SurrealValue;
-use crate::{db::{query_once, sole_query, query_once_option}, AppData, cmd::sites::NOLOG, RainError, img::{verify_img, upload_file}}; 
+use crate::{AppData, RainError, cmd::{signup::AccountState, sites::NOLOG}, db::{query_once, query_once_option, sole_query}, img::{upload_file, verify_img}}; 
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
 use RainError as r;
@@ -25,8 +27,8 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(sender) = unwrap_identity(identity) else {return RainError::for_html(NOLOG)};
     let mut db = app_data.db.lock().await;
-    let Ok(Some(a)) = query_once_option::<super::signup::AccountState>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
-    match a {
+    let Ok(Some(a)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
+    match AccountState::from_str(&a) {
         super::signup::AccountState::Verified => {},
         _ => {return RainError::for_html(super::sites::NOVER)}
     }
@@ -90,7 +92,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 
     let vec : Vec<ChatFrontDataPFP> = vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         let sender = room_id[sender.to_owned()].to_owned();
-        let data = ChatFrontData { timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender };
+        let data = ChatFrontData { timestamp: DateTime::<Utc>::from_str(timestamp).expect("string is not time").format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender };
         ChatFrontDataPFP { data, pfpurl: pfps.remove(0)}
     }).collect();
 
@@ -112,7 +114,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
 ///The chat data stored in the database.
 #[derive(serde::Serialize, Debug, serde::Deserialize, Clone, SurrealValue)]
 pub struct ChatData{
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: String,
     pub msg: String,
     ///Be careful here, as we must ensure sender is in the room, as in, it is contained within the `RoomID`.
     ///There was a thought of using a boolean here to save storage, but we decided not to integrate it.
@@ -162,7 +164,7 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let room_id = RoomID::create([room_title, named_sender.clone()]);
     let sender = named_sender == room_id[true]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
 
-    let to_database = ChatData{timestamp, msg: msg.clone(), sender, was_read: false};
+    let to_database = ChatData{timestamp: timestamp.to_string(), msg: msg.clone(), sender, was_read: false};
     let fake_room = FakeRoom{chat: to_database, room_id};
 
     let mut db = app.db.lock().await;
@@ -209,7 +211,7 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
-        ChatFrontData { timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
+        ChatFrontData { timestamp: DateTime::<Utc>::from_str(timestamp).expect("string is not time").format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
 
     //query accounts for pfp
@@ -343,7 +345,7 @@ pub async fn chats_access(identity: Option<Identity>, uuidn: Path<(String, Strin
     let (uuid, n) = uuidn.into_inner();
 
     let mut db = data.db.lock().await;
-    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::thing(\"chats\", $id)).room_id;", ("id", &uuid)).await else { return RainError::for_html_stderr()};
+    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::record(\"chats\", $id)).room_id;", ("id", &uuid)).await else { return RainError::for_html_stderr()};
     // if let Err(e) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::thing(\"chats\", $id)).room_id;", ("id", &uuid)).await { println!("{}: {e}", line!()); return RainError::for_html(e)};
     // let o: Option<RoomID> = todo!();
     let Some(room) = o else { return RainError::for_html(NOUSER)};
