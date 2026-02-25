@@ -211,7 +211,10 @@ impl EnvConfig{
             app_pwd: var("SMTP_PRIVATE_KEY").expect("Could not find SMTP_PRIVATE_KEY."),
             db_addr: var("DB_ADDR").expect("Missing DB_ADDR"),
             web_addr: var("WEB_ADDR").expect("Missing WEB_ADDR"),
-            web_port: var("WEB_PORT").expect("Missing WEB_PORT").parse().expect("WEB_PORT must be a u8"),
+            web_port: var("PORT")
+            .ok()
+            .and_then(|p| p.parse().ok())
+            .unwrap_or(8080),
         }
     }
 }

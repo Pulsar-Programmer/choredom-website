@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  db:
+    image: surrealdb/surrealdb:latest
+    command: start --log trace --user root --pass root memory
+    ports:
+      - "8000:8000"
+
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DB_ADDR: db:8000
+      WEB_ADDR: 0.0.0.0
+      PORT: 8080
