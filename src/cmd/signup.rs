@@ -125,10 +125,10 @@ pub async fn signup() -> impl Responder{
 #[post("/verify-email")]
 pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: Json<SignupData>) -> impl Responder{
     let SignupData { email: to_email, password, username, displayname, location } = form.into_inner();
-    let true = satisfies_displayname(&displayname) else { return r::for_js_user("Invalid displayname!")};
-    let true = satisfies_username(&username) else { return r::for_js_user("Invalid username!")};
-    let true = satisfies_email(&to_email) else { return r::for_js_user("Invalid email!")};
-    let true = satisifies_password(&password) else { return r::for_js_user("Invalid password!")};
+    let true = satisfies(&displayname, &app_data.validators.displayname) else { return r::for_js_user("Invalid displayname!")};
+    let true = satisfies(&username, &app_data.validators.username) else { return r::for_js_user("Invalid username!")};
+    let true = satisfies(&to_email, &app_data.validators.email) else { return r::for_js_user("Invalid email!")};
+    let true = satisfies(&password, &app_data.validators.password) else { return r::for_js_user("Invalid password!")};
     let false = location.is_empty() else { return r::for_js_user("Please enter a location!")};
     //how much let is too much let? when does pattern matching become TOO op?
 
@@ -513,27 +513,6 @@ pub fn transmission_receive<Transmitter: serde::de::DeserializeOwned>(field: &st
 }
 
 use fancy_regex::Regex;
-pub fn satisfies_username(username: &str) -> bool{
-    satisfies(username, "^[A-Za-z0-9]+$")
+pub fn satisfies(string: &str, regex: &Regex) -> bool{
+    regex.is_match(string).unwrap_or(false)
 }
-
-pub fn satisifies_password(password: &str) -> bool{
-    satisfies(password, r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$")
-}
-
-pub fn satisfies_email(email: &str) -> bool{
-    satisfies(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$")
-}
-
-pub fn satisfies_displayname(displayname: &str) -> bool{
-    satisfies(displayname, "^(?! *$)[A-Za-z0-9 ]{3,20}$")
-}
-
-fn satisfies(string: &str, regex: &str) -> bool{
-    // let regex = format!("/{regex}/g");
-    #[allow(clippy::unwrap_used)]
-    let re = Regex::new(regex).unwrap();
-    re.is_match(string).unwrap_or(false)
-}
-
-// fn sanitize()

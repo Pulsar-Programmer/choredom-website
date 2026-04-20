@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use actix_files::NamedFile;
 use actix_identity::Identity;
@@ -81,10 +81,25 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     };
     let Room { room_id: _, messages: vec } = result;
 
+    let mut pfp_cache: HashMap<String, String> = HashMap::new();
+
     let mut pfps = Vec::new();
     for ChatData { sender, ..} in vec{
         let sender = room_id[sender.to_owned()].to_owned();
-        let Ok(Some(pfpurl)) = query_once_option(&data.db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+        let pfpurl = if let Some(v) = pfp_cache.get(&sender) {
+            v.clone()
+        } else {
+            let v: String = match query_once_option(
+                &data.db,
+                "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;",
+                ("username", &sender)
+            ).await {
+                Ok(Some(v)) => v,
+                _ => return RainError::for_js("Error retrieving pfp_url."),
+            };
+            pfp_cache.insert(sender.clone(), v.clone());
+            v
+        };
         pfps.push(pfpurl);
     }
 

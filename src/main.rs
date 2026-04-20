@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use actix_identity::IdentityMiddleware;
 use actix_web::{web, App, HttpServer, cookie::Key, HttpResponse};
 use actix_session::SessionMiddleware;
@@ -140,6 +142,7 @@ fn not_found<B>(res: ServiceResponse<B>) -> actix_web::error::Result<ErrorHandle
 pub struct AppData {
     pub db: Db,
     pub config: EnvConfig,
+    pub validators: RegexValidators,
 }
 #[derive(serde::Serialize)]
 pub struct RainError{
@@ -211,6 +214,23 @@ impl EnvConfig{
     }
 }
 
+use fancy_regex::Regex;
+pub struct RegexValidators {
+    pub username: LazyLock<Regex>,
+    pub password: LazyLock<Regex>,
+    pub email: LazyLock<Regex>,
+    pub displayname: LazyLock<Regex>,
+}
+impl RegexValidators {
+    pub fn new() -> Self {
+        Self {
+            email: LazyLock::new(||Regex::new("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$").unwrap()),
+            username: LazyLock::new(||Regex::new("^[A-Za-z0-9]+$").unwrap()),
+            password: LazyLock::new(||Regex::new(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%&])(?!.*\s).{8,}$").unwrap()),
+            displayname: LazyLock::new(||Regex::new("^(?! *$)[A-Za-z0-9 ]{3,20}$").unwrap()),
+        }
+    }
+}
 
 
 // pub enum ResponderError{

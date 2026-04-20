@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{db::{sole_query, query_once, query_once_option}, AppData, RainError, img::{process_images, ImageUploads, verify_img, upload_file}, cmd::sites::SUCCESS};
+use crate::{AppData, RainError, RegexValidators, cmd::sites::SUCCESS, db::{query_once, query_once_option, sole_query}, img::{ImageUploads, process_images, upload_file, verify_img}};
 use super::signup::{Account, unwrap_identity, verify_password, email_user};
 use super::sites::{TRANSFER, PASSWORD, SETTINGS, UPLOAD, PROFILE, CONTACT, NOLOG};
 use actix_identity::Identity;
@@ -11,7 +11,7 @@ use rand::RngExt;
 use rust_decimal::{Decimal, prelude::ToPrimitive};
 use serde::{Deserialize, Serialize};
 use surrealdb::types::SurrealValue;
-use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, satisifies_password};
+use super::signup::satisfies;
 
 #[get("/users/{username}")]
 pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
@@ -227,8 +227,8 @@ pub struct SettingsData{
     bio: String,
 }
 impl SettingsData{
-    fn is_valid(&self) -> bool{
-        satisfies_displayname(&self.displayname) && satisfies_username(&self.username) && !self.location.is_empty()
+    fn is_valid(&self, validators: &RegexValidators) -> bool{
+        satisfies(&self.displayname, &validators.displayname) && satisfies(&self.username, &validators.username) && !self.location.is_empty()
     }
 }
 
@@ -287,7 +287,7 @@ pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Ide
 #[post("/settings-post")]
 pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsData>, data: Data<AppData>) -> impl Responder{
     let settings_data = setting.into_inner();
-    let true = settings_data.is_valid() else { return RainError::for_js_user("Invalid given data.") };
+    let true = settings_data.is_valid(&data.validators) else { return RainError::for_js_user("Invalid given data.") };
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     //edit stuff NOT together, as in, independently?
 
@@ -378,7 +378,7 @@ struct PasswordChangeData{
 pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>, identity: Option<Identity>) -> impl Responder{
 
     let PasswordData { p_old, p_new } = form.into_inner();
-    let true = satisifies_password(&p_new) else { return RainError::for_js_user("Invalid given new password!")};
+    let true = satisfies(&p_new, &data.validators.password) else { return RainError::for_js_user("Invalid given new password!")};
 
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
@@ -535,7 +535,7 @@ async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: O
         Err(_) => return RainError::for_js_user("Invalid number!")
     };
 
-    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_js_user("That account does not exist!")};
+    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &self_username)).await else { return RainError::for_js_user("That account does not exist!")};
 
     if balance < credits {
         return RainError::for_js_user("You cannot give more than you have! Add some funds in order to transfer that much!");
@@ -588,7 +588,7 @@ pub struct EmailData{
 #[post("/settings/email/form")]
 pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, app: Data<AppData>, session: Session) -> impl Responder{
     let EmailData {e_old:current_email_input,e_new:new_email, password: entered_pass } = form.into_inner();
-    if !satisfies_email(&new_email){
+    if !satisfies(&new_email, &app.validators.email){
         return RainError::for_js_user("The new email does not exist!")
     }
 
@@ -605,7 +605,6 @@ pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, a
     }
 
     //use current_email_input to email
-    use rand::Rng;
     let code = rand::rng().random_range(100000..1000000); //this gen -> 9^5 * 8 instead of 9^6
     if let Err(e) = settings_transmission_transmit(&session, code.to_string()) { return RainError::for_js(e)}
     if let Err(e) = settings_verification_email(&q2.email, &q2.displayname, &new_email, code, &app.config.app_pwd) { return RainError::for_js(e)}
