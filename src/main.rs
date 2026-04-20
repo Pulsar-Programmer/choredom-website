@@ -13,6 +13,7 @@ use cmd::chats::{chats_get, chats_obtain, receive, send, chat_nav, nav_links, pi
 mod db;
 use cmd::sites::NOUSER;
 use db::setup_db;
+use db::Db;
 mod img;
 
 macro_rules! wapp {
@@ -31,7 +32,7 @@ macro_rules! wapp {
 //     HttpResponse::Ok().body(p)
 // }
 
-// How to do Identity login 
+// How to do Identity login
 // #[get("/index")]
 // async fn index(user: Option<Identity>) -> impl Responder {
 //     if let Some(user) = user {
@@ -53,10 +54,9 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug")); //logger
     let config = EnvConfig::from_env();
     let EnvConfig { web_addr, db_addr, web_port, .. } = config.clone();
-    #[allow(clippy::expect_used)]
     let db = setup_db(db_addr).await.expect("Database connection error.");
     let app_state = web::Data::new(AppData {
-        db: Arc::new(Mutex::new(db.clone())),
+        db: db.clone(),
         config
     });
 
@@ -86,7 +86,7 @@ async fn main() -> std::io::Result<()> {
             .service(actix_files::Files::new("/src-web/assets", "./src-web/assets"))
             .service(actix_files::Files::new("/src-web/static", "./src-web/static"));
             homepage,
-            signup, verify_email, home_redirect_signup, 
+            signup, verify_email, home_redirect_signup,
             login, signin, signout, home_redirect_login,
             settings, settings_post,
             upload, upload_auth,
@@ -104,7 +104,7 @@ async fn main() -> std::io::Result<()> {
             chats_get, chats_obtain, send, receive,
             chat_nav, nav_links,
             delete_rating,
-            pics_bio, pics_pfp, pics_chats, 
+            pics_bio, pics_pfp, pics_chats,
             chats_access,
             policy, success, //last time check of #143
             my_jobs, my_jobs_get,
@@ -125,30 +125,22 @@ use actix_web::{middleware::ErrorHandlerResponse, dev::ServiceResponse};
 fn not_found<B>(res: ServiceResponse<B>) -> actix_web::error::Result<ErrorHandlerResponse<B>> {
     // split service response into request and response components
     let (req, res) = res.into_parts();
-  
+
     // set body of response to modified body
     let res = res.set_body(NOUSER);
-  
+
     // modified bodies need to be boxed and placed in the "right" slot
     let res = ServiceResponse::new(req, res)
         .map_into_boxed_body()
         .map_into_right_body();
-  
+
     Ok(ErrorHandlerResponse::Response(res))
 }
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use crate::db::Db;
 pub struct AppData {
-    pub db: Arc<Mutex<Db>>,
+    pub db: Db,
     pub config: EnvConfig,
 }
-// impl AppData{
-//     async fn obtain_db(&mut self) -> tokio::sync::MutexGuard<'_, Db>{
-//         self.db.lock().await
-//     }
-// }
 #[derive(serde::Serialize)]
 pub struct RainError{
     message: String,
@@ -206,7 +198,7 @@ impl EnvConfig{
     fn from_env() -> Self{
         use std::env::var;
         dotenvy::dotenv().ok();
-        
+
         Self {
             app_pwd: var("SMTP_PRIVATE_KEY").expect("Could not find SMTP_PRIVATE_KEY."),
             db_addr: var("DB_ADDR").expect("Missing DB_ADDR"),

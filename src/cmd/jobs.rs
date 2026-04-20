@@ -13,7 +13,7 @@ use super::signup::AccountState;
 pub struct JobData{
     title: String,
     body: String,
-    time: String, 
+    time: String,
     price: String,
     location: String,
 }
@@ -54,7 +54,7 @@ pub struct Job{
     title: String,
     body: String,
     time: String,
-    price: u64, 
+    price: u64,
     location: String,
 }
 impl Job{
@@ -76,23 +76,21 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     // let user = request.get_identity();
     // let username = user.unwrap().id().unwrap();
     let Ok(username) = super::signup::unwrap_identity(identity) else { return RainError::for_js("Illegal identity travel.")};
-    
+
     let job = match form.into_inner().into_job(){
         Ok(j) => j,
         Err(e) => return e,
     };
 
-    let mut db = data.db.lock().await;
-
     //check for verification
-    let Ok(Some(a)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &username)).await else { return RainError::for_html(NOUSER)};
+    let Ok(Some(a)) = query_once_option::<String>(&data.db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &username)).await else { return RainError::for_html(NOUSER)};
     match AccountState::from_str(&a) {
         super::signup::AccountState::Verified => {},
         _ => {return RainError::for_js_user("You must be verified to post a job!")}
     }
     // return HttpResponse::Ok().finish(); //SHORT CIRCUIT TEST;
 
-    let surrealql = 
+    let surrealql =
     r#"
     BEGIN TRANSACTION;
         LET $id = (SELECT id FROM accounts WHERE username=type::string($username))[0].id;
@@ -100,7 +98,7 @@ pub async fn post_job(form: web::Json<JobData>, data: Data<AppData>, identity: O
     COMMIT TRANSACTION;"#;
     //^feh PLEASE MAKE SURE TO ERROR HANDLE WHAT HAPPENS IF THERE ARE NO ACCOUNTS WITH THAT USERNAME
 
-    if let Err(e) = sole_query(&mut db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
+    if let Err(e) = sole_query(&data.db, surrealql, JobUsername{ job, username }).await { return RainError::for_js(e) };
 
     // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/post-job")).body(POST)
     HttpResponse::Ok().finish()
@@ -116,7 +114,7 @@ struct JobUsername{
 
 #[get("/jobs/{id}")]
 pub async fn jobs(jobid: actix_web::web::Path<String>, data: Data<AppData>) -> impl Responder{
-    let Ok(res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", jobid.into_inner())).await else { return RainError::for_html_stderr()};
+    let Ok(res1) = query_once::<JobPost>(&data.db, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", jobid.into_inner())).await else { return RainError::for_html_stderr()};
     if res1.len() != 1{
         return HttpResponse::Ok().body(super::sites::NOUSER);
     }
@@ -125,7 +123,7 @@ pub async fn jobs(jobid: actix_web::web::Path<String>, data: Data<AppData>) -> i
 
 #[post("/jobs_attain")]
 pub async fn jobs_data(data: Data<AppData>, path: web::Json<String>) -> impl Responder{
-    let Ok(mut res1) = query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", path)).await else { return RainError::for_js("Error querying jobs.")};
+    let Ok(mut res1) = query_once::<JobPost>(&data.db, r#"SELECT * FROM jobs WHERE id=type::record("jobs", $id) FETCH user.accounts;"#, ("id", path)).await else { return RainError::for_js("Error querying jobs.")};
     let Some(job) = res1.get_mut(0) else { return RainError::for_js("Jobs retreival error.") };
     let Ok(..) = job.timestamp_converted() else { return RainError::for_js("Timestamp conversion error.")};
 
@@ -164,7 +162,7 @@ struct FilterJobsJSON{
 pub async fn tasks_in_area(app_data: Data<AppData>, js: web::Json<String>) -> impl Responder{
     // in the future allow filtering of multiple addresses.
     let address = js.into_inner();
-    let Ok(res2) = query_once::<JobPost>(&mut *app_data.db.lock().await, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user;", ("location", address)).await else { return RainError::for_js("Location query error.")};
+    let Ok(res2) = query_once::<JobPost>(&app_data.db, "SELECT * FROM jobs WHERE data.location = type::string($location) FETCH user;", ("location", address)).await else { return RainError::for_js("Location query error.")};
     let result: Vec<_> = res2.into_iter().map(|mut a|{
         a.timestamp_converted().unwrap_or_default();
         a
@@ -198,7 +196,7 @@ fn tasks_build_query(filter: FilterJobsJSON) -> (String, FilterJobs){
 #[derive(serde::Serialize, serde::Deserialize, Debug, SurrealValue)]
 struct JobPost{
     id: RecordId,
-    
+
     data: JobPostData,
 
     user: JobRecordLink,
@@ -216,7 +214,7 @@ struct JobPostData{
     title: String,
     body: String,
     time: String,
-    price: u32, 
+    price: u32,
     location: String,
 }
 
@@ -254,7 +252,7 @@ struct EditPostDataDB{
 #[post("/edit-post")]
 pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Json<EditPostData>) -> impl Responder{
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
-    
+
     let EditPostData { id, change } = edit.into_inner();
     //id should be internally defined
     //job_id should be given by the frontend
@@ -265,9 +263,8 @@ pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Js
         Err(E) => return E,
     };
 
-    let mut db = data.db.lock().await;
     let parameters = EditPostDataDB{ id, change: jobified_change, username };
-    if let Err(e) = sole_query(&mut db, r#"UPDATE type::record("jobs", $id) SET data = $change WHERE user.username = $username;"#, parameters).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&data.db, r#"UPDATE type::record("jobs", $id) SET data = $change WHERE user.username = $username;"#, parameters).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
@@ -284,10 +281,9 @@ async fn delete_post(identity: Option<Identity>, data: Data<AppData>, job_id: Js
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Party island!")};
 
     let job_id = job_id.into_inner();
-    let mut db = data.db.lock().await;
-    
+
     let parameters = IdUsername{ id: job_id, username };
-    if let Err(e) = sole_query(&mut db, r#"DELETE type::record("jobs", $id) WHERE user.username=$username;"#, parameters).await { return RainError::for_js(e) };
+    if let Err(e) = sole_query(&data.db, r#"DELETE type::record("jobs", $id) WHERE user.username=$username;"#, parameters).await { return RainError::for_js(e) };
 
     //job_id should be given by the frontend DONE
     //we must check that username matches the valid job_id DONE
@@ -310,7 +306,7 @@ async fn my_jobs_get(identity: Option<Identity>, data: Data<AppData>) -> impl Re
 
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Cave island!")};
 
-    let mut jobs_vec = match query_once::<JobPost>(&mut *data.db.lock().await, r#"SELECT * FROM jobs WHERE user.username = $username FETCH user;"#, ("username", username)).await {
+    let mut jobs_vec = match query_once::<JobPost>(&data.db, r#"SELECT * FROM jobs WHERE user.username = $username FETCH user;"#, ("username", username)).await {
         Ok(jobs_vec) => jobs_vec,
         Err(e) => return RainError::for_js(e),
     };

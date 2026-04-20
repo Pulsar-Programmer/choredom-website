@@ -6,7 +6,7 @@ use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, Responder, HttpResponse, web::{Data, Json, Path}, HttpRequest};
 use chrono::{DateTime, Utc};
 use surrealdb_types::SurrealValue;
-use crate::{AppData, RainError, cmd::{signup::AccountState, sites::NOLOG}, db::{query_once, query_once_option, sole_query}, img::{upload_file, verify_img}}; 
+use crate::{AppData, RainError, cmd::{signup::AccountState, sites::NOLOG}, db::{query_once, query_once_option, sole_query}, img::{upload_file, verify_img}};
 use super::sites::{CHAT, CHATNAV, NOUSER};
 use super::signup::unwrap_identity;
 use RainError as r;
@@ -26,15 +26,14 @@ Upon refresh, all the chats will stay because the chat messages will be added.
 #[get("/chats/{receiver}")]
 pub async fn chats_get(receiver: Path<String>, app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
     let Ok(sender) = unwrap_identity(identity) else {return RainError::for_html(NOLOG)};
-    let mut db = app_data.db.lock().await;
-    let Ok(Some(a)) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
+    let Ok(Some(a)) = query_once_option::<String>(&app_data.db, "SELECT * FROM (SELECT state FROM accounts WHERE username=$username).state;", ("username", &sender)).await else { return RainError::for_html(NOUSER)};
     match AccountState::from_str(&a) {
         super::signup::AccountState::Verified => {},
         _ => {return RainError::for_html(super::sites::NOVER)}
     }
 
     let receiver = receiver.into_inner();
-    let Ok(result) = query_once::<super::signup::Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await else {return RainError::for_html_stderr()};
+    let Ok(result) = query_once::<super::signup::Account>(&app_data.db, "SELECT * FROM accounts WHERE username=$username;", ("username", &receiver)).await else {return RainError::for_html_stderr()};
     if result.len() != 1 {
         return RainError::for_html(NOUSER);
     }
@@ -68,17 +67,16 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let room_id = RoomID::create([sender.clone(), receiver.clone()]);
 
     //build a room and send to db if one doesn't exist >> use indicies for this
-    let mut db = data.db.lock().await;
 
     let opposite = room_id[true] == receiver;
     let useful_data = ChatDBQuery{ sender: opposite, room_id: room_id.clone() };
 
     // we must first redeem them as all read, since you are entering
-    let Ok(_) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else {return r::for_js("Error updating.")};
-    let Ok(result) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return r::for_js("Error getting chats.")};
+    let Ok(_) = sole_query(&data.db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else {return r::for_js("Error updating.")};
+    let Ok(result) = query_once::<Room>(&data.db, "SELECT * FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return r::for_js("Error getting chats.")};
     let Some(result) = result.first() else {
         let room = Room{room_id, messages: Vec::new()};
-        let Ok(_) = sole_query(&mut db, "CREATE chats SET room_id=$room_id, messages=$messages;", room).await else { return r::for_js("Error creating new chat room.")};
+        let Ok(_) = sole_query(&data.db, "CREATE chats SET room_id=$room_id, messages=$messages;", room).await else { return r::for_js("Error creating new chat room.")};
         return HttpResponse::Ok().json(&Vec::<ChatData>::new());
     };
     let Room { room_id: _, messages: vec } = result;
@@ -86,7 +84,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let mut pfps = Vec::new();
     for ChatData { sender, ..} in vec{
         let sender = room_id[sender.to_owned()].to_owned();
-        let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+        let Ok(Some(pfpurl)) = query_once_option(&data.db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
         pfps.push(pfpurl);
     }
 
@@ -119,7 +117,7 @@ pub struct ChatData{
     ///Be careful here, as we must ensure sender is in the room, as in, it is contained within the `RoomID`.
     ///There was a thought of using a boolean here to save storage, but we decided not to integrate it.
     ///Nevermind we are changing this again to a boolean to save immense storage. I am a monkie. Sorry for that.
-    pub sender: bool, 
+    pub sender: bool,
     ///Here, the was_read condition is pertaining to the person opposite of the sender.
     pub was_read: bool,
 }
@@ -129,7 +127,7 @@ pub struct ChatData{
 struct ChatFrontData{
     timestamp: String,
     msg: String,
-    sender: String, 
+    sender: String,
 }
 ///Just adds stuff to the DB.
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -162,16 +160,15 @@ pub async fn send(json: Json<FrontSentData>, identity: Option<Identity>, app: Da
     let timestamp = Utc::now();
     let FrontSentData{room_title, msg} = json.into_inner();
     let room_id = RoomID::create([room_title, named_sender.clone()]);
-    let sender = named_sender == room_id[true]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly. 
+    let sender = named_sender == room_id[true]; //if the sender equals the room ids second index, it returns true as chosen before; otherwise it returns false correctly.
 
     let to_database = ChatData{timestamp: timestamp.to_string(), msg: msg.clone(), sender, was_read: false};
     let fake_room = FakeRoom{chat: to_database, room_id};
 
-    let mut db = app.db.lock().await;
-    let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await else { return r::for_js("Error adding chat to room.")};
-    
-    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &named_sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
-    
+    let Ok(..) = sole_query(&app.db, "UPDATE chats SET messages += $chat WHERE room_id = $room_id;", fake_room).await else { return r::for_js("Error adding chat to room.")};
+
+    let Ok(Some(pfpurl)) = query_once_option(&app.db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &named_sender)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+
     let to_frontend = ChatFrontData{ timestamp: timestamp.format("%m/%d/%Y @ %H:%M").to_string(), msg, sender: named_sender };
 
     let plus_pfp = ChatFrontDataPFP{ data: to_frontend, pfpurl };
@@ -191,7 +188,7 @@ pub struct ChatDBQuery{
 
 //GIVE THE FRONTEND : Vec<ChatFrontData>
 /// This uses long polling to eventually give the frontend a Vec<ChatFrontData> which is useful for adding it to the DOM.
-/// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it. 
+/// The difference here is that, now, we will use the LIVE feature on SurrealDB to find the next update and use it.
 /// This is opposed to the method used above when refreshing the page which simply obtains all of the Vec<ChatFrontData> rather than the new ones.
 #[post("/chat/receive")]
 pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: Data<AppData>) -> impl Responder{
@@ -202,20 +199,19 @@ pub async fn receive(identity: Option<Identity>, opposite: Json<String>, data: D
     let useful_data = ChatDBQuery{ sender: opposite_unnamed, room_id: room_id.clone() };
 
     //must incorporate the WHILE LET and the EVENT kind of idea to wait for the long polling to end and such and such
-    let mut db = data.db.lock().await;
     // println!("{useful_data:?}");
-    let Ok(res) = query_once::<ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
+    let Ok(res) = query_once::<ChatDBGiven>(&data.db, "SELECT messages[WHERE was_read = false AND sender = $sender] FROM chats WHERE room_id = $room_id;", &useful_data).await else{ return r::for_js("Could not select chats.")};
     let Some(dbgiven) = res.first() else {return HttpResponse::Ok().json(Vec::<ChatDBGiven>::new())};
     let chats_vec = &dbgiven.messages;
     //mark as read right before
-    let Ok(..) = sole_query(&mut db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
+    let Ok(..) = sole_query(&data.db, "UPDATE chats SET messages[WHERE was_read = false AND sender = $sender].was_read = true WHERE room_id = $room_id;", &useful_data).await else { return r::for_js("Could not mark chats as read.")};
 
     let chats_vec : Vec<ChatFrontData> = chats_vec.iter().map(move|ChatData { timestamp, msg, sender, was_read:_ }|{
         ChatFrontData { timestamp: DateTime::<Utc>::from_str(timestamp).expect("string is not time").format("%m/%d/%Y @ %H:%M").to_string(), msg: msg.to_owned(), sender: room_id[sender.to_owned()].to_owned() }
     }).collect();
 
     //query accounts for pfp
-    let Ok(Some(pfpurl)) = query_once_option(&mut db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &opposite)).await else { return RainError::for_js("Error retrieving pfp_url.")};
+    let Ok(Some(pfpurl)) = query_once_option(&data.db, "SELECT * FROM (SELECT page.pfp_url FROM accounts WHERE username=$username).page.pfp_url;", ("username", &opposite)).await else { return RainError::for_js("Error retrieving pfp_url.")};
 
     let bundle = ChatFrontDataBundle{ data: chats_vec, pfpurl };
     HttpResponse::Ok().json(&bundle)
@@ -316,13 +312,12 @@ pub async fn nav_links(identity: Option<Identity>, data: Data<AppData>) -> impl 
     let Ok(username) = unwrap_identity(identity) else { return RainError::for_js("Identity could not be extracted.")};
 
 
-    let mut db = data.db.lock().await;
-    let Ok(rooms) = query_once::<Room>(&mut db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await else{ return r::for_js("Error selecting chats.")};
+    let Ok(rooms) = query_once::<Room>(&data.db, "SELECT * FROM chats WHERE room_id.inner CONTAINS $name;", ("name", &username)).await else{ return r::for_js("Error selecting chats.")};
     let links: Vec<NavLink> = rooms.into_iter().map(|elem|{
         NavLink { room_name: elem.room_id.access_opposite(&username).unwrap_or_default() }
     }).collect();
     // println!("{links:?}");
-    
+
     HttpResponse::Ok().json(links)
 }
 
@@ -344,8 +339,7 @@ pub async fn chats_access(identity: Option<Identity>, uuidn: Path<(String, Strin
 
     let (uuid, n) = uuidn.into_inner();
 
-    let mut db = data.db.lock().await;
-    let Ok(o) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::record(\"chats\", $id)).room_id;", ("id", &uuid)).await else { return RainError::for_html_stderr()};
+    let Ok(o) = query_once_option::<RoomID>(&data.db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::record(\"chats\", $id)).room_id;", ("id", &uuid)).await else { return RainError::for_html_stderr()};
     // if let Err(e) = query_once_option::<RoomID>(&mut db, "SELECT * FROM (SELECT room_id FROM chats WHERE id=type::thing(\"chats\", $id)).room_id;", ("id", &uuid)).await { println!("{}: {e}", line!()); return RainError::for_html(e)};
     // let o: Option<RoomID> = todo!();
     let Some(room) = o else { return RainError::for_html(NOUSER)};
@@ -369,8 +363,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
     let Ok(username) = unwrap_identity(identity) else { return r::for_js("Identity failure.")};
     // println!("Tree");
     let room_id = RoomID::create([username, opposite_chatter.into_inner()]);
-    let mut db = data.db.lock().await;
-    let Ok(v) = query_once_option::<String>(&mut db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
+    let Ok(v) = query_once_option::<String>(&data.db, "SELECT * FROM (SELECT meta::id(id) as a FROM chats WHERE room_id=$room_id)[0].a;", ("room_id", room_id)).await else { return RainError::for_js("Error querying!")};
     let Some(uuid) = v else { return RainError::for_js_user("Chat room does not exist!")};
 
     let mut file_count = 0;
@@ -397,7 +390,7 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
         yourlinks.push(format!("/usr/chats/{uuid}/{n}.png"))
     }
     //^^ this may become useful IF we want to prefill the client's text box with the URL.
-    
+
 
     HttpResponse::Ok().json(yourlinks)
 }

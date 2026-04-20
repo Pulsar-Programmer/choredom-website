@@ -36,12 +36,12 @@ pub struct Account{
 }
 impl Account{
     pub fn new(username: String, displayname: String, password: String, password_salt: String, email: String, location: String) -> Self {
-        Self { 
-            displayname, 
-            username, 
-            creation_date: surrealdb::types::Datetime::now().to_string(), 
-            email, 
-            password, 
+        Self {
+            displayname,
+            username,
+            creation_date: surrealdb::types::Datetime::now().to_string(),
+            email,
+            password,
             balance: 0, // divide by 10 to account for u64 and not float
             page: AccountPage::new(),
             state: AccountState::Verified.to_string(), //switch back in a real app
@@ -133,10 +133,9 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     //how much let is too much let? when does pattern matching become TOO op?
 
     let to_email = to_email.trim();
-    let mut db = app_data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_js("Error querying account.")};
+    let Ok(result) = query_once::<Account>(&app_data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return r::for_js("Error querying account.")};
     let len1 = result.len();
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await else { return r::for_js("Error querying account x2.")};
+    let Ok(result) = query_once::<Account>(&app_data.db, "SELECT * FROM accounts WHERE email = $email;", ("email", &to_email)).await else { return r::for_js("Error querying account x2.")};
     let len2 = result.len();
     if len1 >= 1 {
         return r::for_js_user("That username is taken. Choose a different username.")
@@ -144,7 +143,6 @@ pub async fn verify_email(session: Session, app_data: web::Data<AppData>, form: 
     if len1 != len2{
         return r::for_js_user("That email is taken. Choose a different email.")
     }
-    drop(db);
     let code = rand::rng().random_range(100000..1000000);
     println!("{code}");
     // transmission_transmit("signup", &session, code).unwrap();
@@ -166,7 +164,7 @@ pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web:
         Ok(t) => t,
         Err(e) => return r::for_js_user(e),
     };
-    
+
     // { return  };
     //Remove in one case and obtain in another
     let Ok(account) = transmission_receive::<Account>("account", &session) else { return r::for_js("Error getting account.") };
@@ -176,11 +174,10 @@ pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web:
     if !passwords_match{
         return r::for_js_user("Codes don't match!")
     }
-    let mut db = data.db.lock().await;
 
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &account.username)).await else { return r::for_js("Error querying account.")};
+    let Ok(result) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &account.username)).await else { return r::for_js("Error querying account.")};
     let len1 = result.len();
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &account.email)).await else { return r::for_js("Error querying account x2.")};
+    let Ok(result) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE email = $email;", ("email", &account.email)).await else { return r::for_js("Error querying account x2.")};
     let len2 = result.len();
     if len1 >= 1 {
         return r::for_js_user("That username is taken. Choose a different username.")
@@ -190,7 +187,7 @@ pub async fn home_redirect_signup(session: Session, code: Json<Code>, data: web:
     }
     //We want to create the account only AFTER we verify codes.
 
-    if let Err(e) = sole_query(&mut db, r#"
+    if let Err(e) = sole_query(&data.db, r#"
     CREATE accounts
     SET
     username = $username,
@@ -248,7 +245,7 @@ fn embed_in_email_html(embed: String) -> String{
             img{{
                 height: 100px;
                 border: 0;
-            }}     
+            }}
         </style>
         </head>
         <body>
@@ -352,8 +349,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     //we don't actually need this since we match agnst the databse
 
     let email = email.trim().to_string();
-    let mut db = data.db.lock().await;
-    let result = match query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await {
+    let result = match query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE email = $email;", ("email", email)).await {
         Ok(result) => result,
         Err(e) => return r::for_js(e),
     };
@@ -364,7 +360,7 @@ pub async fn signin(form: Json<LoginData>, data : web::Data<AppData>, session: S
     if !passwords_match{
         return r::for_js_user("Passwords don't match!");
     }
-    
+
     let code = rand::rng().random_range(100000..1000000);
     println!("{code}"); //delete me when done testing
     if let Err(e) = login_transmission_transmit(&session, code.to_string()) { return r::for_js(e)};
@@ -424,8 +420,8 @@ pub fn logout_user(identity: Identity){
 use password_hash::{SaltString, PasswordHasher};
 use argon2::Argon2;
 pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltString)>{
-    
-    
+
+
     let salt = SaltString::generate(&mut OsRng);
 
     // Create an Argon2 password hasher
@@ -437,14 +433,14 @@ pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltStr
 }
 
 pub fn verify_password(entered_password: &str, stored_password: &str, salt: &str) -> anyhow::Result<bool> {
-    
+
     let salt = SaltString::from_b64(salt)?;
-    
+
     let argon2 = Argon2::default();
 
 
     let entered_password_hash = argon2.hash_password(entered_password.as_bytes(), &salt)?;
-    
+
     Ok(stored_password == entered_password_hash.to_string())
 }
 

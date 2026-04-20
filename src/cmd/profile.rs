@@ -15,8 +15,7 @@ use super::signup::{satisfies_username, satisfies_displayname, satisfies_email, 
 
 #[get("/users/{username}")]
 pub async fn profile(username: web::Path<String>, app_data: Data<AppData>) -> impl Responder{
-    let mut db = app_data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username.into_inner())).await else { return RainError::for_html_stderr() };
+    let Ok(result) = query_once::<Account>(&app_data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", username.into_inner())).await else { return RainError::for_html_stderr() };
     if result.len() != 1{
         return RainError::for_html(super::sites::NOUSER);
     }
@@ -38,8 +37,7 @@ struct UsersFrontData<'a>{
 #[post("/obtain_profile")]
 pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>) -> impl Responder{
     let username = username.into_inner();
-    let mut db = app_data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
+    let Ok(result) = query_once::<Account>(&app_data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", username)).await else {
         return RainError::for_js("Issue with DB Queries.");
     };
     let Some(Account{username, displayname, creation_date, location: _, email: _, page, state, password:_, password_salt:_, balance:_}) = result.first() else{
@@ -47,9 +45,9 @@ pub async fn obtain_profile_data(app_data: Data<AppData>, username: Json<String>
     };
     let Some(avg_rating) = Decimal::from_str(&page.avg_rating).expect("Error converting String to Decimal").to_f64() else { return RainError::for_js("Error parsing average rating.")};
     let bio_imgs = &page.bio_images;
-    let data = UsersFrontData{ 
-        displayname, pfp_url: &page.pfp_url, username, avg_rating, 
-        creation_date: chrono::DateTime::<chrono::Utc>::from_str(creation_date).expect("Error parsing string.").format("%m/%d/%Y").to_string(), 
+    let data = UsersFrontData{
+        displayname, pfp_url: &page.pfp_url, username, avg_rating,
+        creation_date: chrono::DateTime::<chrono::Utc>::from_str(creation_date).expect("Error parsing string.").format("%m/%d/%Y").to_string(),
         state: state.as_str(), bio: &page.bio , bio_imgs,
         reviews: &page.reviews,
     };
@@ -92,10 +90,9 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     if rater == username{
         return RainError::for_js_user("You may not rate yourself!");
     }
-    let mut db = data.db.lock().await;
     let chat_block = {
         let room_id = super::chats::RoomID::create([rater.clone(), username.clone()]);
-        let Ok(result) = query_once::<super::chats::ChatDBGiven>(&mut db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return RainError::for_js("Querying check error.")};
+        let Ok(result) = query_once::<super::chats::ChatDBGiven>(&data.db, "SELECT messages[WHERE was_read=true] FROM chats WHERE room_id = $room_id;", ("room_id", &room_id)).await else { return RainError::for_js("Querying check error.")};
         let Some(res) = result.first() else { return RainError::for_js_user("Ensure to work with the one who is to be rated before rating! (Send a chat!)")};
         let mut not_contains_first = true;
         let mut not_contains_second = true;
@@ -119,7 +116,7 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let RatingData { stars: sums, body } = rating_data.into_inner();
     let mut sum = sums.clamp(0, 5);
 
-    let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Internal rating query error.")};
+    let Ok(result) = query_once::<Vec<PageRatingData>>(&data.db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Internal rating query error.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA < ???
     let Some(res) = result.first() else { return RainError::for_js_user("The ratee does not exist!")};
     let div = res.len() + 1;
@@ -134,14 +131,14 @@ pub async fn rate(rating_data: Json<RatingData>, data: web::Data<AppData>, usern
     let new_avg = sum as f64 / div as f64;
     let Some(new_avg) = rust_decimal::Decimal::from_f64_retain(new_avg) else { return RainError::for_js("Error converting to Decimal.")};
     let q = "UPDATE accounts
-    SET 
+    SET
     page.avg_rating = $new_avg,
     page.reviews += $review
     WHERE username = $username;";
 
     let review = PageRatingData{stars: sums, body, rater};
 
-    let Ok(..) = sole_query(&mut db, q, GroupRatingData{username, review: review.clone(), new_avg}).await else { return RainError::for_js("Group rating addition error.")};
+    let Ok(..) = sole_query(&data.db, q, GroupRatingData{username, review: review.clone(), new_avg}).await else { return RainError::for_js("Group rating addition error.")};
 
     HttpResponse::Ok().json(review)
 }
@@ -164,10 +161,9 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
         return RainError::for_js("User not detected.")
     };
     let username = username.into_inner();
-    let mut db = data.db.lock().await;
 
     let mut sum = 0;
-    let Ok(result) = query_once::<Vec<PageRatingData>>(&mut db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
+    let Ok(result) = query_once::<Vec<PageRatingData>>(&data.db, "SELECT * FROM (SELECT page.reviews FROM accounts WHERE username = $username).page.reviews;", ("username", &username)).await else { return RainError::for_js("Data not found.")};
     //^^^^^ UPDATE THIS TO INCLUDE THE NEWLY SELECTED DATA <<< ??? what does this mean monkie???
     let Some(res) = result.first() else { return RainError::for_js("Rater data not found."); };
     let div = res.len();
@@ -190,7 +186,7 @@ pub async fn delete_rating(rater: Option<Identity>, username: web::Path<String>,
     page.avg_rating = $new_avg
     WHERE username = $username;";
 
-    let Ok(..) = sole_query(&mut db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await else { return RainError::for_js("Error updating rating.")};
+    let Ok(..) = sole_query(&data.db, query, DeleteRatingNote{ new_avg, username, rater: &rater }).await else { return RainError::for_js("Error updating rating.")};
 
     HttpResponse::Ok().json(DeleteRatingFeedback{ rater, new_avg: new_avg_a })
 }
@@ -228,7 +224,7 @@ pub struct SettingsData{
     username: String,
     displayname: String,
     location: String,
-    bio: String, 
+    bio: String,
 }
 impl SettingsData{
     fn is_valid(&self) -> bool{
@@ -256,7 +252,7 @@ impl SettingsData2{
 #[get("/settings")]
 pub async fn settings(identity: Option<Identity>) -> impl Responder{
     if identity.is_none(){
-        return HttpResponse::Ok().body(NOLOG); 
+        return HttpResponse::Ok().body(NOLOG);
     }
     HttpResponse::Ok().body(super::sites::SETTINGS)
 }
@@ -271,9 +267,8 @@ struct SettingsPresentData<'a>{
 
 #[post("/settings/present_data")]
 pub async fn settings_present_data(app_data: Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    let mut db = app_data.db.lock().await;
     let Ok(identity)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
-    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
+    let Ok(q1) = query_once::<Account>(&app_data.db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Error querying accounts.")};
     let Some(curry_2) = q1.first() else { return RainError::for_js("No curry for you!")};
     let Account { displayname, username, location, page: super::signup::AccountPage { pfp_url:pfplink, reviews:_, bio, .. }, ..} = curry_2;
     let settings_data = SettingsPresentData{username, displayname, location, bio, pfplink};
@@ -296,10 +291,9 @@ pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsDat
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
     //edit stuff NOT together, as in, independently?
 
-    let mut db: tokio::sync::MutexGuard<'_, surrealdb::Surreal<surrealdb::engine::remote::ws::Client>> = data.db.lock().await;
     //I cannot believe I literally forgot to implement this feature
     if settings_data.username != username{
-        let Ok(v) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username", ("username", &settings_data.username)).await else { return RainError::for_js("Issue querying account.")};
+        let Ok(v) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE username=$username", ("username", &settings_data.username)).await else { return RainError::for_js("Issue querying account.")};
         if !v.is_empty(){
             return RainError::for_js_user("This username is taken!");
         }
@@ -311,10 +305,10 @@ pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsDat
     //         return RainError::for_js_user("This displayname is taken!");
     //     }
     // } //People can have same displayname, right?
-    
+
     //woah i forgot you could compose it like this... << u can't silly I just made a special function to make it into fields lmao
     let settings_data = SettingsData2::new(settings_data, username);
-    
+
     let surrealql = "UPDATE accounts SET
         displayname = $displayname,
         page.bio = $bio,
@@ -322,8 +316,8 @@ pub async fn settings_post(identity: Option<Identity>, setting: Json<SettingsDat
         location = $location
     WHERE username = $username2;
     ";
-    
-    if let Err(e) = sole_query(&mut db, surrealql, settings_data).await { return RainError::for_js(e)};
+
+    if let Err(e) = sole_query(&data.db, surrealql, settings_data).await { return RainError::for_js(e)};
     //might get a runtime error bcs of surrealql since password field is unused?
 
     // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
@@ -350,8 +344,8 @@ pub async fn upload_auth(form: MultipartForm<ImageUploads>, data: Data<AppData>,
 
     let params = UploadInfoToDB{ username, state: super::signup::AccountState::PendingVerification};
     let surrealql = "UPDATE accounts SET state = $state WHERE username = $username;";
-    
-    if let Err(e) = sole_query(&mut * data.db.lock().await, surrealql, params).await { return RainError::for_js(e)};
+
+    if let Err(e) = sole_query(&data.db, surrealql, params).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
@@ -388,11 +382,8 @@ pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>,
 
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
-    let mut db = data.db.lock().await;
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_js("Error querying account in passcode.")};
+    let Ok(result) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else { return RainError::for_js("Error querying account in passcode.")};
     let Some(Account { displayname: _, username: _, creation_date: _, location: _, email, page: _, state: _, password: p_old_2, password_salt: salt, balance: _ }) = result.first() else { return RainError::for_js("Fail to destructure account.") };
-
-    if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new), &data.config.app_pwd) { return RainError::for_js(e)};
 
     let Ok(passwords_match) = verify_password(&p_old, p_old_2, salt) else { return RainError::for_js("Error verifying password.")};
 
@@ -400,8 +391,11 @@ pub async fn password_change_form(data: Data<AppData>, form: Json<PasswordData>,
         return RainError::for_js_user("Password is incorrect!");
     }
 
-    let Ok((password, password_salt)) = super::signup::password_hash_argon2(p_new) else { return RainError::for_js("Error hashing password.") };
-    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await { return RainError::for_js(e)};
+    let Ok((password, password_salt)) = super::signup::password_hash_argon2(p_new.clone()) else { return RainError::for_js("Error hashing password.") };
+    if let Err(e) = sole_query(&data.db, "UPDATE accounts SET password = $password, password_salt = $password_salt WHERE username = $username", PasswordChangeData{password, password_salt: password_salt.to_string(), username}).await { return RainError::for_js(e)};
+
+    if let Err(e) = email_user(email, "Your Choredom Password has been Changed", format!("Dear Choredom User,\n\tYour password has been changed from \n\t`{}`, \n\tto \n\t`{}`.", p_old, p_new), &data.config.app_pwd) { return RainError::for_js(e)};
+
     HttpResponse::Ok().finish()
 }
 
@@ -419,9 +413,8 @@ pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmatio
     let Some(identity) = identity else { return RainError::for_js("Identity not found.")};
     let Ok(username)= identity.id() else {return RainError::for_js("Identity not found.")};
     let password_entered = password.into_inner().password;
-    let mut db = data.db.lock().await;
-    
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_js("Error querying account in delete.")};
+
+    let Ok(result) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &username)).await else{ return RainError::for_js("Error querying account in delete.")};
     let Some(Account { displayname: _, username: _, creation_date: _, location: _, email:_, page: _, state: _, password: password_db, password_salt: salt, balance: _ }) = result.first() else { return RainError::for_js("Account does not exist pas.")};
 
     let Ok(passwords_match) = verify_password(&password_entered, password_db, salt) else { return RainError::for_js("Password verification error.")};
@@ -430,7 +423,7 @@ pub async fn delete(identity: Option<Identity>, password: Json<DeleteConfirmatio
         return RainError::for_js_user("Passwords do not match!");
     }
 
-    if let Err(e) = sole_query(&mut db, "DELETE accounts WHERE username = $username;", ("username", &username)).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&data.db, "DELETE accounts WHERE username = $username;", ("username", &username)).await { return RainError::for_js(e)};
 
     super::signup::logout_user(identity);
 
@@ -474,10 +467,8 @@ async fn deposit(form: Json<FundData>, data: web::Data<AppData>, identity: Optio
     let FundData { changed_funds, password, add } = form.into_inner();
     let Ok(username)= unwrap_identity(identity) else {return RainError::for_js("Identity not found.")};
 
-    let mut db = data.db.lock().await;
-    
     let surrealql = "SELECT * FROM accounts WHERE username=$username;";
-    let res = query_once::<Account>(&mut db, surrealql, ("username", &username)).await.unwrap();
+    let res = query_once::<Account>(&data.db, surrealql, ("username", &username)).await.unwrap();
     let Some(res) = res.first() else { return RainError::for_html_stderr()};
 
     if !verify_password(&password, &res.password, &res.password_salt).unwrap(){
@@ -486,7 +477,7 @@ async fn deposit(form: Json<FundData>, data: web::Data<AppData>, identity: Optio
 
 
     // let url = format!("https://www.paypal.com/sdk/js?client-id={}&currency=USD", 69696969);
-    let surrealql = 
+    let surrealql =
     format!("UPDATE accounts SET balance {}= $balance WHERE username=$username;",
         if add {
             "+"
@@ -495,7 +486,7 @@ async fn deposit(form: Json<FundData>, data: web::Data<AppData>, identity: Optio
             "-"
         }
     );
-    if sole_query(&mut db, &surrealql, ChangeFundData{username, changed_funds}).await.is_err() { return RainError::for_html_stderr() };
+    if sole_query(&data.db, &surrealql, ChangeFundData{username, changed_funds}).await.is_err() { return RainError::for_html_stderr() };
     HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/settings")).body(SETTINGS)
 }
 
@@ -532,7 +523,7 @@ pub struct TransferData{
 
 #[post("/settings/funds/transfer/form")]
 async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: Option<Identity>) -> impl Responder{
-    
+
     let CreditsData { credits, self_password, to_username } = form.into_inner();
     let Ok(self_username) = unwrap_identity(identity) else {return RainError::for_js("User not found.")};
     if self_username == to_username {
@@ -544,9 +535,7 @@ async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: O
         Err(_) => return RainError::for_js_user("Invalid number!")
     };
 
-    let mut db = data.db.lock().await;
-
-    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&mut db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_js_user("That account does not exist!")};
+    let Ok(Some(Account{password, password_salt, balance, ..})) = query_once_option::<Account>(&data.db, "SELECT * FROM accounts WHERE username = $username;", ("username", &to_username)).await else { return RainError::for_js_user("That account does not exist!")};
 
     if balance < credits {
         return RainError::for_js_user("You cannot give more than you have! Add some funds in order to transfer that much!");
@@ -564,7 +553,7 @@ async fn transfer(form: Json<CreditsData>, data: web::Data<AppData>, identity: O
     UPDATE accounts SET balance -= $credits, page.level += $credits WHERE username = $self_username;
     UPDATE accounts SET balance += $credits, page.level += $credits WHERE username = $to_username;
     ";
-    if let Err(e) = sole_query(&mut db, surrealql, transferdata).await { return RainError::for_js(e) };
+    if let Err(e) = sole_query(&data.db, surrealql, transferdata).await { return RainError::for_js(e) };
 
     HttpResponse::Ok().finish()
 }
@@ -603,14 +592,13 @@ pub async fn settings_email(identity: Option<Identity>, form: Json<EmailData>, a
         return RainError::for_js_user("The new email does not exist!")
     }
 
-    let mut db = app.db.lock().await;
     let Ok(identity) = unwrap_identity(identity) else {return RainError::for_js("No identity can be unveiled!")};
-    let Ok(q1) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Wahoo!")};
+    let Ok(q1) = query_once::<Account>(&app.db, "SELECT * FROM accounts WHERE username=$username;", ("username", identity)).await else { return RainError::for_js("Wahoo!")};
     let Some(q2) = q1.first() else { return RainError::for_js("No account!")};
     if q2.email != current_email_input{
         return RainError::for_js_user("Emails do not match!");
     }
-    
+
     let Ok(passwords_match) = verify_password(&entered_pass, &q2.password, &q2.password_salt) else { return RainError::for_js("Day da!") };
     if !passwords_match{
         return RainError::for_js_user("Password is incorrect!");
@@ -639,22 +627,20 @@ pub async fn home_redirect_settings(session: Session, code: Json<super::signup::
     };
     //Remove it one case yet obtain it in another
     let new_email: String = if let Ok(i) = transmission_receive("set", &session) {i} else { return RainError::for_js("Mario.")};
-    
+
     let Ok(password_matches) = verify_password(&code.into_inner().code, &transmitter.hashed_code, &transmitter.salt) else { return RainError::for_js("Mamma mia!")};
 
     if !password_matches{
         return RainError::for_js_user("Passwords do not match!");
     }
 
-    let mut db = data.db.lock().await;
-
-    let Ok(result) = query_once::<Account>(&mut db, "SELECT * FROM accounts WHERE email = $email;", ("email", &new_email)).await else { return RainError::for_js("Error querying account x2.")};
+    let Ok(result) = query_once::<Account>(&data.db, "SELECT * FROM accounts WHERE email = $email;", ("email", &new_email)).await else { return RainError::for_js("Error querying account x2.")};
     let len2 = result.len();
     if len2 >= 1{
         return RainError::for_js_user("That email is taken. Choose a different email.")
     }
 
-    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET email = $email;", ("email", new_email)).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&data.db, "UPDATE accounts SET email = $email;", ("email", new_email)).await { return RainError::for_js(e)};
 
     // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, "/operation_successful")).body(super::sites::SUCCESS)
     HttpResponse::Ok().finish()
@@ -681,9 +667,8 @@ pub async fn pics_pfp(form: MultipartForm<ImageUploads>, user: Option<Identity>,
     if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
     //this will aactually overwrite data so we don't need [the clear function]
 
-    let mut db = data.db.lock().await;
-    let url = format!("/usr/pfp/{user}/0.png"); 
-    if sole_query(&mut db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
+    let url = format!("/usr/pfp/{user}/0.png");
+    if sole_query(&data.db, "UPDATE accounts SET page.pfp_url = $url;", ("url", url)).await.is_err() { return RainError::for_js("Query issue.")};
 
     // HttpResponse::SeeOther().append_header((actix_web::http::header::LOCATION, format!("/users/{user}"))).body(PROFILE) //< hey this is the first reason I've found that it is better to have it more in JS lol
     // .json(url)
@@ -718,17 +703,16 @@ pub async fn pics_bio(form: MultipartForm<ImageUploads>, user: Option<Identity>,
 
         let path = format!("./tmp/bio/{user}/{n}.png");
         if let Err(e) = upload_file(file, &path).await {return RainError::for_js_user(e)};
-        
+
         yourlinks[n] = format!("/usr/bio/{user}/{n}.png");
     }
 
-    let bio_imgs = BioImgs{ 
-        bio_imgs: yourlinks, 
+    let bio_imgs = BioImgs{
+        bio_imgs: yourlinks,
         username: user,
     };
 
-    let mut db = data.db.lock().await;
-    if let Err(e) = sole_query(&mut db, "UPDATE accounts SET page.bio_images = $bio_imgs WHERE username = $username;", bio_imgs).await { return RainError::for_js(e)};
+    if let Err(e) = sole_query(&data.db, "UPDATE accounts SET page.bio_images = $bio_imgs WHERE username = $username;", bio_imgs).await { return RainError::for_js(e)};
 
     HttpResponse::Ok().finish()
 }
@@ -800,8 +784,7 @@ pub async fn contacts_form(data: Data<AppData>, form: Form<ContactsForm>, identi
         CREATE disputes SET email = $email, title = $title, message = $message, user = type::record("accounts", $id);
     COMMIT TRANSACTION;"#;
     //if there is no account it will be -> id: account:NONE
-    let mut db = data.db.lock().await;
-    let Ok(_) = sole_query(&mut db, surrealql, info).await else{ return RainError::for_html_stderr() };
+    let Ok(_) = sole_query(&data.db, surrealql, info).await else{ return RainError::for_html_stderr() };
     HttpResponse::Ok().body(SUCCESS)
 }
 
@@ -884,8 +867,6 @@ pub async fn report(name: Json<UserReportJSON>, identity: Option<Identity>, data
     }
     let u = UserReport{ reportee: name, reporter: identity, msg };
 
-    let mut db = data.db.lock().await;
-
-    if let Err(e) = sole_query(&mut db, "CREATE reports SET reportee = $reportee, reporter = $reporter, msg = $msg;", u).await {return RainError::for_js(e)}
+    if let Err(e) = sole_query(&data.db, "CREATE reports SET reportee = $reportee, reporter = $reporter, msg = $msg;", u).await {return RainError::for_js(e)}
     HttpResponse::Ok().finish()
 }

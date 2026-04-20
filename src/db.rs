@@ -9,7 +9,7 @@ use s::engine::remote::ws::{Client, Ws};
 
 pub type Db = Surreal<Client>;
 
-async fn setup_users(db: &mut Db) -> s::Result<()> {
+async fn setup_users(db: &Db) -> s::Result<()> {
 
 
     //this function will be called from the setup_db function
@@ -18,7 +18,7 @@ async fn setup_users(db: &mut Db) -> s::Result<()> {
 }
 
 ///Basic way to setup tables to allow SELECT in the newer versions without errors.
-async fn setup_tables(db: &mut Db) -> s::Result<()>{
+async fn setup_tables(db: &Db) -> s::Result<()>{
     db.query("DEFINE TABLE accounts SCHEMALESS; DEFINE TABLE jobs SCHEMALESS; DEFINE TABLE chats SCHEMALESS;").await?;
 
 
@@ -27,20 +27,20 @@ async fn setup_tables(db: &mut Db) -> s::Result<()>{
 
 pub async fn setup_db(db_addr: String) -> s::Result<Db>{
     //Change this into the embedded version when ready for non-data persistence
-    let mut db = Surreal::new::<Ws>(db_addr).await?;
+    let db = Surreal::new::<Ws>(db_addr).await?;
 
     db.signin(Root {
         username: "root".to_string(),
         password: "root".to_string(),
     }).await?;
-    
+
 
     //config namespace and database
     db.use_ns("choredom").use_db("main").await?;
 
     // db.authenticate(jwt).await?;
 
-    setup_tables(&mut db).await?;
+    setup_tables(&db).await?;
 
     Ok(db)
 }
@@ -96,27 +96,27 @@ pub async fn setup_db(db_addr: String) -> s::Result<Db>{
 
 // async fn create<T: Serialize>(db: &mut Db, base_query: &str, content: T, fields_skip: &[&str]){
 
-    
+
 //     let fields: HashMap<String, String> = serde_yaml::from_value(serde_yaml::to_value(&content).unwrap()).unwrap();
 //     for (field, value) in fields{
 //         // let plusq = format!("{}")
 //     }
 
 
-    
-//     // let parameters = 
+
+//     // let parameters =
 //     // query(db, query, parameters)
 
 
 // }
 
 
-pub async fn query_value(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<Value>>>>{
+pub async fn query_value(db: &Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<Value>>>>{
     query_all(db, surrealql, parameters).await
 }
 
 
-pub async fn query_all<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
+pub async fn query_all<T: std::fmt::Debug + SurrealValue>(db: &Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<s::Result<Vec<T>>>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let mut vec: Vec<Result<Vec<T>, _>> = Vec::new();
     for i in 0..result.num_statements(){
@@ -129,12 +129,12 @@ pub async fn query_all<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql
 
 //make this something used more frequently for querying without a wanted response.
 ///Querying without a processed response.
-pub async fn sole_query(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<IndexedResults>{
+pub async fn sole_query(db: &Db, surrealql: &str, parameters: impl Serialize) -> s::Result<IndexedResults>{
     db.query(surrealql).bind(valuate(parameters)?).await
 }
 
 ///Only to get the first part of the result of the query.
-pub async fn query_once<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
+pub async fn query_once<T: std::fmt::Debug + SurrealValue>(db: &Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Vec<T>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Vec<T>, _> = result.take(0);
     result
@@ -158,7 +158,7 @@ pub fn extract_first<T>(mut vec: Vec<T>) -> Option<T>{
     Some(vec.remove(0))
 }
 
-pub async fn query_once_option<T: std::fmt::Debug + SurrealValue>(db: &mut Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
+pub async fn query_once_option<T: std::fmt::Debug + SurrealValue>(db: &Db, surrealql: &str, parameters: impl Serialize) -> s::Result<Option<T>>{
     let mut result = db.query(surrealql).bind(valuate(parameters)?).await?;
     let result: Result<Option<T>, _> = result.take(0);
     result
