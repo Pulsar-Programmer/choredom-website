@@ -259,8 +259,8 @@ pub async fn edit_post(identity: Option<Identity>, data: Data<AppData>, edit: Js
     //we must check that username matches the valid job_id
 
     let jobified_change = match change.into_job(){
-        Ok(J) => J,
-        Err(E) => return E,
+        Ok(j) => j,
+        Err(e) => return e,
     };
 
     let parameters = EditPostDataDB{ id, change: jobified_change, username };

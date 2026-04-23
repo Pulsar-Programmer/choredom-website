@@ -18,27 +18,19 @@ pub async fn process_images(form: MultipartForm<ImageUploads>, container: String
 
         let path = format!("./tmp/{container}/{n}.png");
         upload_file(file, &path).await?;
-        
+
     }
     Ok(())
 }
 
 pub fn verify_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>>{
-    if !verify_size(file){
-        return Err("File is too large (over 20MB)!".into())
+    if file.size > 10 * 1024 * 1024{
+        return Err("File is too large (over 10MB)!".into())
     }
 
     verify_type_img(file)?;
 
     Ok(())
-}
-
-
-pub fn verify_size(file: &TempFile) -> bool{
-    if file.size > 20 * 1024 * 1024 { // 20 MB
-        false
-    }
-    else { true }
 }
 
 pub fn verify_type_img(file: &TempFile) -> Result<(), Box<dyn std::error::Error>> {
@@ -73,7 +65,7 @@ use std::{fs, path::Path, io};
 pub fn clear_directory<P: AsRef<Path>>(path: P) -> io::Result<()> {
    // Remove the directory and all its contents
    fs::remove_dir_all(&path)?;
-   
+
    // Recreate the directory
    fs::create_dir(&path)?;
 

@@ -77,7 +77,7 @@ pub async fn chats_obtain(receiver: Json<String>, identity: Option<Identity>, da
     let Some(result) = result.first() else {
         let room = Room{room_id, messages: Vec::new()};
         let Ok(_) = sole_query(&data.db, "CREATE chats SET room_id=$room_id, messages=$messages;", room).await else { return r::for_js("Error creating new chat room.")};
-        return HttpResponse::Ok().json(&Vec::<ChatData>::new());
+        return HttpResponse::Ok().json(Vec::<ChatData>::new());
     };
     let Room { room_id: _, messages: vec } = result;
 
@@ -391,6 +391,10 @@ pub async fn pics_chats(form: MultipartForm<crate::img::ImageUploads>, identity:
                 file_count += 1;
             }
         }
+    }
+
+    if file_count >= 10 {
+        return r::for_js_user("Chat image limit reached for this room.");
     }
 
     let mut yourlinks = Vec::new();
