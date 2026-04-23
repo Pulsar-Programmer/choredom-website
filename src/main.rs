@@ -53,14 +53,13 @@ macro_rules! wapp {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug")); //logger
+    env_logger::Builder::from_env(env_logger::Env::new().default_filter_or("debug"))
+        .filter_module("rustls", log::LevelFilter::Warn)
+        .init(); //logger
     let config = EnvConfig::from_env();
-    let EnvConfig { web_addr, db_addr, web_port, .. } = config.clone();
-    let db = setup_db(db_addr).await.expect("Database connection error.");
-    let app_state = web::Data::new(AppData {
-        db: db.clone(),
-        config
-    });
+    let EnvConfig {web_addr,db_addr,web_port, app_pwd:_, db_user, db_pwd } = config.clone();
+    let db = setup_db(db_addr, db_user, db_pwd).await.expect("Database connection error.");
+    let app_state = web::Data::new(AppData {db:db.clone(),config, validators: RegexValidators::new() });
 
     // key needs to be generated outside the closure or else each worker gonna get a diff key
     let key = Key::generate();
@@ -194,6 +193,8 @@ impl RainError{
 pub struct EnvConfig{
     app_pwd: String,
     db_addr: String,
+    db_user: String,
+    db_pwd: String,
     web_addr: String,
     web_port: u16,
 }
@@ -210,6 +211,8 @@ impl EnvConfig{
             .ok()
             .and_then(|p| p.parse().ok())
             .unwrap_or(8080),
+            db_user: var("DB_USER").expect("Missing DB_USER"),
+            db_pwd: var("DB_PASS").expect("Missing DB_PASS"),
         }
     }
 }

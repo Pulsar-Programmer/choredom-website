@@ -8,7 +8,6 @@ use chrono::{Utc, Duration};
 use lettre::message::{Attachment, Body, MultiPart, SinglePart};
 use lettre::transport::smtp::response::Response;
 use actix_session::Session;
-use password_hash::rand_core::OsRng;
 use rand::RngExt;
 use surrealdb::types::SurrealValue;
 use crate::RainError as r;
@@ -417,8 +416,7 @@ pub fn logout_user(identity: Identity){
     identity.logout()
 }
 
-use password_hash::{SaltString, PasswordHasher};
-use argon2::Argon2;
+use argon2::{Argon2, PasswordHasher as _, password_hash::{SaltString, rand_core::OsRng}};
 pub fn password_hash_argon2(password: String) -> anyhow::Result<(String, SaltString)>{
 
 

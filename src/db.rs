@@ -4,34 +4,36 @@ use surrealdb::method::IntoVariables;
 use surrealdb::types::SurrealValue;
 use surrealdb::{self as s, IndexedResults};
 use s::Surreal;
-use s::opt::auth::Root;
-use s::engine::remote::ws::{Client, Ws};
+use s::opt::auth::{Root, Database};
+use s::engine::remote::ws::{Client, Ws, Wss};
 
 pub type Db = Surreal<Client>;
 
-async fn setup_users(db: &Db) -> s::Result<()> {
+// async fn setup_users(db: &Db) -> s::Result<()> {
 
 
-    //this function will be called from the setup_db function
-    todo!()
-    // Ok(db)
-}
+//     //this function will be called from the setup_db function
+//     todo!()
+//     // Ok(db)
+// }
 
 ///Basic way to setup tables to allow SELECT in the newer versions without errors.
 async fn setup_tables(db: &Db) -> s::Result<()>{
-    db.query("DEFINE TABLE accounts SCHEMALESS; DEFINE TABLE jobs SCHEMALESS; DEFINE TABLE chats SCHEMALESS;").await?;
+    db.query("DEFINE TABLE accounts SCHEMALESS; DEFINE TABLE jobs SCHEMALESS; DEFINE TABLE chats SCHEMALESS; DEFINE TABLE disputes SCHEMALESS; DEFINE TABLE reports SCHEMALESS;").await?;
 
 
     Ok(())
 }
 
-pub async fn setup_db(db_addr: String) -> s::Result<Db>{
+pub async fn setup_db(db_addr: String, db_user: String, db_pwd: String) -> s::Result<Db>{
     //Change this into the embedded version when ready for non-data persistence
-    let db = Surreal::new::<Ws>(db_addr).await?;
+    let db = Surreal::new::<Wss>(db_addr).await?;
 
-    db.signin(Root {
-        username: "root".to_string(),
-        password: "root".to_string(),
+    db.signin(Database {
+        username: db_user,
+        password: db_pwd,
+        namespace: "choredom".into(),
+        database: "main".into(),
     }).await?;
 
 
